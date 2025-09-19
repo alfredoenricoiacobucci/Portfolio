@@ -47,8 +47,9 @@ export default function Portfolio() {
       {/* Header */}
       <header className="w-full flex justify-between items-center py-14 px-4 border-b-4 border-black text-[22px] font-bold">
         <h1 className="cursor-pointer" onClick={() => setSelectedProject(null)}>
-          Alfredo Enrico Iacobucci
-        </h1>
+  {selectedProject ? "Home" : "Alfredo Enrico Iacobucci"}
+</h1>
+
         <nav className="flex gap-2 text-[20px]">
           <span className="cursor-pointer" onClick={() => setShowContact(true)}>
             Email
@@ -183,9 +184,13 @@ export default function Portfolio() {
       </Modal>
 
       {/* Footer */}
-      <footer className="w-full py-12 border-t-4 border-black text-center text-sm font-bold">
-        Alfredo Enrico Iacobucci © {new Date().getFullYear()}
-      </footer>
+      <footer className="w-full py-12 border-t-4 border-black text-center text-sm font-bold space-y-2">
+  <div>Alfredo Enrico Iacobucci © {new Date().getFullYear()}</div>
+  <div className="text-xs font-normal">
+    Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione © 2025
+  </div>
+</footer>
+
 
       {/* FULLSCREEN VIEWER */}
       {viewerOpen && selectedProject?.images?.length > 0 && (
