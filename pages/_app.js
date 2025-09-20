@@ -1,5 +1,18 @@
-import '../styles/globals.css'
+import { useEffect } from "react";
+import "../styles/globals.css";
 
-export default function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />
+function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+    };
+    document.addEventListener("contextmenu", handleContextMenu);
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, []);
+
+  return <Component {...pageProps} />;
 }
+
+export default MyApp;
