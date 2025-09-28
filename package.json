@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "gen:images": "node scripts/generate-images.mjs"
   },
   "dependencies": {
     "framer-motion": "11.0.0",
