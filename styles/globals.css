@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimi extra */
-html, body { height: 100%; background:#fff; color:#000; }
- 
+/* === Modalità colore per Artwork (chiaro) / Professional (scuro) === */
+:root {
+  --bg: #fafafa; /* Artwork (default chiaro) */
+  --fg: #0a0a0a;
+  --muted: #4a4a4a;
+}
+
+.mode-professional {
+  --bg: #0a0a0a; /* Professional (scuro) */
+  --fg: #fafafa;
+  --muted: #a3a3a3;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* utilities */
+.bg-base { background: var(--bg); }
+.text-base { color: var(--fg); }
+.text-muted { color: var(--muted); }
+
+/* Small helpers for marquee and animations (kept from your original) */
+.marquee-track { display: flex; align-items: center; white-space: nowrap; width: max-content; will-change: transform; animation: marquee 80s linear infinite; }
+.marquee-track.reverse { animation-direction: reverse; }
+.marquee-seq { display: inline-block; padding-right: 2rem; font-size: 7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+@keyframes kbOut { 0% { transform: scale(1.03); } 100% { transform: scale(1.00); } }
+.animate-kb-out { animation: kbOut 12s ease-in-out both; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+.fade-in { animation: fadeIn 1600ms ease-in-out both; }
+.fade-out { animation: fadeOut 1600ms ease-in-out both; }

@@ -1,18 +1,18 @@
+// pages/_app.js
+import "@/styles/globals.css";
 import { useEffect } from "react";
-import "../styles/globals.css";
+import { useRouter } from "next/router";
 
-function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+
   useEffect(() => {
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-    };
-    document.addEventListener("contextmenu", handleContextMenu);
-    return () => {
-      document.removeEventListener("contextmenu", handleContextMenu);
-    };
-  }, []);
+    const root = document.documentElement;
+    const isProfessional = router.pathname.startsWith("/professional");
+    const isArtwork = router.pathname.startsWith("/artwork");
+    root.classList.toggle("mode-professional", isProfessional);
+    root.classList.toggle("mode-artwork", isArtwork && !isProfessional);
+  }, [router.pathname]);
 
   return <Component {...pageProps} />;
 }
-
-export default MyApp;

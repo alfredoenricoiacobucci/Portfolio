@@ -1,21 +1,20 @@
-// components/Modal.jsx 
+// components/Modal.jsx
+import React from "react";
+
 export default function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.();
+      }}
     >
-      <div className="w-full max-w-lg bg-white text-black rounded-lg shadow-2xl border-2 border-black">
-        <div className="flex items-center justify-between p-4 border-b-2 border-black">
-          <h3 className="text-xl font-bold">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Chiudi"
-            className="text-2xl leading-none px-2 -mt-1"
-            title="Chiudi"
-          >
-            ×
+      <div className="bg-white text-black max-w-2xl w-full rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="font-semibold">{title}</div>
+          <button className="px-3 py-1" onClick={onClose}>
+            ✕
           </button>
         </div>
         <div className="p-4">{children}</div>
