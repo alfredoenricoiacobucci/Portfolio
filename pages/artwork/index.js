@@ -222,35 +222,54 @@ export default function Portfolio({ projects }) {
   return (
     <div className={`min-h-screen ${mode === "professional" ? "bg-base text-white" : "bg-base text-black"} flex flex-col items-center`}>
       {/* HEADER */}
-      <header className="w-full flex justify-between items-center py-14 px-4 border-b-4 border-black text-[22px] font-bold">
-        <h1
-          className="cursor-pointer"
-          onClick={() => {
-            setSelectedProject(null);
-            pushShallow(`${basePath}`);
-          }}
-        >
-          {selectedProject ? "Home" : "Alfredo Enrico Iacobucci"}
-        </h1>
+<header className="w-full flex justify-between items-center py-14 px-4 border-b-4 site-border text-[22px] font-bold">
+  {/* SWITCH Artwork / Professional (stesso stile delle altre voci) */}
+  <div className="flex items-center gap-2 text-[20px]">
+    <button
+      onClick={() => {
+        // vai a artwork (reset query)
+        router.push("/artwork", undefined, { shallow: true });
+      }}
+      className={`cursor-pointer transition-opacity ${router.pathname.startsWith("/artwork") ? "opacity-100" : "opacity-50"}`}
+      aria-pressed={router.pathname.startsWith("/artwork")}
+    >
+      Artwork
+    </button>
 
-        <nav className="flex gap-2 text-[20px]">
-          <span className="cursor-pointer" onClick={() => setShowContact(true)}>Email</span>,{" "}
-          <span
-            className="cursor-pointer"
-            onClick={() => {
-              setSelectedProject({
-                name: "Info",
-                description:
-                  "Sono Alfredo Enrico Iacobucci nato a Urbino, nel 2002. Dopo aver concluso il percorso al Liceo Scientifico Laurana di Urbino, ho proseguito gli studi presso l’Accademia di Belle Arti della stessa città. Ho approfondito la mia ricerca attraverso viaggi, corsi di teatro e di strumento, oltre a workshop in collaborazione con l’Accademia e personalità di rilievo come Paola Bianchi, Ivan Fantini, Felix Schramm, Emilio Isgrò, Piero Percoco e Marco Bellocchio. La mia ricerca si concentra sulla consapevolezza della relatività della realtà: partendo dalla letteratura scientifica e classica, utilizzo fotografia e installazione per indagare i limiti della percezione umana e il rapporto tra mondo materiale e impalpabile, con lo scopo di urlare al mondo che, per quanto ne sappiamo finora, “nulla è reale, e tutto è lecito”.",
-              });
-              pushShallow(hrefProject("info"));
-            }}
-          >
-            Info
-          </span>,{" "}
-          <a href="https://instagram.com/alfredoenricoiacobucci" target="_blank" rel="noopener noreferrer">Insta</a>
-        </nav>
-      </header>
+    <span className="px-2">/</span>
+
+    <button
+      onClick={() => {
+        router.push("/professional", undefined, { shallow: true });
+      }}
+      className={`cursor-pointer transition-opacity ${router.pathname.startsWith("/professional") ? "opacity-100" : "opacity-50"}`}
+      aria-pressed={router.pathname.startsWith("/professional")}
+    >
+      Professional
+    </button>
+  </div>
+
+  {/* NAV: Email, Info, Insta (lasciamo identico il markup, stesse classi) */}
+  <nav className="flex gap-2 text-[20px]">
+    <span className="cursor-pointer" onClick={() => setShowContact(true)}>Email</span>,{" "}
+    <span
+      className="cursor-pointer"
+      onClick={() => {
+        setSelectedProject({
+          name: "Info",
+          description:
+            "Sono Alfredo Enrico Iacobucci nato a Urbino, nel 2002. Dopo aver concluso il percorso al Liceo Scientifico Laurana di Urbino, ho proseguito gli studi presso l’Accademia di Belle Arti della stessa città...",
+        });
+        pushShallow(hrefProject("info"));
+      }}
+    >
+      Info
+    </span>,{" "}
+    <a href="https://instagram.com/alfredoenricoiacobucci" target="_blank" rel="noopener noreferrer">Insta</a>
+  </nav>
+</header>
+
+
 
       {/* ===== BANNER TITOLO FULL-BLEED con zoom-out leggero + dissolvenza incrociata ===== */}
       {selectedProject && selectedProject.name !== "Info" && selectedProject.images?.length > 0 && (
@@ -449,7 +468,7 @@ export default function Portfolio({ projects }) {
           />
 
           <button
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]"
             onClick={() => {
               setViewerOpen(false);
               if (currentSlug) pushShallow(hrefProject(currentSlug));
@@ -462,12 +481,13 @@ export default function Portfolio({ projects }) {
       )}
 
       {/* FOOTER */}
-      <footer className="w-full py-12 border-t-4 border-black text-center text-sm font-bold space-y-2">
-        <div>Alfredo Enrico Iacobucci © {new Date().getFullYear()}</div>
-        <div className="text-xs font-normal">
-          Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione.
-        </div>
-      </footer>
+      <footer className="w-full py-12 border-t-4 site-border text-center text-sm font-bold space-y-2">
+  <div>Alfredo Enrico Iacobucci © {new Date().getFullYear()}</div>
+  <div className="text-xs font-normal">
+    Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione.
+  </div>
+</footer>
+
     </div>
   );
 }
