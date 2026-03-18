@@ -3,7 +3,7 @@
 // Per attivarlo: vai su https://web3forms.com, inserisci a.e.iacobucci@icloud.com,
 // ricevi la access_key via email e sostituiscila qui sotto.
 
-const ACCESS_KEY = process.env.WEB3FORMS_KEY || "YOUR_ACCESS_KEY_HERE";
+const ACCESS_KEY = process.env.WEB3FORMS_KEY || "6c54ffe5-dbe2-4109-af5b-ef65277506cb";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
