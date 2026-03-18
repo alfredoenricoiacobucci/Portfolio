@@ -38,14 +38,15 @@ export async function getServerSideProps() {
     const description = readText(pathMod.join(pDir, "descrizione.txt"));
     const banner = readText(pathMod.join(pDir, "banner.txt"));
 
-    // Immagini dalla stessa cartella
+    // Immagini dalla sottocartella foto/
+    const fotoDir = pathMod.join(pDir, "foto");
     let files = [];
     try {
-      files = fsMod.readdirSync(pDir)
+      files = fsMod.readdirSync(fotoDir)
         .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()))
         .sort(natural.compare);
     } catch {}
-    const images = files.map((f) => `/projects/${id}/${f}`);
+    const images = files.map((f) => `/projects/${id}/foto/${f}`);
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
