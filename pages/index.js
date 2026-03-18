@@ -238,8 +238,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => setHoverArea("artwork")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer font-semibold text-[20px] ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
-            style={{ display: "inline-block", transition: "opacity 300ms, transform 300ms", transform: displayMode === "artwork" ? "scale(1.08)" : "scale(1)" }}
+            className={`cursor-pointer transition-opacity font-semibold text-[20px] ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Artwork
           </span>
@@ -250,8 +249,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => setHoverArea("professional")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer font-semibold text-[20px] ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
-            style={{ display: "inline-block", transition: "opacity 300ms, transform 300ms", transform: displayMode === "professional" ? "scale(1.08)" : "scale(1)" }}
+            className={`cursor-pointer transition-opacity font-semibold text-[20px] ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Professional
           </span>
