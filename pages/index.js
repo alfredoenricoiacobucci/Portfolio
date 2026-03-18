@@ -30,18 +30,78 @@ export async function getServerSideProps() {
   const artworkImages = artworkIds.flatMap((id) => readImages(id)).slice(0, 24);
   const professionalImages = professionalIds.flatMap((id) => readImages(id)).slice(0, 24);
 
+  // Leggi stringhe da content/stringhe.txt
+  const contentDir = path.join(process.cwd(), "content");
+  let stringheRaw = "";
+  try { stringheRaw = fs.readFileSync(path.join(contentDir, "stringhe.txt"), "utf-8").trim(); } catch {}
+  const strings = {};
+  stringheRaw.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx < 0) return;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    if (key) strings[key] = val;
+  });
+
   return {
-    props: { artworkImages, professionalImages },
+    props: { artworkImages, professionalImages, strings },
   };
 }
 
-export default function Landing({ artworkImages = [], professionalImages = [] }) {
+// Filtra solo immagini orizzontali (w >= h)
+function useHorizontalImages(allImages) {
+  const [filtered, setFiltered] = useState([]);
+
+  useEffect(() => {
+    if (!allImages?.length) { setFiltered([]); return; }
+    let cancelled = false;
+
+    Promise.all(
+      allImages.map(
+        (src) =>
+          new Promise((resolve) => {
+            const img = new window.Image();
+            img.onload = () => resolve({ src, ok: img.naturalWidth >= img.naturalHeight });
+            img.onerror = () => resolve({ src, ok: false });
+            img.src = src;
+          })
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      const horiz = results.filter((r) => r.ok).map((r) => r.src);
+      setFiltered(horiz.length ? horiz : allImages);
+    });
+
+    return () => { cancelled = true; };
+  }, [allImages]);
+
+  return filtered;
+}
+
+export default function Landing({ artworkImages = [], professionalImages = [], strings = {} }) {
+  const landingName = strings.NOME || "Alfredo Enrico Iacobucci";
   const router = useRouter();
 
+  // Filtra verticali da entrambe le liste
+  const filteredArt = useHorizontalImages(artworkImages);
+  const filteredProf = useHorizontalImages(professionalImages);
+
+  // ===== CURTAIN: overlay che scompare dopo il mount =====
+  const [curtainVisible, setCurtainVisible] = useState(true);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => {
+      setCurtainVisible(false);
+    });
+    return () => cancelAnimationFrame(t);
+  }, []);
+
   // persistent selection if user clicks (start Artwork by default)
-  const [mode, setMode] = useState("artwork"); // default artwork selected
+  const [mode, setMode] = useState("artwork");
   // area hover based on cursor position (left/right)
-  const [hoverArea, setHoverArea] = useState(null); // null | "artwork" | "professional"
+  const [hoverArea, setHoverArea] = useState(null);
 
   // indices (advance once per entering an area)
   const artIndexRef = useRef(0);
@@ -97,20 +157,29 @@ export default function Landing({ artworkImages = [], professionalImages = [] })
     };
   }, []);
 
-  // when hoverArea changes, advance the index for that area exactly once
+  // Avanza l'immagine solo quando si INCROCIA dall'altro lato, non al primo ingresso
+  const prevHoverRef = useRef(null);
+
   useEffect(() => {
-    if (hoverArea === "artwork" && artworkImages.length > 0) {
-      artIndexRef.current = (artIndexRef.current + 1) % artworkImages.length;
+    const prev = prevHoverRef.current;
+    prevHoverRef.current = hoverArea;
+
+    // Non avanzare se arriviamo da null (primo ingresso nella pagina)
+    if (prev === null) return;
+
+    // Avanza solo se il lato è cambiato (es. pro → art o art → pro)
+    if (hoverArea === "artwork" && prev === "professional" && filteredArt.length > 0) {
+      artIndexRef.current = (artIndexRef.current + 1) % filteredArt.length;
       setArtIndex(artIndexRef.current);
     }
-    if (hoverArea === "professional" && professionalImages.length > 0) {
-      profIndexRef.current = (profIndexRef.current + 1) % professionalImages.length;
+    if (hoverArea === "professional" && prev === "artwork" && filteredProf.length > 0) {
+      profIndexRef.current = (profIndexRef.current + 1) % filteredProf.length;
       setProfIndex(profIndexRef.current);
     }
-  }, [hoverArea, artworkImages.length, professionalImages.length]);
+  }, [hoverArea, filteredArt.length, filteredProf.length]);
 
-  const artSrc = artworkImages.length ? artworkImages[artIndex % artworkImages.length] : null;
-  const profSrc = professionalImages.length ? professionalImages[profIndex % professionalImages.length] : null;
+  const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
+  const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
@@ -139,8 +208,8 @@ export default function Landing({ artworkImages = [], professionalImages = [] })
     >
       {/* BACKGROUND LAYERS */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        {/* artwork (white overlay stronger) */}
-        <div className={`landing-bg landing-bg--artwork ${hoverArea === "artwork" ? "visible" : ""}`}>
+        {/* artwork (white overlay stronger) — visibile di default quando nessun hover */}
+        <div className={`landing-bg landing-bg--artwork ${hoverArea !== "professional" ? "visible" : ""}`}>
           {artSrc && <img key={artSrc} src={artSrc} alt="" className="landing-bg__img show" />}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
@@ -155,13 +224,13 @@ export default function Landing({ artworkImages = [], professionalImages = [] })
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
         {/* Name smaller */}
-        <h1 className={`text-xl md:text-3xl tracking-tight font-semibold ${isDark ? "text-white" : "text-black"}`}>
-          Alfredo Enrico Iacobucci
+        <h1 className="text-2xl md:text-[2rem] tracking-tight font-semibold" style={{ color: "#c8102e", textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+          {landingName}
         </h1>
 
         {/* SWITCH larger but text slightly smaller and closer to name */}
         <div
-          className="flex items-center justify-center text-[20px] md:text-[28px] select-none gap-2"
+          className="flex items-center justify-center text-[20px] md:text-[28px] select-none gap-4"
           onMouseMove={onSwitchPointerMove}
           onMouseLeave={() => setHoverArea(null)}
         >
@@ -169,23 +238,39 @@ export default function Landing({ artworkImages = [], professionalImages = [] })
             onMouseEnter={() => setHoverArea("artwork")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-opacity ${displayMode === "artwork" ? "opacity-100 font-semibold text-[20px]" : "opacity-50 text-[18px]"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer font-semibold text-[20px] ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            style={{ display: "inline-block", transition: "opacity 300ms, transform 300ms", transform: displayMode === "artwork" ? "scale(1.08)" : "scale(1)" }}
           >
             Artwork
           </span>
 
-          <span className={`${isDark ? "text-white" : "text-black"}`}>/</span>
+          <span className={`font-semibold text-[20px] ${isDark ? "text-white" : "text-black"}`}>/</span>
 
           <span
             onMouseEnter={() => setHoverArea("professional")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-opacity ${displayMode === "professional" ? "opacity-100 font-semibold text-[20px]" : "opacity-50 text-[18px]"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer font-semibold text-[20px] ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            style={{ display: "inline-block", transition: "opacity 300ms, transform 300ms", transform: displayMode === "professional" ? "scale(1.08)" : "scale(1)" }}
           >
             Professional
           </span>
         </div>
       </div>
+
+      {/* CURTAIN: parte bianca (artwork default), sfuma via rivelando lo sfondo */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 100,
+          backgroundColor: "#fafafa",
+          opacity: curtainVisible ? 1 : 0,
+          transition: "opacity 800ms cubic-bezier(.25,.1,.25,1)",
+          pointerEvents: "none",
+        }}
+      />
     </main>
   );
 }

@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 /* === Modalità colore per Artwork (chiaro) / Professional (scuro) === */
 :root {
   --bg: #fafafa; /* Artwork (default chiaro) */
@@ -17,7 +18,7 @@
 
 html,
 body {
-  background: var(--bg);
+  background-color: var(--bg) !important;
   color: var(--fg);
 }
 
@@ -26,19 +27,16 @@ body {
 .text-base { color: var(--fg); }
 .text-muted { color: var(--muted); }
 
-/* Small helpers for marquee and animations (kept from your original) */
-.marquee-track { display: flex; align-items: center; white-space: nowrap; width: max-content; will-change: transform; animation: marquee 80s linear infinite; }
-.marquee-track.reverse { animation-direction: reverse; }
+/* Marquee base styles — animation is controlled by the JSX <style> in artwork/index.js */
 .marquee-seq { display: inline-block; padding-right: 2rem; font-size: 7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; }
-@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 @keyframes kbOut { 0% { transform: scale(1.03); } 100% { transform: scale(1.00); } }
 .animate-kb-out { animation: kbOut 12s ease-in-out both; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-.fade-in { animation: fadeIn 1600ms ease-in-out both; }
-.fade-out { animation: fadeOut 1600ms ease-in-out both; }
+.fade-in { animation: fadeIn 400ms ease-out both; }
+.fade-out { animation: fadeOut 400ms ease-out both; }
 
 /* ---------- bordi dinamici (nero per artwork / bianco per professional) ---------- */
 :root {
@@ -103,9 +101,13 @@ body {
 .landing-bg--artwork { z-index: 0; transition: opacity 520ms ease; }
 .landing-bg--professional { z-index: 1; transition: opacity 520ms ease; }
 
-/* Landing dark modifier: force text white in content when professional is active */
-.landing--dark .landing-content, .landing--dark h1, .landing--dark span, .landing--dark * {
+/* Landing dark modifier: force text white in content when professional is active —
+   but exclude elements with explicit inline color (like the red name) */
+.landing--dark .landing-content, .landing--dark span {
   color: white !important;
+}
+.landing--dark h1 {
+  /* Do NOT override h1 — its red color is set inline */
 }
 
 /* small tweaks for sizes/spacings */

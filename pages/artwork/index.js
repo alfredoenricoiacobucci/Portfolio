@@ -3,97 +3,111 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/router";
 import { BY_MODE } from "@/data/projects";
+import dynamic from "next/dynamic";
+const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
 
-/**
- * Legge /public/projects/* e costruisce i progetti.
- * Imposta `banner: "nome-file.jpg"` per far partire il banner da quella foto.
- */
+// About text viene ora da content/about/testo.txt via getServerSideProps
+
 export async function getServerSideProps() {
   const fs = await import("fs");
   const path = await import("path");
-
-  const PROJECTS_META = [
-    {
-      id: "p1",
-      title: "Xylella, Bellezza Fragile - Martano (LE) 2025",
-      description:
-        "L'uomo è parte dell'ecosistema terrestre. In ogni ecosistema la più piccola variazione può rompere un anello e l'intera catena si spezzerà. L'epidemia di Xylella, ha mandato in rovina secoli di lavoro e sacrifici di generazioni di famiglie di un'intera regione. E a noi non rimane che osservare inermi, a raccogliere i cocci.",
-      banner: "xylella-1.jpg",
-    },
-    {
-      id: "p2",
-      title: "Le radici ca tieni - Martano (LE) 2024",
-      description:
-        "Come sono diventati oggi quesi volti, oggetti, luoghi, texture e atmosfere della mia infanzia?",
-      banner: "radici-001.jpg",
-    },
-    {
-      id: "p3",
-      title: "Gemelli Cosmici - Rimini (RM) 2025",
-      description:
-        "“Gemelli cosmici” è un ritratto fotografico a un'opera di land art sulla sabbia. L'esigenza di immortalare l'effimera scultura in sabbia scaturisce da un ragionamento: alla base degli elementi che compongono la materia vi sono le particelle elementari, cariche elettriche in equilibrio all’interno di legami, il numero e la disposizione di queste cariche determinano l’elemento specifico. Dunque la materia non è altro che energia, in particolare energia potenziale, perciò l’universo è un’unica unità di energia. In quest’ottica, i confini che abbiamo messo tra noi e le cose e tra lo cose stesse, svaniscono e l'individualismo che caratterizza la cultura occidentale viene superato: il mio volto non ha nulla di differente da quello scolpito nella sabbia: entrambi sono effimere espressioni temporanee dello stesso magma universale. “Portiamo in noi l’infanzia dell’universo” (E. Coccia)",
-      banner: "gemelli-1.jpg",
-    },
-    {
-      id: "p4",
-      title: "Benzina senza piombo, morti senza ferro - Pesaro (PS) 2024",
-      description: "no comment",
-      banner: "benzina-01.jpg",
-    },
-    {
-      id: "p5",
-      title: "Incastri di cemento - Jesi (AN) 2024",
-      description: "no coment",
-      banner: "cimitero-01.jpg",
-    },
-    {
-      id: "p6",
-      title: "SONO MANIFESTO, Workshop con Paola Bianchi - Urbino (PU) 2025",
-      description:
-        "Paola Bianchi è corpo parlante, manifestazione fisica di un pensiero, è un’idea che si esprime con gesti - ma anche con fiato, fruscii, urti - e che, di volta in volta, diventa iconografia, evocazione, messaggio. Paola Bianchi è una forma dinamica che parla di politica, di società, di collettività attraverso torsioni nodose, posture articolate e tensioni urgenti. Per conoscere meglio il suo FARSI MANIFESTO si propone un workshop di 2 giorni, rivolto ad un numero prestabilito di partecipanti (indicato dall’artista), che si completerà con una performance finale.",
-      banner: "PB-01.jpg",
-    },
-  ];
-
   const fsMod = await fs;
   const pathMod = await path;
 
+  const root = process.cwd();
+  const contentDir = pathMod.join(root, "content");
+  const projectsContentDir = pathMod.join(contentDir, "projects");
+  const publicDir = pathMod.join(root, "public");
+  const imagesBase = pathMod.join(publicDir, "projects");
+
+  // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
+  const readText = (filePath) => {
+    try { return fsMod.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
+  };
+
   const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+  const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
   const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
-  const publicDir = pathMod.join(process.cwd(), "public");
-  const base = pathMod.join(publicDir, "projects");
+  // ---- PROGETTI: leggi da content/projects/{id}/ ----
+  let projectIds = [];
+  try { projectIds = fsMod.readdirSync(projectsContentDir).filter((f) => fsMod.statSync(pathMod.join(projectsContentDir, f)).isDirectory()).sort(natural.compare); } catch {}
 
-  const projects = PROJECTS_META.map((meta) => {
-    const folder = pathMod.join(base, meta.id);
+  const projects = projectIds.map((id) => {
+    const cDir = pathMod.join(projectsContentDir, id);
+    const title = readText(pathMod.join(cDir, "titolo.txt"));
+    const description = readText(pathMod.join(cDir, "descrizione.txt"));
+    const banner = readText(pathMod.join(cDir, "banner.txt"));
+
+    // Immagini da public/projects/{id}/
+    const imgFolder = pathMod.join(imagesBase, id);
     let files = [];
-    if (fsMod.existsSync(folder)) {
-      files = fsMod
-        .readdirSync(folder)
+    if (fsMod.existsSync(imgFolder)) {
+      files = fsMod.readdirSync(imgFolder)
         .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()))
         .sort(natural.compare);
     }
-    const images = files.map((f) => `/projects/${meta.id}/${f}`);
+    const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;
-    if (meta.banner && files.length > 0) {
-      const idx = files.findIndex((f) => f.toLowerCase() === meta.banner.toLowerCase());
+    if (banner && files.length > 0) {
+      const idx = files.findIndex((f) => f.toLowerCase() === banner.toLowerCase());
       bannerStartIndex = idx >= 0 ? idx : 0;
     }
 
-    return {
-      id: meta.id,
-      name: meta.title,
-      description: meta.description,
-      images,
-      bannerStartIndex,
-    };
+    return { id, name: title || id, description, images, bannerStartIndex };
   });
 
-  return { props: { projects } };
+  // ---- ABOUT: leggi da content/about/ ----
+  const aboutDir = pathMod.join(contentDir, "about");
+  const aboutText = readText(pathMod.join(aboutDir, "testo.txt"));
+  const aboutQuote = readText(pathMod.join(aboutDir, "citazione.txt"));
+
+  // Cerca foto in content/about/ (copia in public se serve per servire)
+  let aboutPhoto = "";
+  let aboutVideo = "";
+  try {
+    const aboutFiles = fsMod.readdirSync(aboutDir);
+    const photoFile = aboutFiles.find((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
+    const videoFile = aboutFiles.find((f) => VIDEO_EXT.has(pathMod.extname(f).toLowerCase()));
+
+    if (photoFile) {
+      // Copia in public/about/ per servirla come asset statico
+      const pubAbout = pathMod.join(publicDir, "about");
+      if (!fsMod.existsSync(pubAbout)) fsMod.mkdirSync(pubAbout, { recursive: true });
+      fsMod.copyFileSync(pathMod.join(aboutDir, photoFile), pathMod.join(pubAbout, photoFile));
+      aboutPhoto = `/about/${photoFile}`;
+    }
+    if (videoFile) {
+      const pubAbout = pathMod.join(publicDir, "about");
+      if (!fsMod.existsSync(pubAbout)) fsMod.mkdirSync(pubAbout, { recursive: true });
+      fsMod.copyFileSync(pathMod.join(aboutDir, videoFile), pathMod.join(pubAbout, videoFile));
+      aboutVideo = `/about/${videoFile}`;
+    }
+  } catch {}
+
+  // ---- STRINGHE: leggi da content/stringhe.txt ----
+  const stringheRaw = readText(pathMod.join(contentDir, "stringhe.txt"));
+  const strings = {};
+  stringheRaw.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx < 0) return;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    if (key) strings[key] = val;
+  });
+
+  return {
+    props: {
+      projects,
+      about: { text: aboutText, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo },
+      strings,
+    },
+  };
 }
 
-// util: titolo -> slug per URL
 const slugify = (s) =>
   (s || "")
     .toLowerCase()
@@ -102,358 +116,614 @@ const slugify = (s) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-export default function Portfolio({ projects }) {
+/* ============================================================
+   ContactForm — invia email tramite /api/contact (Web3Forms).
+   Fallback: apre mailto: se l'API non è configurata.
+   ============================================================ */
+function ContactForm({ mode, strings: S = {}, onSuccess }) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const isDark = mode === "professional";
+
+  const inputCls = isDark
+    ? "w-full bg-transparent border-b border-white/30 text-white placeholder-white/40 py-3 focus:outline-none focus:border-white transition-colors"
+    : "w-full bg-transparent border-b border-black/20 text-black placeholder-black/35 py-3 focus:outline-none focus:border-black transition-colors";
+  const btnCls = isDark
+    ? "w-full py-3 mt-2 font-semibold border border-white text-white hover:bg-white hover:text-black transition-colors"
+    : "w-full py-3 mt-2 font-semibold border border-black text-black hover:bg-black hover:text-white transition-colors";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    const name = e.target.elements["contact-name"].value.trim();
+    const email = e.target.elements["contact-email"].value.trim();
+    const message = e.target.elements["contact-message"].value.trim();
+
+    setSending(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSent(true);
+        setTimeout(() => onSuccess?.(), 2000);
+      } else {
+        // Fallback: apri mailto
+        const subject = encodeURIComponent("Contatto dal portfolio");
+        const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
+        window.location.href = `mailto:${S.EMAIL_DESTINATARIO || "a.e.iacobucci@icloud.com"}?subject=${subject}&body=${body}`;
+      }
+    } catch {
+      // Fallback: apri mailto
+      const subject = encodeURIComponent("Contatto dal portfolio");
+      const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
+      window.location.href = `mailto:a.e.iacobucci@icloud.com?subject=${subject}&body=${body}`;
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="py-8 text-center">
+        <p className={`text-lg font-semibold ${isDark ? "text-white" : "text-black"}`}>{S.MESSAGGIO_INVIATO || "Messaggio inviato!"}</p>
+        <p className={`text-sm mt-2 ${isDark ? "text-white/60" : "text-black/50"}`}>{S.MESSAGGIO_INVIATO_SUB || "Ti risponderò il prima possibile."}</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-1">
+      <input name="contact-name" type="text" placeholder={S.PLACEHOLDER_NOME || "Nome e Cognome"} className={inputCls} required />
+      <input name="contact-email" type="email" placeholder={S.PLACEHOLDER_EMAIL || "La tua email"} className={inputCls} />
+      <textarea name="contact-message" placeholder={S.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio"} className={`${inputCls} resize-none`} rows={5} required />
+      {error && <p className="text-red-500 text-xs">{error}</p>}
+      <button type="submit" className={btnCls} disabled={sending}>
+        {sending ? "Invio in corso..." : (S.TASTO_INVIA || "Invia")}
+      </button>
+    </form>
+  );
+}
+
+/* ============================================================
+   JustifiedGallery — mosaico omogeneo.
+   Ogni riga ha MINIMO 2 foto. Se ne avanza 1, viene assorbita
+   dalla riga precedente. Tutte le righe riempiono la larghezza.
+   ============================================================ */
+function JustifiedGallery({ images = [], onImageClick }) {
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [dims, setDims] = useState(null);
+  const GAP = 6;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const m = () => { const w = el.clientWidth; if (w > 0) setContainerWidth(w); };
+    m();
+    const ro = new ResizeObserver(m);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!images.length) { setDims([]); return; }
+    let cancelled = false;
+    Promise.all(images.map((src, i) => new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve({ src, ratio: img.naturalWidth / img.naturalHeight, idx: i });
+      img.onerror = () => resolve({ src, ratio: 1.5, idx: i });
+      img.src = src;
+    }))).then((d) => { if (!cancelled) setDims(d); });
+    return () => { cancelled = true; };
+  }, [images]);
+
+  const rows = useMemo(() => {
+    if (!dims?.length || containerWidth <= 0) return [];
+    const TARGET_H = containerWidth < 640 ? 280 : containerWidth < 1024 ? 380 : 480;
+    const rawRows = [];
+    let i = 0;
+
+    // Passo 1: costruisci righe greedily (min 2 per riga, max 3)
+    while (i < dims.length) {
+      const row = [dims[i]];
+      let ratioSum = dims[i].ratio;
+      i++;
+
+      // Aggiungi almeno un'altra foto (min 2 per riga) se disponibile
+      if (i < dims.length) {
+        row.push(dims[i]);
+        ratioSum += dims[i].ratio;
+        i++;
+      }
+
+      // Prova ad aggiungere una terza se la riga non è ancora piena
+      if (i < dims.length && row.length < 3) {
+        const candidateWidth = (ratioSum + dims[i].ratio) * TARGET_H + row.length * GAP;
+        // Aggiungi solo se non sfora troppo o se servono almeno 2 nella prossima riga
+        const remaining = dims.length - i;
+        if (candidateWidth <= containerWidth * 1.4 || remaining === 1) {
+          row.push(dims[i]);
+          ratioSum += dims[i].ratio;
+          i++;
+        }
+      }
+
+      rawRows.push(row);
+    }
+
+    // Passo 2: se l'ultima riga ha 1 sola foto, spostala nella penultima
+    if (rawRows.length > 1 && rawRows[rawRows.length - 1].length === 1) {
+      const loner = rawRows.pop()[0];
+      rawRows[rawRows.length - 1].push(loner);
+    }
+
+    // Passo 3: calcola altezze giustificate (ogni riga riempie la larghezza)
+    return rawRows.map((row) => {
+      const totalGap = GAP * (row.length - 1);
+      const ratioSum = row.reduce((s, item) => s + item.ratio, 0);
+      const h = (containerWidth - totalGap) / ratioSum;
+      return { items: row, height: h };
+    });
+  }, [dims, containerWidth]);
+
+  return (
+    <div ref={containerRef} className="w-full">
+      {rows.map((row, ri) => (
+        <div key={ri} className="flex" style={{
+          gap: `${GAP}px`,
+          marginBottom: ri < rows.length - 1 ? `${GAP}px` : 0,
+        }}>
+          {row.items.map((item) => {
+            const w = item.ratio * row.height;
+            return (
+              <button key={item.idx} type="button"
+                className="group relative overflow-hidden cursor-zoom-in focus:outline-none flex-shrink-0"
+                style={{ width: `${w}px`, height: `${row.height}px` }}
+                onClick={() => onImageClick?.(item.idx)}
+                aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
+              >
+                <img src={item.src} alt=""
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  loading={ri < 2 ? "eager" : "lazy"} />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200" />
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="rounded px-3 py-1 text-white text-xs md:text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-150 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
+                    visualizza a schermo intero
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Portfolio({ projects, about = {}, strings = {} }) {
+  // Stringhe con fallback
+  const S = {
+    NOME: strings.NOME || "Alfredo Enrico Iacobucci",
+    LABEL_ARTWORK: strings.LABEL_ARTWORK || "Artwork",
+    LABEL_PROFESSIONAL: strings.LABEL_PROFESSIONAL || "Professional",
+    LABEL_EMAIL: strings.LABEL_EMAIL || "Email",
+    LABEL_ABOUT: strings.LABEL_ABOUT || "About",
+    LABEL_HOME: strings.LABEL_HOME || "Home",
+    LABEL_INSTA: strings.LABEL_INSTA || "Insta",
+    LINK_INSTA: strings.LINK_INSTA || "https://instagram.com/alfredoenricoiacobucci",
+    COPYRIGHT: strings.COPYRIGHT || "Alfredo Enrico Iacobucci",
+    DISCLAIMER: strings.DISCLAIMER || "Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione.",
+    TITOLO_CONTATTI: strings.TITOLO_CONTATTI || "Contattami",
+    PLACEHOLDER_NOME: strings.PLACEHOLDER_NOME || "Nome e Cognome",
+    PLACEHOLDER_EMAIL: strings.PLACEHOLDER_EMAIL || "La tua email",
+    PLACEHOLDER_MESSAGGIO: strings.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio",
+    TASTO_INVIA: strings.TASTO_INVIA || "Invia",
+    MESSAGGIO_INVIATO: strings.MESSAGGIO_INVIATO || "Messaggio inviato!",
+    MESSAGGIO_INVIATO_SUB: strings.MESSAGGIO_INVIATO_SUB || "Ti risponderò il prima possibile.",
+    EMAIL_DESTINATARIO: strings.EMAIL_DESTINATARIO || "a.e.iacobucci@icloud.com",
+    TELEFONO: strings.TELEFONO || "+39 373 7286324",
+    INSTAGRAM_HANDLE: strings.INSTAGRAM_HANDLE || "@alfredoenricoiacobucci",
+    LABEL_VIDEO_PLACEHOLDER: strings.LABEL_VIDEO_PLACEHOLDER || "Video coming soon",
+    LABEL_FOTO_PLACEHOLDER: strings.LABEL_FOTO_PLACEHOLDER || "Foto",
+  };
   const router = useRouter();
 
-  // --- Qui calcoliamo la "mode" (artwork/professional) e backdrop per i link
   const mode = router.pathname.startsWith("/professional") ? "professional" : "artwork";
   const basePath = `/${mode}`;
 
   const [selectedProject, setSelectedProject] = useState(null);
-
-  // Modal contatti
   const [showContact, setShowContact] = useState(false);
 
-  // Viewer fullscreen
+  // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
-  // Banner slideshow
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
 
-  // Progetti con slug (filtrati in base al mode)
-  const allow = useMemo(() => new Set(BY_MODE[mode]), [mode]);
-  const projectsWithSlug = useMemo(
-    () =>
-      (projects || [])
-        .filter((p) => allow.has(p.id))
-        .map((p) => ({ ...p, slug: slugify(p.name) })),
-    [projects, allow]
-  );
+  const orderList = BY_MODE[mode] || [];
+
+  const projectsWithSlug = useMemo(() => {
+    const idx = new Map(orderList.map((id, i) => [id, i]));
+    const filtered = (projects || [])
+      .filter((p) => idx.has(p.id))
+      .map((p) => ({ ...p, slug: slugify(p.name) }));
+    filtered.sort((a, b) => idx.get(a.id) - idx.get(b.id));
+    return filtered;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects, mode]);
+
   const currentSlug = useMemo(
     () => (selectedProject ? slugify(selectedProject.name) : null),
     [selectedProject]
   );
 
   const hrefProject = (slug) => `${basePath}?p=${slug}`;
-  const hrefImage = (slug, i) => `${basePath}?p=${slug}&img=${i}`;
-  const pushShallow = (href) => router.push(href, undefined, { shallow: true });
 
-  // URL → stato
-  useEffect(() => {
-    const q = router.query?.p;
-    const imgIndex = router.query?.img ? parseInt(router.query.img, 10) : null;
-
-    if (!q) {
-      setSelectedProject(null);
-      setViewerOpen(false);
-      return;
-    }
-
-    if (q === "info") {
-      setSelectedProject({
-        name: "Info",
-        description:
-          "Sono Alfredo Enrico Iacobucci nato a Urbino, nel 2002. Dopo aver concluso il percorso al Liceo Scientifico Laurana di Urbino, ho proseguito gli studi presso l’Accademia di Belle Arti della stessa città. Ho approfondito la mia ricerca attraverso viaggi, corsi di teatro e di strumento, oltre a workshop in collaborazione con l’Accademia e personalità di rilievo come Paola Bianchi, Ivan Fantini, Felix Schramm, Emilio Isgrò, Piero Percoco e Marco Bellocchio. La mia ricerca si concentra sulla consapevolezza della relatività della realtà: partendo dalla letteratura scientifica e classica, utilizzo fotografia e installazione per indagare i limiti della percezione umana e il rapporto tra mondo materiale e impalpabile, con lo scopo di urlare al mondo che, per quanto ne sappiamo finora, “nulla è reale, e tutto è lecito”.",
-      });
-      setViewerOpen(false);
-      return;
-    }
-
-    const found = projectsWithSlug.find((p) => p.slug === q);
-    if (found) {
-      setSelectedProject(found);
-      if (found.images?.length) {
-        setBannerIndex(found.bannerStartIndex || 0);
-        setPrevBannerIndex(null);
-      }
-      if (imgIndex !== null && !isNaN(imgIndex) && found.images[imgIndex]) {
-        setViewerIndex(imgIndex);
-        setViewerOpen(true);
-      } else {
+  // ===== URL → STATE: sincronizza progetto dall'URL =====
+  const syncStateFromUrl = useMemo(() => {
+    return (q) => {
+      if (!q) {
+        setSelectedProject(null);
         setViewerOpen(false);
+        window.scrollTo({ top: 0 });
+        return;
       }
-    }
-  }, [router.query?.p, router.query?.img, projectsWithSlug]);
 
-  // Timer per cambio banner con dissolvenza incrociata
-  useEffect(() => {
-    if (!selectedProject?.images?.length) return;
-    const TOTAL = 12000; // durata ciclo (ms)
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setPrevBannerIndex((prev) => (prev === null ? bannerIndex : (prev + 1) % selectedProject.images.length));
-      setBannerIndex((i) => (i + 1) % selectedProject.images.length);
-    }, TOTAL);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (q === "about") {
+        setSelectedProject({
+          name: "About",
+          description: about.text || "",
+          quote: about.quote || "",
+          photo: about.photo || "",
+          video: about.video || "",
+        });
+        setViewerOpen(false);
+        window.scrollTo({ top: 0 });
+        return;
+      }
+
+      const found = projectsWithSlug.find((p) => p.slug === q);
+      if (found) {
+        setSelectedProject(found);
+        if (found.images?.length) {
+          setBannerIndex(found.bannerStartIndex || 0);
+          setPrevBannerIndex(null);
+        }
+        setViewerOpen(false);
+        window.scrollTo({ top: 0 });
+      }
     };
-  }, [selectedProject, bannerIndex]);
+  }, [projectsWithSlug, mode]);
 
-  // Tastiera viewer
+  // Reagisce ai cambi di query (navigazione in avanti)
+  useEffect(() => {
+    syncStateFromUrl(router.query?.p);
+  }, [router.query?.p, syncStateFromUrl]);
+
+  // Gestisce il back/forward del browser in modo affidabile
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      const params = new URL(url, window.location.origin).searchParams;
+      syncStateFromUrl(params.get("p") || undefined);
+    };
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => {
+      router.events.off("routeChangeComplete", handleRouteChange);
+    };
+  }, [router.events, syncStateFromUrl]);
+
+  // ===== TASTIERA VIEWER: solo state, niente URL =====
   useEffect(() => {
     if (!viewerOpen || !selectedProject?.images?.length) return;
+    
     const onKey = (e) => {
       if (e.key === "Escape") {
         setViewerOpen(false);
-        if (currentSlug) pushShallow(hrefProject(currentSlug));
       }
       if (e.key === "ArrowRight") {
-        setViewerIndex((i) => {
-          const ni = (i + 1) % selectedProject.images.length;
-          if (currentSlug) pushShallow(hrefImage(currentSlug, ni));
-          return ni;
-        });
+        setViewerIndex((prev) => (prev + 1) % selectedProject.images.length);
       }
       if (e.key === "ArrowLeft") {
-        setViewerIndex((i) => {
-          const ni = (i - 1 + selectedProject.images.length) % selectedProject.images.length;
-          if (currentSlug) pushShallow(hrefImage(currentSlug, ni));
-          return ni;
-        });
+        setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length);
       }
     };
+    
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [viewerOpen, selectedProject, currentSlug]);
+  }, [viewerOpen, selectedProject]);
+
+  // Flag: siamo nella vista home (marquee visibile)?
+  const isHome = !selectedProject;
+
+  // Gradiente bottom: opacità basata sulla distanza dal fondo della pagina
+  const [gradientOpacity, setGradientOpacity] = useState(1);
+
+  useEffect(() => {
+    if (!isHome) { setGradientOpacity(0); return; }
+
+    const onScroll = () => {
+      const distFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      // Sfuma tra 200px e 0px dal fondo
+      const opacity = Math.min(1, Math.max(0, distFromBottom / 200));
+      setGradientOpacity(opacity);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // calcola subito
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  // ===== MARQUEE =====
+  useEffect(() => {
+    // Ricalcola solo quando la home è visibile
+    if (!isHome) return;
+
+    const PX_PER_SEC = 500;
+    // Doppio timeout: il primo aspetta il render, il secondo aspetta il layout
+    const timer = setTimeout(() => {
+      requestAnimationFrame(() => {
+        const tracks = document.querySelectorAll(".marquee-track");
+        tracks.forEach((track) => {
+          const seq = track.querySelector(".marquee-seq");
+          if (!seq) return;
+          const distance = seq.scrollWidth;
+          const durSec = Math.max(4, distance / PX_PER_SEC);
+          track.style.setProperty("--marquee-duration", `${durSec}s`);
+        });
+      });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [mode, isHome]);
 
   return (
     <div className={`min-h-screen ${mode === "professional" ? "bg-base text-white" : "bg-base text-black"} flex flex-col items-center`}>
       {/* HEADER */}
-<header className="w-full flex justify-between items-center py-14 px-4 border-b-4 site-border text-[22px] font-bold">
-  {/* SWITCH Artwork / Professional (stesso stile delle altre voci) */}
-  <div className="flex items-center gap-2 text-[20px]">
-    <button
-      onClick={() => {
-        // vai a artwork (reset query)
-        router.push("/artwork", undefined, { shallow: true });
-      }}
-      className={`cursor-pointer transition-opacity ${router.pathname.startsWith("/artwork") ? "opacity-100" : "opacity-50"}`}
-      aria-pressed={router.pathname.startsWith("/artwork")}
-    >
-      Artwork
-    </button>
+      <header className="w-full flex justify-between items-center py-14 px-4 border-b-4 site-border text-[22px] font-bold relative">
+        {/* PALLINO ROSSO — riporta alla landing */}
+        <button
+          onClick={() => router.push("/")}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full cursor-pointer hover:scale-150 transition-transform"
+          style={{ backgroundColor: "#c8102e" }}
+          aria-label="Torna alla landing"
+        />
+        <div className="flex items-center gap-2 text-[20px]">
+          <button
+            onClick={() => {
+              const isAbout = router.query?.p === "about";
+              router.push(isAbout ? "/artwork?p=about" : "/artwork");
+            }}
+            className={`cursor-pointer transition-opacity ${
+              router.pathname.startsWith("/artwork") ? "opacity-100" : "opacity-50"
+            }`}
+          >
+            {S.LABEL_ARTWORK}
+          </button>
+          <span className="px-2">/</span>
+          <button
+            onClick={() => {
+              const isAbout = router.query?.p === "about";
+              router.push(isAbout ? "/professional?p=about" : "/professional");
+            }}
+            className={`cursor-pointer transition-opacity ${
+              router.pathname.startsWith("/professional") ? "opacity-100" : "opacity-50"
+            }`}
+          >
+            {S.LABEL_PROFESSIONAL}
+          </button>
+        </div>
 
-    <span className="px-2">/</span>
+        <nav className="flex gap-2 text-[20px]">
+          <span className="cursor-pointer" onClick={() => setShowContact(true)}>
+            {S.LABEL_EMAIL}
+          </span>
+          ,{" "}
+          {router.query?.p === "about" ? (
+            <span
+              className="cursor-pointer"
+              onClick={() => router.push(basePath, undefined, { shallow: true })}
+            >
+              {S.LABEL_HOME}
+            </span>
+          ) : (
+            <span
+              className="cursor-pointer"
+              onClick={() => router.push(`${basePath}?p=about`, undefined, { shallow: true })}
+            >
+              {S.LABEL_ABOUT}
+            </span>
+          )}
+          ,{" "}
+          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer">
+            {S.LABEL_INSTA}
+          </a>
+        </nav>
+      </header>
 
-    <button
-      onClick={() => {
-        router.push("/professional", undefined, { shallow: true });
-      }}
-      className={`cursor-pointer transition-opacity ${router.pathname.startsWith("/professional") ? "opacity-100" : "opacity-50"}`}
-      aria-pressed={router.pathname.startsWith("/professional")}
-    >
-      Professional
-    </button>
-  </div>
-
-  {/* NAV: Email, Info, Insta (lasciamo identico il markup, stesse classi) */}
-  <nav className="flex gap-2 text-[20px]">
-    <span className="cursor-pointer" onClick={() => setShowContact(true)}>Email</span>,{" "}
-    <span
-      className="cursor-pointer"
-      onClick={() => {
-        setSelectedProject({
-          name: "Info",
-          description:
-            "Sono Alfredo Enrico Iacobucci nato a Urbino, nel 2002. Dopo aver concluso il percorso al Liceo Scientifico Laurana di Urbino, ho proseguito gli studi presso l’Accademia di Belle Arti della stessa città...",
-        });
-        pushShallow(hrefProject("info"));
-      }}
-    >
-      Info
-    </span>,{" "}
-    <a href="https://instagram.com/alfredoenricoiacobucci" target="_blank" rel="noopener noreferrer">Insta</a>
-  </nav>
-</header>
-
-
-
-      {/* ===== BANNER TITOLO FULL-BLEED con zoom-out leggero + dissolvenza incrociata ===== */}
-      {selectedProject && selectedProject.name !== "Info" && selectedProject.images?.length > 0 && (
-        <section className="w-full">
-          {(() => {
-            const imgs = selectedProject.images;
-            const cur = imgs[bannerIndex % imgs.length];
-            const prev = prevBannerIndex !== null ? imgs[prevBannerIndex % imgs.length] : null;
-
-            return (
-              <div className="relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden bg-black">
-                {/* Strato precedente (fade out + zoom-out leggero) */}
-                {prev && (
-                  <img
-                    key={`prev-${prev}`}
-                    src={prev}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover object-center animate-kb-out fade-out"
-                  />
-                )}
-
-                {/* Strato corrente (fade in + zoom-out leggero) */}
-                <img
-                  key={`cur-${cur}`}
-                  src={cur}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover object-center animate-kb-out fade-in"
-                />
-
-                {/* Gradiente più scuro per leggibilità del titolo */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/95" />
-
-                {/* Titolo in basso a sinistra */}
-                <div className="absolute inset-0 flex items-end px-6 md:px-12">
-                  <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
-                    {selectedProject.name}
-                  </h2>
-                </div>
-              </div>
-            );
-          })()}
+      {/* BANNER — nessun fade-in: TopRotator ha il suo crossfade interno */}
+      {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
+        <section key={`banner-${currentSlug}`} className="w-full relative">
+          <TopRotator
+            images={selectedProject.images}
+            alt={selectedProject.name || ""}
+            className="relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden bg-black"
+            interval={4000}
+            fadeMs={2500}
+            zoomMs={7000}
+            priorityFirst
+          />
+          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+          <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
+            <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+              {selectedProject.name}
+            </h2>
+          </div>
         </section>
       )}
 
-      {/* ===== CONTENUTO PROGETTO ===== */}
-      {selectedProject && selectedProject.name !== "Info" ? (
-        <div className="w-full max-w-6xl px-6 py-12">
-          {/* Descrizione */}
+      {/* CONTENUTO PROGETTO — fade-in breve solo sul contenuto sotto il banner */}
+      {selectedProject && selectedProject.name !== "About" ? (
+        <div key={`project-${currentSlug}`} className="w-full max-w-6xl px-6 py-12 fade-in">
           <p className={`${mode === "professional" ? "text-white" : "text-black"} text-sm md:text-base leading-relaxed mb-10 max-w-3xl whitespace-pre-line`}>
             {selectedProject.description}
           </p>
 
-          {/* Galleria 2-per-riga con overlay */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {selectedProject.images?.map((img, i) => (
-              <button
-                key={i}
-                type="button"
-                className="group relative w-full cursor-zoom-in focus:outline-none"
-                onClick={() => {
-                  setViewerIndex(i);
-                  setViewerOpen(true);
-                }}
-                aria-label={`Apri immagine ${i + 1} a schermo intero`}
-              >
-                <div className="relative w-full h-56 md:h-72 lg:h-80 overflow-hidden">
-                  <img
-                    src={img}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01] group-active:scale-[1.01]"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 group-active:bg-black/25 group-focus:bg-black/25 transition-colors duration-200" />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <span className="rounded px-3 py-1 text-white text-xs md:text-sm font-semibold opacity-0 group-hover:opacity-100 group-active:opacity-100 group-focus:opacity-100 transition-opacity duration-150 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
-                      visualizza a schermo intero
-                    </span>
+          <JustifiedGallery
+            images={selectedProject.images || []}
+            onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
+          />
+        </div>
+      ) : selectedProject && selectedProject.name === "About" ? (
+        <>
+          {/* VIDEO — letto da content/about/ */}
+          <section key="about-video" className="w-full relative">
+            <div className={`relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+              {selectedProject.video ? (
+                <video
+                  className="absolute inset-0 w-full h-full object-cover"
+                  playsInline
+                  muted
+                  loop
+                  autoPlay
+                  src={selectedProject.video}
+                />
+              ) : (
+                <span className={`relative z-10 text-sm font-medium ${mode === "professional" ? "text-white/30" : "text-black/20"}`}>
+                  {S.LABEL_VIDEO_PLACEHOLDER}
+                </span>
+              )}
+            </div>
+            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+            <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
+              <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                About
+              </h2>
+            </div>
+          </section>
+
+          {/* CONTENUTO ABOUT */}
+          <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
+            {/* TESTO IN DUE COLONNE */}
+            <div className={`w-full max-w-6xl mx-auto px-6 md:px-12 py-12 ${mode === "professional" ? "text-white" : "text-black"}`}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 text-sm md:text-base leading-relaxed">
+                <p className="whitespace-pre-line">{selectedProject.description}</p>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div>Telefono: <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="underline">{S.TELEFONO}</a></div>
+                    <div>Email: <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="underline">{S.EMAIL_DESTINATARIO}</a></div>
+                    <div>Instagram: <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="underline">{S.INSTAGRAM_HANDLE}</a></div>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : selectedProject && selectedProject.name === "Info" ? (
-        <div className="max-w-4xl p-24">
-          <h2 className="text-6xl font-bold mb-6 text-left">{selectedProject.name}</h2>
-          <div className={`${mode === "professional" ? "text-white" : "text-black"} text-sm md:text-base leading-relaxed whitespace-pre-line`}>
-            {selectedProject.description}
-            <div className="mt-8 space-y-2">
-              <div>Telefono: <a href="tel:+393737286324" className="underline">+39 373 7286324</a></div>
-              <div>Email: <a href="mailto:a.e.iacobucci@icloud.com" className="underline">a.e.iacobucci@icloud.com</a></div>
-              <div>Instagram: <a href="https://instagram.com/alfredoenricoiacobucci" target="_blank" rel="noopener noreferrer" className="underline">@alfredoenricoiacobucci</a></div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        // Home: fasce scorrevoli
-        <div className="w-full flex flex-col gap-0 p-0">
-          {projectsWithSlug.map((project, index) => (
-            <div key={project.slug} className="w-full border-t-4 border-b-4 border-black min-h-[1vh] flex items-center overflow-hidden">
-              <div className={`marquee-track ${index % 2 === 1 ? "reverse" : ""}`}>
-                <span
-                  className="marquee-seq"
-                  onClick={() => {
-                    setSelectedProject(project);
-                    pushShallow(hrefProject(project.slug));
-                  }}
-                >
-                  {Array(20).fill(`${project.name} |`).join(" ")}
-                </span>
-                <span
-                  className="marquee-seq"
-                  aria-hidden="true"
-                  onClick={() => {
-                    setSelectedProject(project);
-                    pushShallow(hrefProject(project.slug));
-                  }}
-                >
-                  {Array(20).fill(`${project.name} |`).join(" ")}
-                </span>
               </div>
             </div>
-          ))}
+
+            {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional */}
+            <div className={`w-full py-20 md:py-28 ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`}>
+              {/* CITAZIONE — letta da content/about/citazione.txt */}
+              {selectedProject.quote && (
+                <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
+                  <div className="text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: "#c8102e" }}>&ldquo;&rdquo;</div>
+                  <blockquote className="text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: "#c8102e" }}>
+                    {selectedProject.quote}
+                  </blockquote>
+                </div>
+              )}
+
+              {/* FOTO GRANDE — letta da content/about/ (prima immagine trovata) */}
+              <div className="w-full px-6 md:px-12 mt-16 md:mt-20">
+                <div className={`w-full h-[50vh] md:h-[65vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
+                  {selectedProject.photo ? (
+                    <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className={`text-sm font-medium ${mode === "professional" ? "text-black/20" : "text-white/20"}`}>
+                      {S.LABEL_FOTO_PLACEHOLDER}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div key="home" className="w-full relative fade-in" style={{ animationDuration: '400ms' }}>
+          <div className="flex flex-col gap-0 p-0">
+            {projectsWithSlug.map((project, index) => (
+              <div
+                key={project.slug}
+                className={`w-full border-t-4 border-b-4 ${
+                  mode === "professional" ? "border-white" : "border-black"
+                } min-h-[1vh] flex items-center overflow-hidden`}
+              >
+                <div className={`marquee-track ${index % 2 === 1 ? "reverse" : ""}`}>
+                  <span
+                    className="marquee-seq"
+                    onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+                  >
+                    {Array(20).fill(`${project.name} |`).join(" ")}
+                  </span>
+                  <span
+                    className="marquee-seq"
+                    aria-hidden="true"
+                    onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+                  >
+                    {Array(20).fill(`${project.name} |`).join(" ")}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Gradient fade bottom — fixed, non interferisce col layout */}
+          <div
+            className="pointer-events-none fixed bottom-0 left-0 right-0 z-10 h-24 md:h-32"
+            style={{
+              background: mode === "professional"
+                ? "linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.6) 40%, transparent 100%)"
+                : "linear-gradient(to top, #fafafa 0%, rgba(250,250,250,0.35) 40%, transparent 100%)",
+              opacity: gradientOpacity,
+              transition: "opacity 200ms ease-out",
+            }}
+          />
         </div>
       )}
 
-      {/* Contact Modal */}
-      <Modal open={showContact} onClose={() => setShowContact(false)} title="Contattami">
-        <form
-          action="mailto:a.e.iacobucci@icloud.com"
-          method="GET"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const email = "a.e.iacobucci@icloud.com";
-            const subject = encodeURIComponent("Contatto dal portfolio");
-            const body = encodeURIComponent(`Ciao Alfredo,\n\nTi scrivo dal portfolio.\n\n[Scrivi il tuo messaggio qui]\n`);
-            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-          }}
-          className="space-y-4"
-        >
-          <input type="email" placeholder="La tua email (opzionale)" className="w-full rounded border border-black p-3" />
-          <textarea placeholder="Il tuo messaggio" className="w-full rounded border border-black p-3" rows={6} required></textarea>
-          <button type="submit" className="w-full rounded bg-black p-3 text-white">Invia</button>
-        </form>
+      {/* MODAL CONTATTI */}
+      <Modal open={showContact} onClose={() => setShowContact(false)} title={S.TITOLO_CONTATTI} mode={mode}>
+        <ContactForm mode={mode} strings={S} onSuccess={() => setShowContact(false)} />
       </Modal>
 
       {/* VIEWER FULLSCREEN */}
       {viewerOpen && selectedProject?.images?.length > 0 && (
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 fade-in"
+          style={{ animationDuration: '250ms' }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setViewerOpen(false);
-              if (currentSlug) pushShallow(hrefProject(currentSlug));
-            }
+            if (e.target === e.currentTarget) setViewerOpen(false);
           }}
         >
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white text-lg font-semibold text-center px-4">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white text-lg font-semibold text-center px-4 pointer-events-none">
             {selectedProject?.name}
           </div>
 
           {selectedProject.images.length > 1 && (
             <>
               <button
-                className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2"
-                onClick={() =>
-                  setViewerIndex((i) => {
-                    const ni = (i - 1 + selectedProject.images.length) % selectedProject.images.length;
-                    if (currentSlug) pushShallow(hrefImage(currentSlug, ni));
-                    return ni;
-                  })
-                }
+                className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-transform z-10"
+                onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
                 aria-label="Immagine precedente"
               >
                 ‹
               </button>
               <button
-                className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2"
-                onClick={() =>
-                  setViewerIndex((i) => {
-                    const ni = (i + 1) % selectedProject.images.length;
-                    if (currentSlug) pushShallow(hrefImage(currentSlug, ni));
-                    return ni;
-                  })
-                }
+                className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-transform z-10"
+                onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
                 aria-label="Immagine successiva"
               >
                 ›
@@ -464,15 +734,13 @@ export default function Portfolio({ projects }) {
           <img
             src={selectedProject.images[viewerIndex]}
             alt=""
-            className="max-w-[95vw] max-h-[85vh] w-auto h-auto object-contain shadow-2xl"
+            className="max-w-[95vw] max-h-[85vh] w-auto h-auto object-contain shadow-2xl select-none"
           />
 
           <button
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]"
-            onClick={() => {
-              setViewerOpen(false);
-              if (currentSlug) pushShallow(hrefProject(currentSlug));
-            }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-transform z-10"
+            style={{ color: "#c8102e" }}
+            onClick={() => setViewerOpen(false)}
             aria-label="Chiudi visualizzazione"
           >
             ×
@@ -482,12 +750,34 @@ export default function Portfolio({ projects }) {
 
       {/* FOOTER */}
       <footer className="w-full py-12 border-t-4 site-border text-center text-sm font-bold space-y-2">
-  <div>Alfredo Enrico Iacobucci © {new Date().getFullYear()}</div>
-  <div className="text-xs font-normal">
-    Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione.
-  </div>
-</footer>
+        <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
+        <div className="text-xs font-normal">
+          {S.DISCLAIMER}
+        </div>
+      </footer>
 
+      <style jsx global>{`
+        @keyframes marqueeX {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+
+        .marquee-track {
+          display: flex;
+          white-space: nowrap;
+          width: max-content;
+          will-change: transform;
+          animation: marqueeX var(--marquee-duration, 80s) linear infinite;
+        }
+
+        .marquee-track.reverse {
+          animation-direction: reverse;
+        }
+
+        .marquee-seq {
+          padding: 0 1rem;
+        }
+      `}</style>
     </div>
   );
 }

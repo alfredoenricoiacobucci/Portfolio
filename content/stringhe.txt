@@ -1,0 +1,37 @@
+# Stringhe del sito — modifica qui senza toccare il codice
+# Formato: CHIAVE = valore
+# Le righe che iniziano con # sono commenti e vengono ignorate
+
+# Landing
+NOME = Alfredo Enrico Iacobucci
+
+# Header
+LABEL_ARTWORK = Artwork
+LABEL_PROFESSIONAL = Professional
+LABEL_EMAIL = Email
+LABEL_ABOUT = About
+LABEL_HOME = Home
+LABEL_INSTA = Insta
+LINK_INSTA = https://instagram.com/alfredoenricoiacobucci
+
+# Footer
+COPYRIGHT = Alfredo Enrico Iacobucci
+DISCLAIMER = Tutte le immagini presenti sono coperte da copyright e non possono essere utilizzate senza autorizzazione.
+
+# Contatti
+TITOLO_CONTATTI = Contattami
+PLACEHOLDER_NOME = Nome e Cognome
+PLACEHOLDER_EMAIL = La tua email
+PLACEHOLDER_MESSAGGIO = Il tuo messaggio
+TASTO_INVIA = Invia
+MESSAGGIO_INVIATO = Messaggio inviato!
+MESSAGGIO_INVIATO_SUB = Ti risponderò il prima possibile.
+EMAIL_DESTINATARIO = a.e.iacobucci@icloud.com
+
+# Contatti About
+TELEFONO = +39 373 7286324
+INSTAGRAM_HANDLE = @alfredoenricoiacobucci
+
+# About
+LABEL_VIDEO_PLACEHOLDER = Video coming soon
+LABEL_FOTO_PLACEHOLDER = Foto
