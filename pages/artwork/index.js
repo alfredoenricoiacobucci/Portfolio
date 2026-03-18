@@ -16,9 +16,8 @@ export async function getServerSideProps() {
 
   const root = process.cwd();
   const contentDir = pathMod.join(root, "content");
-  const projectsContentDir = pathMod.join(contentDir, "projects");
   const publicDir = pathMod.join(root, "public");
-  const imagesBase = pathMod.join(publicDir, "projects");
+  const projectsDir = pathMod.join(publicDir, "projects");
 
   // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
   const readText = (filePath) => {
@@ -29,24 +28,23 @@ export async function getServerSideProps() {
   const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
   const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
-  // ---- PROGETTI: leggi da content/projects/{id}/ ----
+  // ---- PROGETTI: leggi tutto da public/projects/{id}/ (testi + immagini insieme) ----
   let projectIds = [];
-  try { projectIds = fsMod.readdirSync(projectsContentDir).filter((f) => fsMod.statSync(pathMod.join(projectsContentDir, f)).isDirectory()).sort(natural.compare); } catch {}
+  try { projectIds = fsMod.readdirSync(projectsDir).filter((f) => fsMod.statSync(pathMod.join(projectsDir, f)).isDirectory()).sort(natural.compare); } catch {}
 
   const projects = projectIds.map((id) => {
-    const cDir = pathMod.join(projectsContentDir, id);
-    const title = readText(pathMod.join(cDir, "titolo.txt"));
-    const description = readText(pathMod.join(cDir, "descrizione.txt"));
-    const banner = readText(pathMod.join(cDir, "banner.txt"));
+    const pDir = pathMod.join(projectsDir, id);
+    const title = readText(pathMod.join(pDir, "titolo.txt"));
+    const description = readText(pathMod.join(pDir, "descrizione.txt"));
+    const banner = readText(pathMod.join(pDir, "banner.txt"));
 
-    // Immagini da public/projects/{id}/
-    const imgFolder = pathMod.join(imagesBase, id);
+    // Immagini dalla stessa cartella
     let files = [];
-    if (fsMod.existsSync(imgFolder)) {
-      files = fsMod.readdirSync(imgFolder)
+    try {
+      files = fsMod.readdirSync(pDir)
         .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()))
         .sort(natural.compare);
-    }
+    } catch {}
     const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;
