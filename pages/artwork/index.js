@@ -546,67 +546,55 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </nav>
       </header>
 
-      {/* BANNER — nessun fade-in: TopRotator ha il suo crossfade interno */}
-      {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative">
-          <TopRotator
-            images={selectedProject.images}
-            alt={selectedProject.name || ""}
-            className="relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden bg-black"
-            interval={4000}
-            fadeMs={2500}
-            zoomMs={7000}
-            priorityFirst
-          />
-          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
-          <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
-            <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
-              {selectedProject.name}
-            </h2>
-          </div>
-        </section>
-      )}
-
-      {/* TITOLO PROGETTO — si estende da destra a sinistra a tutta larghezza */}
+      {/* TITOLO PROGETTO — riempie tutta la larghezza, font size dinamico */}
       {selectedProject && selectedProject.name !== "About" && (
-        <div key={`title-${currentSlug}`} className="w-full overflow-hidden py-6 md:py-10 fade-in">
+        <div key={`title-${currentSlug}`} className="w-full overflow-hidden pt-8 md:pt-12 pb-4 fade-in">
           <h2
             ref={(el) => {
               if (!el) return;
-              const parent = el.parentElement;
-              const pw = parent.clientWidth - 48;
-              let fs = 120;
+              const pw = el.parentElement.clientWidth;
+              const pad = window.innerWidth < 768 ? 32 : 48;
+              const avail = pw - pad * 2;
+              let fs = 200;
               el.style.fontSize = `${fs}px`;
-              while (el.scrollWidth > pw && fs > 20) {
-                fs -= 2;
+              while (el.scrollWidth > avail && fs > 16) {
+                fs -= 1;
                 el.style.fontSize = `${fs}px`;
               }
+              // Se è troppo piccolo per riempire, ingrandisci
+              while (el.scrollWidth < avail * 0.98 && fs < 300) {
+                fs += 1;
+                el.style.fontSize = `${fs}px`;
+                if (el.scrollWidth > avail) { fs -= 1; el.style.fontSize = `${fs}px`; break; }
+              }
             }}
-            className={`${mode === "professional" ? "text-white" : "text-black"} font-extrabold uppercase leading-[0.9] tracking-tight text-right px-6 md:px-12 whitespace-nowrap`}
-            style={{ fontSize: "120px" }}
+            className={`${mode === "professional" ? "text-white" : "text-black"} font-extrabold uppercase leading-[0.85] tracking-tighter whitespace-nowrap`}
+            style={{ fontSize: "200px", paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}
           >
             {selectedProject.name}
           </h2>
         </div>
       )}
 
-      {/* CONTENUTO PROGETTO — gallery a sinistra, testo a destra */}
+      {/* CONTENUTO PROGETTO — gallery a sinistra (scroll), testo a destra (scroll indipendente) */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full max-w-7xl px-6 md:px-12 pb-12 fade-in">
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-            {/* Gallery — occupa la maggior parte della larghezza */}
-            <div className="w-full md:w-2/3 lg:w-3/4">
+        <div key={`project-${currentSlug}`} className="w-full pb-24 fade-in">
+          <div className="flex flex-col md:flex-row" style={{ paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}>
+            {/* Gallery — colonna sinistra, scorre normalmente */}
+            <div className="w-full md:w-2/3 lg:w-3/4 md:pr-8 lg:pr-12">
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra fissa */}
+            {/* Descrizione — colonna destra, sticky (scorre indipendentemente) */}
             {selectedProject.description && (
-              <div className="w-full md:w-1/3 lg:w-1/4 md:sticky md:top-8 md:self-start">
-                <p className={`${mode === "professional" ? "text-white/80" : "text-black/70"} text-sm leading-relaxed whitespace-pre-line`}>
-                  {selectedProject.description}
-                </p>
+              <div className="w-full md:w-1/3 lg:w-1/4 pt-6 md:pt-0">
+                <div className="md:sticky md:top-8">
+                  <p className={`${mode === "professional" ? "text-white/80" : "text-black/70"} text-sm leading-relaxed whitespace-pre-line`}>
+                    {selectedProject.description}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -724,6 +712,38 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           />
         </div>
       )}
+
+      {/* FRECCE NAVIGAZIONE OVERLAY — navigano tra progetti, scompaiono nella home e nel viewer */}
+      {selectedProject && !viewerOpen && !showContact && (() => {
+        const currentIdx = projectsWithSlug.findIndex((p) => p.slug === currentSlug);
+        const prevProject = currentIdx > 0 ? projectsWithSlug[currentIdx - 1] : null;
+        const nextProject = currentIdx < projectsWithSlug.length - 1 ? projectsWithSlug[currentIdx + 1] : null;
+        const isAbout = selectedProject.name === "About";
+        return (
+          <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-between pointer-events-none" style={{ paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}>
+            {!isAbout && prevProject ? (
+              <button
+                onClick={() => router.push(hrefProject(prevProject.slug), undefined, { shallow: true })}
+                className="pointer-events-auto text-3xl md:text-4xl font-bold transition-all hover:scale-125 hover-red"
+                style={{ color: "#c8102e", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
+                aria-label={`Progetto precedente: ${prevProject.name}`}
+              >
+                ‹
+              </button>
+            ) : <span />}
+            {!isAbout && nextProject ? (
+              <button
+                onClick={() => router.push(hrefProject(nextProject.slug), undefined, { shallow: true })}
+                className="pointer-events-auto text-3xl md:text-4xl font-bold transition-all hover:scale-125 hover-red"
+                style={{ color: "#c8102e", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
+                aria-label={`Progetto successivo: ${nextProject.name}`}
+              >
+                ›
+              </button>
+            ) : <span />}
+          </div>
+        );
+      })()}
 
       {/* MODAL CONTATTI */}
       <Modal open={showContact} onClose={() => setShowContact(false)} title={S.TITOLO_CONTATTI} mode={mode}>
