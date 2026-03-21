@@ -101,13 +101,9 @@ body {
 .landing-bg--artwork { z-index: 0; transition: opacity 520ms ease; }
 .landing-bg--professional { z-index: 1; transition: opacity 520ms ease; }
 
-/* Landing dark modifier: force text white in content when professional is active —
-   but exclude elements with explicit inline color (like the red name) */
+/* Landing dark modifier: force text white in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
   color: white !important;
-}
-.landing--dark h1 {
-  /* Do NOT override h1 — its red color is set inline */
 }
 
 /* small tweaks for sizes/spacings */
@@ -115,6 +111,9 @@ h1 { line-height: 1.05; }
 @media (min-width: 768px) {
   .landing--dark h1 { letter-spacing: -0.02em; }
 }
+
+/* Hover rosso su tutti gli elementi interattivi */
+.hover-red:hover { color: #c8102e !important; }
 
 /* mobile safety: disable hover backgrounds on touch */
 @media (hover: none) and (pointer: coarse) {

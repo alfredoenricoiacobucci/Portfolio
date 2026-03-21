@@ -499,7 +499,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               const isAbout = router.query?.p === "about";
               router.push(isAbout ? "/artwork?p=about" : "/artwork");
             }}
-            className={`cursor-pointer transition-opacity ${
+            className={`cursor-pointer transition-all hover-red ${
               router.pathname.startsWith("/artwork") ? "opacity-100" : "opacity-50"
             }`}
           >
@@ -511,7 +511,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               const isAbout = router.query?.p === "about";
               router.push(isAbout ? "/professional?p=about" : "/professional");
             }}
-            className={`cursor-pointer transition-opacity ${
+            className={`cursor-pointer transition-all hover-red ${
               router.pathname.startsWith("/professional") ? "opacity-100" : "opacity-50"
             }`}
           >
@@ -520,27 +520,27 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </div>
 
         <nav className="flex gap-2 text-[20px]">
-          <span className="cursor-pointer" onClick={() => setShowContact(true)}>
+          <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>
             {S.LABEL_EMAIL}
           </span>
           ,{" "}
           {router.query?.p === "about" ? (
             <span
-              className="cursor-pointer"
+              className="cursor-pointer transition-colors hover-red"
               onClick={() => router.push(basePath, undefined, { shallow: true })}
             >
               {S.LABEL_HOME}
             </span>
           ) : (
             <span
-              className="cursor-pointer"
+              className="cursor-pointer transition-colors hover-red"
               onClick={() => router.push(`${basePath}?p=about`, undefined, { shallow: true })}
             >
               {S.LABEL_ABOUT}
             </span>
           )}
           ,{" "}
-          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer">
+          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors hover-red">
             {S.LABEL_INSTA}
           </a>
         </nav>
@@ -567,17 +567,49 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </section>
       )}
 
-      {/* CONTENUTO PROGETTO — fade-in breve solo sul contenuto sotto il banner */}
-      {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full max-w-6xl px-6 py-12 fade-in">
-          <p className={`${mode === "professional" ? "text-white" : "text-black"} text-sm md:text-base leading-relaxed mb-10 max-w-3xl whitespace-pre-line`}>
-            {selectedProject.description}
-          </p>
+      {/* TITOLO PROGETTO — si estende da destra a sinistra a tutta larghezza */}
+      {selectedProject && selectedProject.name !== "About" && (
+        <div key={`title-${currentSlug}`} className="w-full overflow-hidden py-6 md:py-10 fade-in">
+          <h2
+            ref={(el) => {
+              if (!el) return;
+              const parent = el.parentElement;
+              const pw = parent.clientWidth - 48;
+              let fs = 120;
+              el.style.fontSize = `${fs}px`;
+              while (el.scrollWidth > pw && fs > 20) {
+                fs -= 2;
+                el.style.fontSize = `${fs}px`;
+              }
+            }}
+            className={`${mode === "professional" ? "text-white" : "text-black"} font-extrabold uppercase leading-[0.9] tracking-tight text-right px-6 md:px-12 whitespace-nowrap`}
+            style={{ fontSize: "120px" }}
+          >
+            {selectedProject.name}
+          </h2>
+        </div>
+      )}
 
-          <JustifiedGallery
-            images={selectedProject.images || []}
-            onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
-          />
+      {/* CONTENUTO PROGETTO — gallery a sinistra, testo a destra */}
+      {selectedProject && selectedProject.name !== "About" ? (
+        <div key={`project-${currentSlug}`} className="w-full max-w-7xl px-6 md:px-12 pb-12 fade-in">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            {/* Gallery — occupa la maggior parte della larghezza */}
+            <div className="w-full md:w-2/3 lg:w-3/4">
+              <JustifiedGallery
+                images={selectedProject.images || []}
+                onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
+              />
+            </div>
+            {/* Descrizione — colonna destra fissa */}
+            {selectedProject.description && (
+              <div className="w-full md:w-1/3 lg:w-1/4 md:sticky md:top-8 md:self-start">
+                <p className={`${mode === "professional" ? "text-white/80" : "text-black/70"} text-sm leading-relaxed whitespace-pre-line`}>
+                  {selectedProject.description}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
@@ -714,14 +746,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           {selectedProject.images.length > 1 && (
             <>
               <button
-                className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-transform z-10"
+                className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
                 onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
                 aria-label="Immagine precedente"
               >
                 ‹
               </button>
               <button
-                className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-transform z-10"
+                className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
                 onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
                 aria-label="Immagine successiva"
               >
@@ -737,8 +769,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           />
 
           <button
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-transform z-10"
-            style={{ color: "#c8102e" }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-all hover-red z-10"
             onClick={() => setViewerOpen(false)}
             aria-label="Chiudi visualizzazione"
           >

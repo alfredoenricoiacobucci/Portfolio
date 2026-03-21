@@ -23,8 +23,7 @@ export default function Modal({ open, onClose, title, children, mode = "artwork"
         <div className={`flex items-center justify-between px-6 pt-6 pb-4`}>
           <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
           <button
-            className="transition-colors text-2xl hover:scale-110"
-            style={{ color: "#c8102e" }}
+            className={`text-2xl hover:scale-110 transition-all hover-red ${isDark ? "text-white" : "text-black"}`}
             onClick={onClose}
             aria-label="Chiudi"
           >

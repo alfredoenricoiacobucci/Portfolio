@@ -223,8 +223,8 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
-        {/* Name smaller */}
-        <h1 className="text-2xl md:text-[2rem] tracking-tight font-semibold" style={{ color: "#c8102e", textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+        {/* Name — bianco su pro, nero su art */}
+        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-300 ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
           {landingName}
         </h1>
 
@@ -238,7 +238,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => setHoverArea("artwork")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-opacity font-semibold text-[20px] ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all font-semibold text-[20px] hover-red ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Artwork
           </span>
@@ -249,7 +249,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => setHoverArea("professional")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-opacity font-semibold text-[20px] ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all font-semibold text-[20px] hover-red ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Professional
           </span>
