@@ -115,6 +115,15 @@ h1 { line-height: 1.05; }
 /* Hover rosso su tutti gli elementi interattivi */
 .hover-red:hover { color: #c8102e !important; }
 
+/* Scroll indipendente senza scrollbar visibili */
+.independent-scroll {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.independent-scroll::-webkit-scrollbar { display: none; }
+
 /* mobile safety: disable hover backgrounds on touch */
 @media (hover: none) and (pointer: coarse) {
   .landing-bg { display: none; }

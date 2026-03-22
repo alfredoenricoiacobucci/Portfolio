@@ -34,7 +34,10 @@ export async function getServerSideProps() {
 
   const projects = projectIds.map((id) => {
     const pDir = pathMod.join(projectsDir, id);
-    const title = readText(pathMod.join(pDir, "titolo.txt"));
+    const titleRaw = readText(pathMod.join(pDir, "titolo.txt"));
+    const titleLines = titleRaw.split("\n").map((l) => l.trim());
+    const title = titleLines[0] || "";
+    const datePlace = titleLines[1] || "";
     const description = readText(pathMod.join(pDir, "descrizione.txt"));
     const banner = readText(pathMod.join(pDir, "banner.txt"));
 
@@ -54,7 +57,7 @@ export async function getServerSideProps() {
       bannerStartIndex = idx >= 0 ? idx : 0;
     }
 
-    return { id, name: title || id, description, images, bannerStartIndex };
+    return { id, name: title || id, datePlace, description, images, bannerStartIndex };
   });
 
   // ---- ABOUT: leggi da content/about/ ----
@@ -151,16 +154,23 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
         setSent(true);
         setTimeout(() => onSuccess?.(), 2000);
       } else {
-        // Fallback: apri mailto
+        // Mostra errore e apri mailto come fallback
+        console.error("Web3Forms error:", data);
+        setError("Invio automatico non riuscito. Apertura client email...");
+        setTimeout(() => {
+          const subject = encodeURIComponent("Contatto dal portfolio");
+          const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
+          window.location.href = `mailto:${S.EMAIL_DESTINATARIO || "a.e.iacobucci@icloud.com"}?subject=${subject}&body=${body}`;
+        }, 1500);
+      }
+    } catch (err) {
+      console.error("Contact fetch error:", err);
+      setError("Invio automatico non riuscito. Apertura client email...");
+      setTimeout(() => {
         const subject = encodeURIComponent("Contatto dal portfolio");
         const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
-        window.location.href = `mailto:${S.EMAIL_DESTINATARIO || "a.e.iacobucci@icloud.com"}?subject=${subject}&body=${body}`;
-      }
-    } catch {
-      // Fallback: apri mailto
-      const subject = encodeURIComponent("Contatto dal portfolio");
-      const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
-      window.location.href = `mailto:a.e.iacobucci@icloud.com?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:a.e.iacobucci@icloud.com?subject=${subject}&body=${body}`;
+      }, 1500);
     } finally {
       setSending(false);
     }
@@ -223,7 +233,7 @@ function JustifiedGallery({ images = [], onImageClick }) {
 
   const rows = useMemo(() => {
     if (!dims?.length || containerWidth <= 0) return [];
-    const TARGET_H = containerWidth < 640 ? 280 : containerWidth < 1024 ? 380 : 480;
+    const TARGET_H = containerWidth < 640 ? 360 : containerWidth < 1024 ? 500 : 640;
     const rawRows = [];
     let i = 0;
 
@@ -486,13 +496,25 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
     <div className={`min-h-screen ${mode === "professional" ? "bg-base text-white" : "bg-base text-black"} flex flex-col items-center`}>
       {/* HEADER */}
       <header className="w-full flex justify-between items-center py-14 px-4 border-b-4 site-border text-[22px] font-bold relative">
-        {/* PALLINO ROSSO — riporta alla landing */}
-        <button
-          onClick={() => router.push("/")}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full cursor-pointer hover:scale-150 transition-transform"
-          style={{ backgroundColor: "#c8102e" }}
-          aria-label="Torna alla landing"
-        />
+        {/* PALLINO ROSSO / TRIANGOLO INDIETRO */}
+        {selectedProject ? (
+          <button
+            onClick={() => router.push(basePath, undefined, { shallow: true })}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-150 transition-transform"
+            aria-label="Torna alla home"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="#c8102e">
+              <polygon points="0,8 14,0.5 14,15.5" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            onClick={() => router.push("/")}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full cursor-pointer hover:scale-150 transition-transform"
+            style={{ backgroundColor: "#c8102e" }}
+            aria-label="Torna alla landing"
+          />
+        )}
         <div className="flex items-center gap-2 text-[20px]">
           <button
             onClick={() => {
@@ -519,82 +541,72 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           </button>
         </div>
 
-        <nav className="flex gap-2 text-[20px]">
-          <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>
-            {S.LABEL_EMAIL}
-          </span>
-          ,{" "}
+        <nav className="text-[20px]">
+          <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>{S.LABEL_EMAIL}</span>
+          <span>, </span>
           {router.query?.p === "about" ? (
-            <span
-              className="cursor-pointer transition-colors hover-red"
-              onClick={() => router.push(basePath, undefined, { shallow: true })}
-            >
-              {S.LABEL_HOME}
-            </span>
+            <span className="cursor-pointer transition-colors hover-red" onClick={() => router.push(basePath, undefined, { shallow: true })}>{S.LABEL_HOME}</span>
           ) : (
-            <span
-              className="cursor-pointer transition-colors hover-red"
-              onClick={() => router.push(`${basePath}?p=about`, undefined, { shallow: true })}
-            >
-              {S.LABEL_ABOUT}
-            </span>
+            <span className="cursor-pointer transition-colors hover-red" onClick={() => router.push(`${basePath}?p=about`, undefined, { shallow: true })}>{S.LABEL_ABOUT}</span>
           )}
-          ,{" "}
-          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors hover-red">
-            {S.LABEL_INSTA}
-          </a>
+          <span>, </span>
+          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors hover-red">{S.LABEL_INSTA}</a>
         </nav>
       </header>
 
-      {/* TITOLO PROGETTO — riempie tutta la larghezza, font size dinamico */}
-      {selectedProject && selectedProject.name !== "About" && (
-        <div key={`title-${currentSlug}`} className="w-full overflow-hidden pt-8 md:pt-12 pb-4 fade-in">
-          <h2
-            ref={(el) => {
-              if (!el) return;
-              const pw = el.parentElement.clientWidth;
-              const pad = window.innerWidth < 768 ? 32 : 48;
-              const avail = pw - pad * 2;
-              let fs = 200;
-              el.style.fontSize = `${fs}px`;
-              while (el.scrollWidth > avail && fs > 16) {
-                fs -= 1;
-                el.style.fontSize = `${fs}px`;
-              }
-              // Se è troppo piccolo per riempire, ingrandisci
-              while (el.scrollWidth < avail * 0.98 && fs < 300) {
-                fs += 1;
-                el.style.fontSize = `${fs}px`;
-                if (el.scrollWidth > avail) { fs -= 1; el.style.fontSize = `${fs}px`; break; }
-              }
-            }}
-            className={`${mode === "professional" ? "text-white" : "text-black"} font-extrabold uppercase leading-[0.85] tracking-tighter whitespace-nowrap`}
-            style={{ fontSize: "200px", paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}
-          >
-            {selectedProject.name}
-          </h2>
-        </div>
+      {/* BANNER — nessun fade-in: TopRotator ha il suo crossfade interno */}
+      {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
+        <section key={`banner-${currentSlug}`} className="w-full relative">
+          <TopRotator
+            images={selectedProject.images}
+            alt={selectedProject.name || ""}
+            className="relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden bg-black"
+            interval={4000}
+            fadeMs={2500}
+            zoomMs={7000}
+            priorityFirst
+          />
+          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+          <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
+            <div className="mb-6">
+              <h2 className="text-white text-4xl md:text-6xl font-extrabold drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                {selectedProject.name}
+              </h2>
+              {selectedProject.datePlace && (
+                <p className="text-4xl md:text-6xl font-extrabold mt-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
+                  {selectedProject.datePlace}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* CONTENUTO PROGETTO — gallery a sinistra (scroll), testo a destra (scroll indipendente) */}
+      {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full pb-24 fade-in">
-          <div className="flex flex-col md:flex-row" style={{ paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}>
-            {/* Gallery — colonna sinistra, scorre normalmente */}
-            <div className="w-full md:w-2/3 lg:w-3/4 md:pr-8 lg:pr-12">
+        <div key={`project-${currentSlug}`} className="w-full fade-in flex-1">
+          <div className="flex flex-col md:flex-row">
+            {/* Gallery — colonna sinistra, scorre con la pagina */}
+            <div className="w-full md:w-2/3 lg:w-3/4 px-6 md:pl-12 md:pr-6 py-8">
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky (scorre indipendentemente) */}
+            {/* Descrizione — colonna destra, fissa (fixed) sotto il banner, scroll indipendente */}
             {selectedProject.description && (
-              <div className="w-full md:w-1/3 lg:w-1/4 pt-6 md:pt-0">
-                <div className="md:sticky md:top-8">
-                  <p className={`${mode === "professional" ? "text-white/80" : "text-black/70"} text-sm leading-relaxed whitespace-pre-line`}>
-                    {selectedProject.description}
-                  </p>
-                </div>
+              <div className={`hidden md:block fixed right-0 w-1/3 lg:w-1/4 independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/80 bg-[#0a0a0a]" : "text-black/70 bg-[#fafafa]"}`} style={{ zIndex: 30, top: "calc(40vh + 120px)", bottom: 0 }}>
+                <p className="text-sm leading-relaxed whitespace-pre-line">
+                  {selectedProject.description}
+                </p>
+              </div>
+            )}
+            {/* Descrizione mobile — sotto la gallery */}
+            {selectedProject.description && (
+              <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
+                <p className="text-sm leading-relaxed whitespace-pre-line">
+                  {selectedProject.description}
+                </p>
               </div>
             )}
           </div>
@@ -713,37 +725,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </div>
       )}
 
-      {/* FRECCE NAVIGAZIONE OVERLAY — navigano tra progetti, scompaiono nella home e nel viewer */}
-      {selectedProject && !viewerOpen && !showContact && (() => {
-        const currentIdx = projectsWithSlug.findIndex((p) => p.slug === currentSlug);
-        const prevProject = currentIdx > 0 ? projectsWithSlug[currentIdx - 1] : null;
-        const nextProject = currentIdx < projectsWithSlug.length - 1 ? projectsWithSlug[currentIdx + 1] : null;
-        const isAbout = selectedProject.name === "About";
-        return (
-          <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-between pointer-events-none" style={{ paddingLeft: "clamp(16px, 4vw, 48px)", paddingRight: "clamp(16px, 4vw, 48px)" }}>
-            {!isAbout && prevProject ? (
-              <button
-                onClick={() => router.push(hrefProject(prevProject.slug), undefined, { shallow: true })}
-                className="pointer-events-auto text-3xl md:text-4xl font-bold transition-all hover:scale-125 hover-red"
-                style={{ color: "#c8102e", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
-                aria-label={`Progetto precedente: ${prevProject.name}`}
-              >
-                ‹
-              </button>
-            ) : <span />}
-            {!isAbout && nextProject ? (
-              <button
-                onClick={() => router.push(hrefProject(nextProject.slug), undefined, { shallow: true })}
-                className="pointer-events-auto text-3xl md:text-4xl font-bold transition-all hover:scale-125 hover-red"
-                style={{ color: "#c8102e", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
-                aria-label={`Progetto successivo: ${nextProject.name}`}
-              >
-                ›
-              </button>
-            ) : <span />}
-          </div>
-        );
-      })()}
+      {/* Freccia overlay rimossa — navigazione spostata nell'header accanto al pallino */}
 
       {/* MODAL CONTATTI */}
       <Modal open={showContact} onClose={() => setShowContact(false)} title={S.TITOLO_CONTATTI} mode={mode}>
