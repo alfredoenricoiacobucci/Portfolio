@@ -585,7 +585,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full fade-in flex-1">
-          <div className="flex flex-col md:flex-row">
+          <div className="flex flex-col md:flex-row items-start">
             {/* Gallery — colonna sinistra, scorre con la pagina */}
             <div className="w-full md:w-2/3 lg:w-3/4 px-6 md:pl-12 md:pr-6 py-8">
               <JustifiedGallery
@@ -593,23 +593,23 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, fissa (fixed) sotto il banner, scroll indipendente */}
+            {/* Descrizione — colonna destra, sticky alla stessa altezza della gallery */}
             {selectedProject.description && (
-              <div className={`hidden md:block fixed right-0 w-1/3 lg:w-1/4 independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/80 bg-[#0a0a0a]" : "text-black/70 bg-[#fafafa]"}`} style={{ zIndex: 30, top: "calc(40vh + 120px)", bottom: 0 }}>
-                <p className="text-sm leading-relaxed whitespace-pre-line">
-                  {selectedProject.description}
-                </p>
-              </div>
-            )}
-            {/* Descrizione mobile — sotto la gallery */}
-            {selectedProject.description && (
-              <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
+              <div className={`hidden md:block w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
                 <p className="text-sm leading-relaxed whitespace-pre-line">
                   {selectedProject.description}
                 </p>
               </div>
             )}
           </div>
+          {/* Descrizione mobile — sotto la gallery */}
+          {selectedProject.description && (
+            <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
+              <p className="text-sm leading-relaxed whitespace-pre-line">
+                {selectedProject.description}
+              </p>
+            </div>
+          )}
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
