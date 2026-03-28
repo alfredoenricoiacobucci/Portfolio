@@ -224,7 +224,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
         {/* Name — bianco su pro, nero su art */}
-        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-300 ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
           {landingName}
         </h1>
 
@@ -238,18 +238,18 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => setHoverArea("artwork")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-all font-semibold text-[20px] hover-red ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Artwork
           </span>
 
-          <span className={`font-semibold text-[20px] ${isDark ? "text-white" : "text-black"}`}>/</span>
+          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`}>/</span>
 
           <span
             onMouseEnter={() => setHoverArea("professional")}
             onMouseLeave={() => setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-all font-semibold text-[20px] hover-red ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
           >
             Professional
           </span>

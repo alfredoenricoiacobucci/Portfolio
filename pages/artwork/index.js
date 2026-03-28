@@ -28,20 +28,19 @@ export async function getServerSideProps() {
   const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
   const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
-  // ---- PROGETTI: leggi tutto da public/projects/{id}/ (testi + immagini insieme) ----
-  let projectIds = [];
-  try { projectIds = fsMod.readdirSync(projectsDir).filter((f) => fsMod.statSync(pathMod.join(projectsDir, f)).isDirectory()).sort(natural.compare); } catch {}
-
-  const projects = projectIds.map((id) => {
-    const pDir = pathMod.join(projectsDir, id);
+  // ---- PROGETTI: leggi da public/projects/art/* e public/projects/pro/* ----
+  const readProject = (prefix, folder) => {
+    const id = `${prefix}/${folder}`;
+    const pDir = pathMod.join(projectsDir, prefix, folder);
     const titleRaw = readText(pathMod.join(pDir, "titolo.txt"));
-    const titleLines = titleRaw.split("\n").map((l) => l.trim());
-    const title = titleLines[0] || "";
-    const datePlace = titleLines[1] || "";
+    const titleLines = titleRaw.split("\n").map((l) => l.trim()).filter(Boolean);
+    const titleParts = titleLines.length > 1 ? titleLines.slice(0, -1) : titleLines;
+    const title = titleParts[0] || "";
+    const titleExtra = titleParts.slice(1);
+    const datePlace = titleLines.length > 1 ? titleLines[titleLines.length - 1] : "";
     const description = readText(pathMod.join(pDir, "descrizione.txt"));
     const banner = readText(pathMod.join(pDir, "banner.txt"));
 
-    // Immagini dalla sottocartella foto/
     const fotoDir = pathMod.join(pDir, "foto");
     let files = [];
     try {
@@ -57,8 +56,16 @@ export async function getServerSideProps() {
       bannerStartIndex = idx >= 0 ? idx : 0;
     }
 
-    return { id, name: title || id, datePlace, description, images, bannerStartIndex };
-  });
+    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex };
+  };
+
+  let projects = [];
+  for (const prefix of ["art", "pro"]) {
+    const prefixDir = pathMod.join(projectsDir, prefix);
+    let folders = [];
+    try { folders = fsMod.readdirSync(prefixDir).filter((f) => fsMod.statSync(pathMod.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
+    projects = projects.concat(folders.map((f) => readProject(prefix, f)));
+  }
 
   // ---- ABOUT: leggi da content/about/ ----
   const aboutDir = pathMod.join(contentDir, "about");
@@ -104,7 +111,21 @@ export async function getServerSideProps() {
   return {
     props: {
       projects,
-      about: { text: aboutText, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo },
+      about: (() => {
+        let col1 = aboutText, col2 = "";
+        if (aboutText.includes("---")) {
+          const parts = aboutText.split("---");
+          col1 = parts[0].trim();
+          col2 = parts.slice(1).join("---").trim();
+        } else {
+          // Dividi a metà per paragrafi
+          const paragraphs = aboutText.split("\n").filter(Boolean);
+          const mid = Math.ceil(paragraphs.length / 2);
+          col1 = paragraphs.slice(0, mid).join("\n");
+          col2 = paragraphs.slice(mid).join("\n");
+        }
+        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
+      })(),
       strings,
     },
   };
@@ -348,6 +369,60 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [showContact, setShowContact] = useState(false);
 
+  // ===== NAVIGATION HISTORY: stack per il triangolo back =====
+  const navHistoryRef = useRef([]);
+
+  // ===== HEADER HEIGHT per banner calc =====
+  const headerRef = useRef(null);
+  useEffect(() => {
+    if (headerRef.current) {
+      const h = headerRef.current.offsetHeight;
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    }
+  });
+
+  // ===== HEADER AUTO-HIDE su progetto e about =====
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  useEffect(() => {
+    if (!selectedProject) { setHeaderHidden(false); return; }
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastScrollY.current && y > 48) {
+        setHeaderHidden(true);
+      } else {
+        setHeaderHidden(false);
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [selectedProject]);
+
+  // ===== CAMBIO MODO: semplice fade out → naviga → fade in =====
+  const navigatingRef = useRef(false);
+  const pageRef = useRef(null);
+
+  const handleModeSwitch = (targetMode) => {
+    if (targetMode === mode || navigatingRef.current) return;
+    navigatingRef.current = true;
+    const isAbout = router.query?.p === "about";
+    const target = isAbout ? `/${targetMode}?p=about` : `/${targetMode}`;
+
+    // Fade out il contenuto, poi naviga
+    if (pageRef.current) {
+      pageRef.current.style.transition = "opacity 250ms ease-out";
+      pageRef.current.style.opacity = "0";
+    }
+    setTimeout(() => {
+      router.push(target);
+      navigatingRef.current = false;
+    }, 260);
+  };
+
+  // Hover sui label
+  const [hoverMode, setHoverMode] = useState(null);
+
   // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
@@ -381,7 +456,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       if (!q) {
         setSelectedProject(null);
         setViewerOpen(false);
-        window.scrollTo({ top: 0 });
+        window.scrollTo(0, 0);
         return;
       }
 
@@ -389,12 +464,13 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         setSelectedProject({
           name: "About",
           description: about.text || "",
+          description2: about.text2 || "",
           quote: about.quote || "",
           photo: about.photo || "",
           video: about.video || "",
         });
         setViewerOpen(false);
-        window.scrollTo({ top: 0 });
+        window.scrollTo(0, 0);
         return;
       }
 
@@ -406,7 +482,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           setPrevBannerIndex(null);
         }
         setViewerOpen(false);
-        window.scrollTo({ top: 0 });
+        window.scrollTo(0, 0);
       }
     };
   }, [projectsWithSlug, mode]);
@@ -452,8 +528,20 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   // Flag: siamo nella vista home (marquee visibile)?
   const isHome = !selectedProject;
 
-  // Gradiente bottom: opacità basata sulla distanza dal fondo della pagina
+  // Gradiente bottom home: opacità basata sulla distanza dal fondo della pagina
   const [gradientOpacity, setGradientOpacity] = useState(1);
+
+  // Gradiente bottom banner: svanisce appena si scrolla
+  const [bannerFadeOpacity, setBannerFadeOpacity] = useState(1);
+  useEffect(() => {
+    if (!selectedProject || selectedProject.name === "About") { setBannerFadeOpacity(1); return; }
+    const onScroll = () => {
+      const opacity = Math.min(1, Math.max(0, 1 - window.scrollY / 150));
+      setBannerFadeOpacity(opacity);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [selectedProject]);
 
   useEffect(() => {
     if (!isHome) { setGradientOpacity(0); return; }
@@ -470,110 +558,152 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isHome]);
 
-  // ===== MARQUEE =====
+  // ===== MARQUEE: imposta durate =====
   useEffect(() => {
-    // Ricalcola solo quando la home è visibile
     if (!isHome) return;
-
     const PX_PER_SEC = 500;
-    // Doppio timeout: il primo aspetta il render, il secondo aspetta il layout
-    const timer = setTimeout(() => {
-      requestAnimationFrame(() => {
-        const tracks = document.querySelectorAll(".marquee-track");
-        tracks.forEach((track) => {
-          const seq = track.querySelector(".marquee-seq");
-          if (!seq) return;
-          const distance = seq.scrollWidth;
-          const durSec = Math.max(4, distance / PX_PER_SEC);
-          track.style.setProperty("--marquee-duration", `${durSec}s`);
-        });
+    requestAnimationFrame(() => {
+      const tracks = document.querySelectorAll(".marquee-track");
+      tracks.forEach((track) => {
+        const seq = track.querySelector(".marquee-seq");
+        if (!seq) return;
+        const distance = seq.scrollWidth;
+        const durSec = Math.max(4, distance / PX_PER_SEC);
+        track.style.setProperty("--marquee-duration", `${durSec}s`);
       });
-    }, 100);
-    return () => clearTimeout(timer);
+    });
   }, [mode, isHome]);
 
   return (
-    <div className={`min-h-screen ${mode === "professional" ? "bg-base text-white" : "bg-base text-black"} flex flex-col items-center`}>
+    <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? "#0a0a0a" : "#fafafa", color: mode === "professional" ? "#ffffff" : "#000000" }}>
       {/* HEADER */}
-      <header className="w-full flex justify-between items-center py-14 px-4 border-b-4 site-border text-[22px] font-bold relative">
-        {/* PALLINO ROSSO / TRIANGOLO INDIETRO */}
-        {selectedProject ? (
-          <button
-            onClick={() => router.push(basePath, undefined, { shallow: true })}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-150 transition-transform"
-            aria-label="Torna alla home"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="#c8102e">
-              <polygon points="0,8 14,0.5 14,15.5" />
-            </svg>
-          </button>
-        ) : (
-          <button
-            onClick={() => router.push("/")}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full cursor-pointer hover:scale-150 transition-transform"
-            style={{ backgroundColor: "#c8102e" }}
-            aria-label="Torna alla landing"
-          />
-        )}
-        <div className="flex items-center gap-2 text-[20px]">
-          <button
-            onClick={() => {
-              const isAbout = router.query?.p === "about";
-              router.push(isAbout ? "/artwork?p=about" : "/artwork");
-            }}
-            className={`cursor-pointer transition-all hover-red ${
-              router.pathname.startsWith("/artwork") ? "opacity-100" : "opacity-50"
-            }`}
-          >
-            {S.LABEL_ARTWORK}
-          </button>
-          <span className="px-2">/</span>
-          <button
-            onClick={() => {
-              const isAbout = router.query?.p === "about";
-              router.push(isAbout ? "/professional?p=about" : "/professional");
-            }}
-            className={`cursor-pointer transition-all hover-red ${
-              router.pathname.startsWith("/professional") ? "opacity-100" : "opacity-50"
-            }`}
-          >
-            {S.LABEL_PROFESSIONAL}
-          </button>
-        </div>
+      <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000", backgroundColor: mode === "professional" ? "#0a0a0a" : "#fafafa" }}>
+        {/* SINISTRA: Art / Pro */}
+        {(() => {
+          const fg = mode === "professional" ? "#ffffff" : "#000000";
+          let artColor, proColor;
+          if (hoverMode === "artwork") {
+            artColor = "#c8102e"; proColor = fg;
+          } else if (hoverMode === "professional") {
+            proColor = "#c8102e"; artColor = fg;
+          } else {
+            artColor = mode === "artwork" ? "#c8102e" : fg;
+            proColor = mode === "professional" ? "#c8102e" : fg;
+          }
+          return (
+            <div className="flex items-center gap-2 text-[20px]">
+              <button
+                onClick={() => handleModeSwitch("artwork")}
+                onMouseEnter={() => setHoverMode("artwork")}
+                onMouseLeave={() => setHoverMode(null)}
+                className="cursor-pointer transition-colors duration-300"
+                style={{ color: artColor }}
+              >Art</button>
+              <span className="px-1">/</span>
+              <button
+                onClick={() => handleModeSwitch("professional")}
+                onMouseEnter={() => setHoverMode("professional")}
+                onMouseLeave={() => setHoverMode(null)}
+                className="cursor-pointer transition-colors duration-300"
+                style={{ color: proColor }}
+              >Pro</button>
+            </div>
+          );
+        })()}
 
+        {/* CENTRO: Pallino (home) o Triangolo (progetto/about) */}
+        {(() => {
+          const navColor = mode === "professional" ? "#ffffff" : "#000000";
+          if (selectedProject) {
+            return (
+              <button
+                onClick={() => {
+                  const prev = navHistoryRef.current.pop();
+                  if (prev) {
+                    router.push(`${basePath}?p=${prev}`, undefined, { shallow: true });
+                  } else {
+                    router.push(basePath, undefined, { shallow: true });
+                  }
+                }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer tri-back-hover"
+                aria-label="Torna indietro"
+              >
+                <svg width={mode === "professional" ? "16" : "17"} height={mode === "professional" ? "14" : "15"} viewBox="0 0 20 18" className="tri-back-svg">
+                  <polygon points="0,9 17.32,0 17.32,18" fill={navColor} />
+                </svg>
+              </button>
+            );
+          }
+          return (
+            <button
+              onClick={() => router.push("/")}
+              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer dot-nav ${mode === "professional" ? "w-[12px] h-[12px]" : "w-[13px] h-[13px]"}`}
+              style={{ backgroundColor: navColor }}
+              aria-label="Torna alla landing"
+            />
+          );
+        })()}
+
+        {/* DESTRA: Email, About/Home, Insta */}
         <nav className="text-[20px]">
           <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>{S.LABEL_EMAIL}</span>
-          <span>, </span>
+          <span>,</span><span className="inline-block w-[0.6em]" />
           {router.query?.p === "about" ? (
-            <span className="cursor-pointer transition-colors hover-red" onClick={() => router.push(basePath, undefined, { shallow: true })}>{S.LABEL_HOME}</span>
+            <span className="cursor-pointer transition-colors hover-red" onClick={() => {
+              navHistoryRef.current = [];
+              router.push(basePath, undefined, { shallow: true });
+            }}>{S.LABEL_HOME}</span>
           ) : (
-            <span className="cursor-pointer transition-colors hover-red" onClick={() => router.push(`${basePath}?p=about`, undefined, { shallow: true })}>{S.LABEL_ABOUT}</span>
+            <span className="cursor-pointer transition-colors hover-red" onClick={() => {
+              if (selectedProject && selectedProject.name !== "About") {
+                navHistoryRef.current.push(currentSlug);
+              }
+              router.push(`${basePath}?p=about`, undefined, { shallow: true });
+            }}>{S.LABEL_ABOUT}</span>
           )}
-          <span>, </span>
+          <span>,</span><span className="inline-block w-[0.6em]" />
           <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors hover-red">{S.LABEL_INSTA}</a>
         </nav>
       </header>
 
-      {/* BANNER — nessun fade-in: TopRotator ha il suo crossfade interno */}
+      {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative">
+        <section key={`banner-${currentSlug}`} className="w-full relative" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
-            className="relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden bg-black"
+            className="relative w-full h-full overflow-hidden bg-black"
             interval={4000}
             fadeMs={2500}
             zoomMs={7000}
             priorityFirst
           />
           <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+          {/* Sfumatura leggera — arriva appena sopra la riga rossa, scompare allo scroll */}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0"
+            style={{
+              zIndex: 45,
+              height: 'calc(2rem + 70px)',
+              background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
+              opacity: bannerFadeOpacity,
+              transition: "opacity 250ms ease-out",
+            }}
+          />
           <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
-            <div className="mb-6">
-              <h2 className="text-white text-4xl md:text-6xl font-extrabold drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+            <div className="mb-8 space-y-0 leading-tight">
+              {/* Righe titolo — bianche */}
+              <h2 className="text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                 {selectedProject.name}
               </h2>
+              {selectedProject.titleExtra?.map((line, i) => (
+                <h2 key={i} className="text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                  {line}
+                </h2>
+              ))}
+              {/* Ultima riga — rossa (data e luogo) */}
               {selectedProject.datePlace && (
-                <p className="text-4xl md:text-6xl font-extrabold mt-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
+                <p className="text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
                   {selectedProject.datePlace}
                 </p>
               )}
@@ -584,7 +714,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
       {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full fade-in flex-1">
+        <div key={`project-${currentSlug}`} className="w-full flex-1">
           <div className="flex flex-col md:flex-row items-start">
             {/* Gallery — colonna sinistra, scorre con la pagina */}
             <div className="w-full md:w-2/3 lg:w-3/4 px-6 md:pl-12 md:pr-6 py-8">
@@ -595,8 +725,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             </div>
             {/* Descrizione — colonna destra, sticky alla stessa altezza della gallery */}
             {selectedProject.description && (
-              <div className={`hidden md:block w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
-                <p className="text-sm leading-relaxed whitespace-pre-line">
+              <div className={`hidden md:block w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+                <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
                   {selectedProject.description}
                 </p>
               </div>
@@ -604,8 +734,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           </div>
           {/* Descrizione mobile — sotto la gallery */}
           {selectedProject.description && (
-            <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/80" : "text-black/70"}`}>
-              <p className="text-sm leading-relaxed whitespace-pre-line">
+            <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+              <p className="text-base leading-relaxed whitespace-pre-line project-text" lang="it">
                 {selectedProject.description}
               </p>
             </div>
@@ -615,7 +745,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         <>
           {/* VIDEO — letto da content/about/ */}
           <section key="about-video" className="w-full relative">
-            <div className={`relative w-full h-[40vh] md:h-[48vh] lg:h-[56vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+            <div className={`relative w-full h-[48vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -641,17 +771,20 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
-            {/* TESTO IN DUE COLONNE */}
-            <div className={`w-full max-w-6xl mx-auto px-6 md:px-12 py-12 ${mode === "professional" ? "text-white" : "text-black"}`}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 text-sm md:text-base leading-relaxed">
-                <p className="whitespace-pre-line">{selectedProject.description}</p>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div>Telefono: <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="underline">{S.TELEFONO}</a></div>
-                    <div>Email: <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="underline">{S.EMAIL_DESTINATARIO}</a></div>
-                    <div>Instagram: <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="underline">{S.INSTAGRAM_HANDLE}</a></div>
-                  </div>
-                </div>
+            {/* TESTO IN DUE COLONNE — margini laterali uguali, gap centrale più piccolo, centrato sulla metà pagina */}
+            <div className={`w-full py-12 ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 text-base leading-relaxed" style={{ gap: '4%' }} lang="it">
+                <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
+                <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
+              </div>
+            </div>
+
+            {/* CONTATTI — stessi margini del testo, distribuiti: sx, centro, dx */}
+            <div className={`w-full py-8 text-base ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+              <div className="flex items-center justify-between">
+                <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Telefono: <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="underline">{S.TELEFONO}</a></span>
+                <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Email: <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="underline">{S.EMAIL_DESTINATARIO}</a></span>
+                <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Instagram: <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="underline">{S.INSTAGRAM_HANDLE}</a></span>
               </div>
             </div>
 
@@ -683,16 +816,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           </div>
         </>
       ) : (
-        <div key="home" className="w-full relative fade-in" style={{ animationDuration: '400ms' }}>
+        <div key="home" className="w-full relative">
           <div className="flex flex-col gap-0 p-0">
             {projectsWithSlug.map((project, index) => (
               <div
                 key={project.slug}
-                className={`w-full border-t-4 border-b-4 ${
-                  mode === "professional" ? "border-white" : "border-black"
-                } min-h-[1vh] flex items-center overflow-hidden`}
+                className={`w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} min-h-[1vh] flex items-center overflow-hidden`}
               >
-                <div className={`marquee-track ${index % 2 === 1 ? "reverse" : ""}`}>
+                <div className={`marquee-track ${(mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0)) ? "reverse" : ""}`}>
                   <span
                     className="marquee-seq"
                     onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
@@ -735,53 +866,61 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* VIEWER FULLSCREEN */}
       {viewerOpen && selectedProject?.images?.length > 0 && (
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 fade-in"
+          className="fixed inset-0 z-[200] flex flex-col bg-black/95 fade-in py-2"
           style={{ animationDuration: '250ms' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setViewerOpen(false);
           }}
         >
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white text-lg font-semibold text-center px-4 pointer-events-none">
-            {selectedProject?.name}
+          {/* Title bar */}
+          <div className="w-full flex items-center justify-center h-[44px] shrink-0 pointer-events-none">
+            <span className="text-white text-sm font-semibold text-center px-4 whitespace-nowrap">
+              {[selectedProject?.name, ...(selectedProject?.titleExtra || []), selectedProject?.datePlace].filter(Boolean).join(" ")}
+            </span>
           </div>
 
-          {selectedProject.images.length > 1 && (
-            <>
-              <button
-                className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
-                onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
-                aria-label="Immagine precedente"
-              >
-                ‹
-              </button>
-              <button
-                className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
-                onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
-                aria-label="Immagine successiva"
-              >
-                ›
-              </button>
-            </>
-          )}
+          {/* Image area */}
+          <div className="relative flex-1 w-full flex items-center justify-center min-h-0">
+            {selectedProject.images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
+                  onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
+                  aria-label="Immagine precedente"
+                >
+                  ‹
+                </button>
+                <button
+                  className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
+                  onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
+                  aria-label="Immagine successiva"
+                >
+                  ›
+                </button>
+              </>
+            )}
+            <img
+              src={selectedProject.images[viewerIndex]}
+              alt=""
+              className="max-w-[95vw] max-h-full w-auto h-auto object-contain shadow-2xl select-none"
+            />
+          </div>
 
-          <img
-            src={selectedProject.images[viewerIndex]}
-            alt=""
-            className="max-w-[95vw] max-h-[85vh] w-auto h-auto object-contain shadow-2xl select-none"
-          />
-
-          <button
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-all hover-red z-10"
-            onClick={() => setViewerOpen(false)}
-            aria-label="Chiudi visualizzazione"
-          >
-            ×
-          </button>
+          {/* Close button */}
+          <div className="w-full flex items-center justify-center h-[44px] shrink-0">
+            <button
+              className="text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-all hover-red z-10"
+              onClick={() => setViewerOpen(false)}
+              aria-label="Chiudi visualizzazione"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 
       {/* FOOTER */}
-      <footer className="w-full py-12 border-t-4 site-border text-center text-sm font-bold space-y-2">
+      <footer className={`w-full py-12 ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000" }}>
         <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
         <div className="text-xs font-normal">
           {S.DISCLAIMER}

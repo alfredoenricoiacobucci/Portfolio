@@ -24,7 +24,7 @@ body {
 
 /* utilities */
 .bg-base { background: var(--bg); }
-.text-base { color: var(--fg); }
+.text-fg { color: var(--fg); }
 .text-muted { color: var(--muted); }
 
 /* Marquee base styles — animation is controlled by the JSX <style> in artwork/index.js */
@@ -60,7 +60,7 @@ body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 520ms cubic-bezier(.2,.9,.2,1);
+  transition: opacity 700ms cubic-bezier(.2,.9,.2,1);
   z-index: 0;
   will-change: opacity;
 }
@@ -78,7 +78,7 @@ body {
   /* less blur, more presence */
   filter: blur(3px) saturate(1.05) contrast(1);
   opacity: 0;
-  transition: opacity 520ms ease, transform 520ms ease, filter 520ms ease;
+  transition: opacity 700ms ease, transform 700ms ease, filter 700ms ease;
   transform: scale(1.02);
 }
 
@@ -89,7 +89,7 @@ body {
 }
 
 /* overlays stronger for more coverage and slightly different for smooth crossfade */
-.landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 520ms ease; }
+.landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 700ms ease; }
 .landing-bg__overlay--light {
   background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.9) 40%, rgba(255,255,255,0.85) 100%);
 }
@@ -98,8 +98,8 @@ body {
 }
 
 /* smoother crossfade: allow slight overlap and smoother timing */
-.landing-bg--artwork { z-index: 0; transition: opacity 520ms ease; }
-.landing-bg--professional { z-index: 1; transition: opacity 520ms ease; }
+.landing-bg--artwork { z-index: 0; transition: opacity 700ms ease; }
+.landing-bg--professional { z-index: 1; transition: opacity 700ms ease; }
 
 /* Landing dark modifier: force text white in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
@@ -114,6 +114,52 @@ h1 { line-height: 1.05; }
 
 /* Hover rosso su tutti gli elementi interattivi */
 .hover-red:hover { color: #c8102e !important; }
+
+/* Pallino nav: rosso su hover con ingrandimento */
+.dot-nav {
+  transition: background-color 300ms ease, transform 300ms ease;
+}
+.dot-nav:hover {
+  background-color: #c8102e !important;
+  transform: translate(-50%, -50%) scale(1.5);
+}
+
+/* Triangolo back: rubber-band squeeze */
+.tri-back-svg polygon {
+  transition: fill 300ms ease;
+}
+.tri-back-hover:hover .tri-back-svg polygon {
+  fill: #c8102e !important;
+}
+.tri-back-hover:hover .tri-back-svg {
+  animation: rubberSnap 400ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes rubberSnap {
+  0%   { transform: translateX(0) scaleX(1); }
+  25%  { transform: translateX(-7px) scaleX(0.75); }
+  50%  { transform: translateX(3px) scaleX(1.1); }
+  70%  { transform: translateX(-1px) scaleX(0.95); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+/* Testo giustificato — colonne larghe (about) */
+.project-text {
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+/* Testo giustificato — sidebar stretta (progetti): font ridotto + spaziatura compatta */
+.project-text-narrow {
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+  font-size: 14px;
+  word-spacing: -0.5px;
+}
 
 /* Scroll indipendente senza scrollbar visibili */
 .independent-scroll {
