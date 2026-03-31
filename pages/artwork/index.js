@@ -666,6 +666,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </nav>
       </header>
 
+
+
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
         <section key={`banner-${currentSlug}`} className="w-full relative" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
