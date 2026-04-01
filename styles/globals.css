@@ -180,6 +180,21 @@ h1 { line-height: 1.05; }
   body { display: none !important; }
 }
 
+/* ===== Mobile landscape: scala proporzionale di tutti gli elementi ===== */
+@media (max-height: 500px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  /* Marquee ridotto */
+  .marquee-seq { font-size: 3.5rem !important; }
+
+  /* Header più compatto */
+  header { padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; font-size: 12px !important; }
+
+  /* Testi e spaziature ridotti */
+  .project-text, .project-text-narrow { font-size: 12px !important; }
+
+  /* About: video e foto con larghezza massima */
+  .about-media-limit { max-width: 65vw !important; margin-left: auto !important; margin-right: auto !important; }
+}
+
 /* Protezione anti-salvataggio immagini mobile */
 img, picture, video, canvas {
   -webkit-touch-callout: none; /* blocca menu iOS */

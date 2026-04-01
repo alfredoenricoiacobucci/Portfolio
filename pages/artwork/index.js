@@ -180,7 +180,6 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
       const data = await res.json();
       if (data.success) {
         setSent(true);
-        setTimeout(() => onSuccess?.(), 2000);
       } else {
         setError(S.ERRORE_INVIO || "Errore nell'invio. Riprova o scrivi direttamente a a.e.iacobucci@icloud.com");
       }
@@ -741,7 +740,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         <>
           {/* VIDEO — letto da content/about/ */}
           <section key="about-video" className="w-full relative">
-            <div className={`relative w-full h-[48vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+            <div className={`relative w-full h-[48vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center about-media-limit ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -798,7 +797,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
               {/* FOTO GRANDE — letta da content/about/ (prima immagine trovata) */}
               <div className="w-full px-6 md:px-12 mt-16 md:mt-20">
-                <div className={`w-full h-[50vh] md:h-[65vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
+                <div className={`w-full h-[50vh] md:h-[65vh] overflow-hidden flex items-center justify-center about-media-limit ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
