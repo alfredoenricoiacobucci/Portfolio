@@ -637,25 +637,21 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           );
         })()}
 
-        {/* DESTRA: Email, About/Home, Insta */}
+        {/* DESTRA: Home, About, Email */}
         <nav className="text-[20px]">
+          <span className="cursor-pointer transition-colors hover-red" onClick={() => {
+            navHistoryRef.current = [];
+            router.push(basePath, undefined, { shallow: true });
+          }}>{S.LABEL_HOME}</span>
+          <span>,</span><span className="inline-block w-[0.6em]" />
+          <span className="cursor-pointer transition-colors hover-red" onClick={() => {
+            if (selectedProject && selectedProject.name !== "About") {
+              navHistoryRef.current.push(currentSlug);
+            }
+            router.push(`${basePath}?p=about`, undefined, { shallow: true });
+          }}>{S.LABEL_ABOUT}</span>
+          <span>,</span><span className="inline-block w-[0.6em]" />
           <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>{S.LABEL_EMAIL}</span>
-          <span>,</span><span className="inline-block w-[0.6em]" />
-          {router.query?.p === "about" ? (
-            <span className="cursor-pointer transition-colors hover-red" onClick={() => {
-              navHistoryRef.current = [];
-              router.push(basePath, undefined, { shallow: true });
-            }}>{S.LABEL_HOME}</span>
-          ) : (
-            <span className="cursor-pointer transition-colors hover-red" onClick={() => {
-              if (selectedProject && selectedProject.name !== "About") {
-                navHistoryRef.current.push(currentSlug);
-              }
-              router.push(`${basePath}?p=about`, undefined, { shallow: true });
-            }}>{S.LABEL_ABOUT}</span>
-          )}
-          <span>,</span><span className="inline-block w-[0.6em]" />
-          <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors hover-red">{S.LABEL_INSTA}</a>
         </nav>
       </header>
 
