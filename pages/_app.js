@@ -19,7 +19,7 @@ export default function App({ Component, pageProps }) {
   const pendingRef = useRef(null);
   const transitioning = useRef(false);
 
-  // ---- Protezione immagini ----
+  // ---- Protezione immagini + anti-screenshot ----
   useEffect(() => {
     const handleContextMenu = (e) => {
       if (e.target && e.target.tagName === "IMG") {
@@ -30,11 +30,50 @@ export default function App({ Component, pageProps }) {
     const handleDragStart = (e) => {
       if (e.target && e.target.tagName === "IMG") e.preventDefault();
     };
+
+    // Block PrintScreen and common screenshot shortcuts
+    const handleKeyDown = (e) => {
+      // PrintScreen
+      if (e.key === "PrintScreen") {
+        e.preventDefault();
+        document.body.style.filter = "blur(30px)";
+        setTimeout(() => { document.body.style.filter = ""; }, 1500);
+      }
+      // Cmd+Shift+3/4/5 (macOS screenshots)
+      if (e.metaKey && e.shiftKey && ["3", "4", "5"].includes(e.key)) {
+        e.preventDefault();
+        document.body.style.filter = "blur(30px)";
+        setTimeout(() => { document.body.style.filter = ""; }, 1500);
+      }
+      // Ctrl+Shift+S (Windows Snipping)
+      if (e.ctrlKey && e.shiftKey && e.key === "S") {
+        e.preventDefault();
+      }
+      // Block Cmd+P / Ctrl+P (print)
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        e.preventDefault();
+      }
+    };
+
+    // Blur content when window loses focus (e.g. screen recording, app switcher)
+    const handleBlur = () => {
+      document.body.style.filter = "blur(15px)";
+    };
+    const handleFocus = () => {
+      document.body.style.filter = "";
+    };
+
     document.addEventListener("contextmenu", handleContextMenu);
     document.addEventListener("dragstart", handleDragStart);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
     return () => {
       document.removeEventListener("contextmenu", handleContextMenu);
       document.removeEventListener("dragstart", handleDragStart);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 

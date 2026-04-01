@@ -165,33 +165,27 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
 
     setSending(true);
     try {
-      const res = await fetch("/api/contact", {
+      // Invio diretto a Web3Forms (client-side, no API route)
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({
+          access_key: "6c54ffe5-dbe2-4109-af5b-ef65277506cb",
+          subject: `Contatto dal portfolio — ${name}`,
+          from_name: name,
+          replyto: email || "",
+          message: `Nome: ${name}\nEmail: ${email || "non fornita"}\n\n${message}`,
+        }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) {
+      if (data.success) {
         setSent(true);
         setTimeout(() => onSuccess?.(), 2000);
       } else {
-        // Mostra errore e apri mailto come fallback
-        console.error("Web3Forms error:", data);
-        setError("Invio automatico non riuscito. Apertura client email...");
-        setTimeout(() => {
-          const subject = encodeURIComponent("Contatto dal portfolio");
-          const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
-          window.location.href = `mailto:${S.EMAIL_DESTINATARIO || "a.e.iacobucci@icloud.com"}?subject=${subject}&body=${body}`;
-        }, 1500);
+        setError(S.ERRORE_INVIO || "Errore nell'invio. Riprova o scrivi direttamente a a.e.iacobucci@icloud.com");
       }
     } catch (err) {
-      console.error("Contact fetch error:", err);
-      setError("Invio automatico non riuscito. Apertura client email...");
-      setTimeout(() => {
-        const subject = encodeURIComponent("Contatto dal portfolio");
-        const body = encodeURIComponent(`Ciao Alfredo,\n\nNome: ${name}\nEmail: ${email}\n\n${message}\n`);
-        window.location.href = `mailto:a.e.iacobucci@icloud.com?subject=${subject}&body=${body}`;
-      }, 1500);
+      setError(S.ERRORE_INVIO || "Errore di connessione. Riprova o scrivi direttamente a a.e.iacobucci@icloud.com");
     } finally {
       setSending(false);
     }

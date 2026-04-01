@@ -175,6 +175,11 @@ h1 { line-height: 1.05; }
   .landing-bg { display: none; }
 }
 
+/* Anti-print: nasconde tutto in stampa */
+@media print {
+  body { display: none !important; }
+}
+
 /* Protezione anti-salvataggio immagini mobile */
 img, picture, video, canvas {
   -webkit-touch-callout: none; /* blocca menu iOS */
