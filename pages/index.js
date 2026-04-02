@@ -116,21 +116,25 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const isDark = displayMode === "professional";
 
   // pointer handler on container: sets hoverArea to left/right and advances index only when crossing
+  // Touch devices: no hover detection (tap on Artwork/Professional navigates directly)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
+    // Skip hover detection on touch devices
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (isTouch) return;
 
     let lastArea = null;
 
     const computeArea = (x) => {
       const rect = el.getBoundingClientRect();
       const mid = rect.left + rect.width / 2;
-      // choose side strictly left or right; no neutral zone
       return x < mid ? "artwork" : "professional";
     };
 
     const onMove = (e) => {
-      const x = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX);
+      const x = e.clientX;
       if (typeof x !== "number") return;
       const area = computeArea(x);
       if (area !== lastArea) {
@@ -146,14 +150,10 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
     el.addEventListener("mousemove", onMove);
     el.addEventListener("mouseleave", onLeave);
-    el.addEventListener("touchstart", onMove, { passive: true });
-    el.addEventListener("touchend", onLeave);
 
     return () => {
       el.removeEventListener("mousemove", onMove);
       el.removeEventListener("mouseleave", onLeave);
-      el.removeEventListener("touchstart", onMove);
-      el.removeEventListener("touchend", onLeave);
     };
   }, []);
 
@@ -189,11 +189,13 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   };
 
   // helper for switch hover area when hovering the switch itself (no dead zone)
+  // Only on non-touch (desktop) — mobile uses tap directly
+  const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
   const onSwitchPointerMove = (e) => {
-    // compute area relative to container center
+    if (isTouch) return;
     const el = containerRef.current;
     if (!el) return;
-    const x = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX);
+    const x = e.clientX;
     if (typeof x !== "number") return;
     const rect = el.getBoundingClientRect();
     const mid = rect.left + rect.width / 2;
@@ -224,7 +226,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
         {/* Name — bianco su pro, nero su art */}
-        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isTouch ? "text-black" : isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
           {landingName}
         </h1>
 
@@ -235,21 +237,21 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
           onMouseLeave={() => setHoverArea(null)}
         >
           <span
-            onMouseEnter={() => setHoverArea("artwork")}
-            onMouseLeave={() => setHoverArea(null)}
+            onMouseEnter={() => !isTouch && setHoverArea("artwork")}
+            onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${displayMode === "artwork" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${isTouch ? "opacity-100 text-black" : (displayMode === "artwork" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Artwork
           </span>
 
-          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`}>/</span>
+          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isTouch ? "text-black" : isDark ? "text-white" : "text-black"}`}>/</span>
 
           <span
-            onMouseEnter={() => setHoverArea("professional")}
-            onMouseLeave={() => setHoverArea(null)}
+            onMouseEnter={() => !isTouch && setHoverArea("professional")}
+            onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${displayMode === "professional" ? "opacity-100" : "opacity-40"} ${isDark ? "text-white" : "text-black"}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${isTouch ? "opacity-100 text-black" : (displayMode === "professional" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Professional
           </span>
