@@ -150,21 +150,49 @@ export default function App({ Component, pageProps }) {
   // Mobile landscape before entering: show Entra gate
   // After entering: site is visible, and rotating back to portrait shows overlay without losing state
 
-  // Block scroll on body when portrait overlay is showing
+  // Block scroll on body when portrait overlay or landscape gate is showing
   useEffect(() => {
-    if (isMobile && isPortrait) {
+    if (isMobile && (isPortrait || !mobileEntered)) {
       document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.height = "100%";
     } else {
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.height = "";
     }
-    return () => { document.body.style.overflow = ""; };
-  }, [isMobile, isPortrait]);
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.height = "";
+    };
+  }, [isMobile, isPortrait, mobileEntered]);
 
+  // Countdown for landscape gate (3 → 2 → 1 → enter, total ~2.5s)
+  const [countdown, setCountdown] = useState(null);
+
+  useEffect(() => {
+    if (isMobile && !isPortrait && !mobileEntered) {
+      setCountdown(3);
+      const t1 = setTimeout(() => setCountdown(2), 800);
+      const t2 = setTimeout(() => setCountdown(1), 1600);
+      const t3 = setTimeout(() => setMobileEntered(true), 2500);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    }
+  }, [isMobile, isPortrait, mobileEntered]);
+
+  // Portrait overlay: if user has already entered site, use blur backdrop; otherwise solid black
   const mobilePortraitOverlay = isMobile && isPortrait ? (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      backgroundColor: "#0a0a0a", color: "#ffffff", padding: "2rem", textAlign: "center",
+      backgroundColor: mobileEntered ? "rgba(0,0,0,0.7)" : "#0a0a0a",
+      backdropFilter: mobileEntered ? "blur(20px)" : "none",
+      WebkitBackdropFilter: mobileEntered ? "blur(20px)" : "none",
+      color: "#ffffff", padding: "2rem", textAlign: "center",
       touchAction: "none",
     }}
       onTouchMove={(e) => e.preventDefault()}
@@ -206,22 +234,20 @@ export default function App({ Component, pageProps }) {
         <rect x="2" y="4" width="20" height="16" rx="2" />
         <path d="M18 12h.01" />
       </svg>
-      <button
-        onClick={() => setMobileEntered(true)}
-        style={{
-          marginTop: "1rem", padding: "0.7rem 2.5rem",
-          fontSize: "0.9rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
-          color: "#ffffff", backgroundColor: "transparent",
-          border: "2px solid #ffffff", cursor: "pointer",
-          transition: "all 300ms ease",
-        }}
-        onTouchStart={(e) => { e.target.style.backgroundColor = "#c8102e"; e.target.style.borderColor = "#c8102e"; }}
-        onTouchEnd={(e) => { e.target.style.backgroundColor = "transparent"; e.target.style.borderColor = "#ffffff"; }}
-        onMouseEnter={(e) => { e.target.style.backgroundColor = "#c8102e"; e.target.style.borderColor = "#c8102e"; }}
-        onMouseLeave={(e) => { e.target.style.backgroundColor = "transparent"; e.target.style.borderColor = "#ffffff"; }}
-      >
-        Entra
-      </button>
+      {countdown !== null && (
+        <span style={{
+          fontSize: "2.5rem", fontWeight: 700, color: "#ffffff",
+          animation: "countPulse 0.8s ease-out",
+        }} key={countdown}>
+          {countdown}
+        </span>
+      )}
+      <style>{`
+        @keyframes countPulse {
+          0% { transform: scale(1.5); opacity: 0.3; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   ) : null;
 

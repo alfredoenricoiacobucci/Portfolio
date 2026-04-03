@@ -706,7 +706,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div className="flex flex-row items-start">
+          <div className="flex flex-row items-stretch">
             {/* Gallery — colonna sinistra, scorre con la pagina */}
             <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
               <JustifiedGallery
@@ -714,12 +714,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky, non supera la gallery */}
+            {/* Descrizione — colonna destra, sticky, allineata alle foto */}
             {selectedProject.description && (
-              <div className={`w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-3 md:px-6 md:pr-12 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
-                <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
-                  {selectedProject.description}
-                </p>
+              <div className={`w-1/3 lg:w-1/4 relative ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+                <div className="sticky top-0 h-screen independent-scroll px-3 md:px-6 md:pr-12 py-8">
+                  <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
+                    {selectedProject.description}
+                  </p>
+                </div>
               </div>
             )}
           </div>
