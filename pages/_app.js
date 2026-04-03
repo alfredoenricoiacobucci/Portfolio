@@ -171,16 +171,17 @@ export default function App({ Component, pageProps }) {
     };
   }, [isMobile, isPortrait, mobileEntered]);
 
-  // Countdown for landscape gate (3 → 2 → 1 → enter, total ~2.5s)
-  const [countdown, setCountdown] = useState(null);
+  // Loading bar for landscape gate (2.5s then auto-enter)
+  const [gateActive, setGateActive] = useState(false);
 
   useEffect(() => {
     if (isMobile && !isPortrait && !mobileEntered) {
-      setCountdown(3);
-      const t1 = setTimeout(() => setCountdown(2), 800);
-      const t2 = setTimeout(() => setCountdown(1), 1600);
-      const t3 = setTimeout(() => setMobileEntered(true), 2500);
-      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+      // Small delay to trigger CSS animation after mount
+      requestAnimationFrame(() => setGateActive(true));
+      const t = setTimeout(() => setMobileEntered(true), 2500);
+      return () => { clearTimeout(t); setGateActive(false); };
+    } else {
+      setGateActive(false);
     }
   }, [isMobile, isPortrait, mobileEntered]);
 
@@ -234,20 +235,17 @@ export default function App({ Component, pageProps }) {
         <rect x="2" y="4" width="20" height="16" rx="2" />
         <path d="M18 12h.01" />
       </svg>
-      {countdown !== null && (
-        <span style={{
-          fontSize: "2.5rem", fontWeight: 700, color: "#ffffff",
-          animation: "countPulse 0.8s ease-out",
-        }} key={countdown}>
-          {countdown}
-        </span>
-      )}
-      <style>{`
-        @keyframes countPulse {
-          0% { transform: scale(1.5); opacity: 0.3; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
+      {/* Loading bar */}
+      <div style={{
+        width: "120px", height: "3px", backgroundColor: "rgba(255,255,255,0.15)",
+        borderRadius: "2px", overflow: "hidden", marginTop: "1.5rem",
+      }}>
+        <div style={{
+          height: "100%", backgroundColor: "#ffffff", borderRadius: "2px",
+          width: gateActive ? "100%" : "0%",
+          transition: "width 2.5s linear",
+        }} />
+      </div>
     </div>
   ) : null;
 

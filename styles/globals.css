@@ -207,6 +207,9 @@ h1 { line-height: 1.05; }
 
   /* Testi e spaziature ridotti */
   .project-text, .project-text-narrow { font-size: 11px !important; }
+
+  /* Banner title ridotto su mobile */
+  .banner-title { font-size: 1.5rem !important; }
 }
 
 /* Protezione anti-salvataggio immagini mobile */

@@ -684,17 +684,17 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
             <div className="mb-8 space-y-0 leading-tight">
               {/* Righe titolo — bianche */}
-              <h2 className="text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+              <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                 {selectedProject.name}
               </h2>
               {selectedProject.titleExtra?.map((line, i) => (
-                <h2 key={i} className="text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                <h2 key={i} className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                   {line}
                 </h2>
               ))}
               {/* Ultima riga — rossa (data e luogo) */}
               {selectedProject.datePlace && (
-                <p className="text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
+                <p className="banner-title text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
                   {selectedProject.datePlace}
                 </p>
               )}
@@ -703,25 +703,23 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </section>
       )}
 
-      {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
+      {/* CONTENUTO PROGETTO — gallery + testo a destra (scorrono insieme) */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div className="flex flex-row">
-            {/* Gallery — colonna sinistra, scorre con la pagina */}
-            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 pt-8 pb-8`}>
+          <div className="flex flex-row items-start">
+            {/* Gallery — colonna sinistra */}
+            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky allineata alla prima foto */}
+            {/* Descrizione — colonna destra, scorre con la pagina, no sticky */}
             {selectedProject.description && (
-              <div className={`w-1/3 lg:w-1/4 pt-8 pb-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
-                <div className="sticky top-0 max-h-screen overflow-y-auto independent-scroll px-3 md:px-6 md:pr-12 py-4">
-                  <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
-                    {selectedProject.description}
-                  </p>
-                </div>
+              <div className={`w-1/3 lg:w-1/4 py-8 px-3 md:px-6 md:pr-12 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+                <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
+                  {selectedProject.description}
+                </p>
               </div>
             )}
           </div>
