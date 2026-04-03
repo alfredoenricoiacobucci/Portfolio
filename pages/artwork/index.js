@@ -659,7 +659,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -669,14 +669,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             zoomMs={7000}
             priorityFirst
           />
-          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black/80" />
           {/* Sfumatura leggera — arriva appena sopra la riga rossa, scompare allo scroll */}
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0"
             style={{
               zIndex: 45,
               height: 'calc(2rem + 70px)',
-              background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
+              background: "linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)",
               opacity: bannerFadeOpacity,
               transition: "opacity 250ms ease-out",
             }}
@@ -727,8 +727,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
           {/* VIDEO — letto da content/about/ */}
-          <section key="about-video" className="w-full relative">
-            <div className={`relative w-full h-[56vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+          <section key="about-video" className="w-full relative about-video-section" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
+            <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -744,18 +744,20 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 </span>
               )}
             </div>
-            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/78 to-black/95" />
+            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black/80" />
             <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
-              <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
-                About
-              </h2>
+              <div className="mb-8 space-y-0 leading-tight">
+                <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                  About
+                </h2>
+              </div>
             </div>
           </section>
 
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE — margini laterali uguali, gap centrale più piccolo, centrato sulla metà pagina */}
-            <div className={`w-full py-12 ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+            <div className={`w-full py-12 about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
               <div className="grid grid-cols-1 md:grid-cols-2 text-base leading-relaxed" style={{ gap: '4%' }} lang="it">
                 <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
@@ -785,7 +787,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
               {/* FOTO GRANDE — letta da content/about/ (prima immagine trovata) */}
               <div className="w-full px-6 md:px-12 mt-16 md:mt-20">
-                <div className={`w-full h-[55vh] md:h-[65vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
+                <div className={`w-full h-[55vh] md:h-[65vh] about-photo overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (

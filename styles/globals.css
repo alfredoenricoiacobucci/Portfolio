@@ -208,8 +208,20 @@ h1 { line-height: 1.05; }
   /* Testi e spaziature ridotti */
   .project-text, .project-text-narrow { font-size: 11px !important; }
 
-  /* Banner title ridotto su mobile */
-  .banner-title { font-size: 1.5rem !important; }
+  /* Banner title su mobile: 1.5rem + 6pt = ~2rem */
+  .banner-title { font-size: 2rem !important; }
+
+  /* Banner altezza ridotta su mobile */
+  .project-banner { height: 50vh !important; }
+
+  /* About video stesse proporzioni del banner progetto */
+  .about-video-section { height: 50vh !important; }
+
+  /* About foto più alta su mobile */
+  .about-photo { height: 45vh !important; }
+
+  /* About testo stesso corpo dei progetti */
+  .about-text-section { font-size: 11px !important; }
 }
 
 /* Protezione anti-salvataggio immagini mobile */
