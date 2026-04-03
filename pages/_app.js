@@ -150,29 +150,47 @@ export default function App({ Component, pageProps }) {
   // Mobile landscape before entering: show Entra gate
   // After entering: site is visible, and rotating back to portrait shows overlay without losing state
 
+  // Block scroll on body when portrait overlay is showing
+  useEffect(() => {
+    if (isMobile && isPortrait) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobile, isPortrait]);
+
   const mobilePortraitOverlay = isMobile && isPortrait ? (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       backgroundColor: "#0a0a0a", color: "#ffffff", padding: "2rem", textAlign: "center",
-    }}>
-      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#c8102e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "2rem" }}>
-        <rect x="4" y="2" width="16" height="20" rx="2" />
-        <path d="M12 18h.01" />
-      </svg>
+      touchAction: "none",
+    }}
+      onTouchMove={(e) => e.preventDefault()}
+    >
+      {/* Animated phone: rotates from vertical red to horizontal green */}
+      <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{ animation: "phoneRotate 3s ease-in-out infinite" }}
+        >
+          <rect x="4" y="2" width="16" height="20" rx="2" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
+          <path d="M12 18h.01" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
+        </svg>
+      </div>
       <p style={{ fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.5, maxWidth: "280px" }}>
         Ruota il telefono in orizzontale per visualizzare il portfolio.
       </p>
-      <div style={{ marginTop: "2rem", width: "40px", height: "40px", animation: "rotateHint 2s ease-in-out infinite" }}>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M1 4v6h6" />
-          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-        </svg>
-      </div>
       <style>{`
-        @keyframes rotateHint {
-          0%, 100% { transform: rotate(0deg); opacity: 0.5; }
-          50% { transform: rotate(-90deg); opacity: 1; }
+        @keyframes phoneRotate {
+          0%, 20% { transform: rotate(0deg); }
+          50%, 70% { transform: rotate(-90deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes phoneColor {
+          0%, 20% { stroke: #c8102e; }
+          50%, 70% { stroke: #22c55e; }
+          100% { stroke: #c8102e; }
         }
       `}</style>
     </div>

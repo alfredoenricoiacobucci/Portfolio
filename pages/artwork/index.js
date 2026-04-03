@@ -706,37 +706,29 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div className="flex flex-col md:flex-row items-start">
+          <div className="flex flex-row items-start">
             {/* Gallery — colonna sinistra, scorre con la pagina */}
-            <div className="w-full md:w-2/3 lg:w-3/4 px-6 md:pl-12 md:pr-6 py-8">
+            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky alla stessa altezza della gallery */}
+            {/* Descrizione — colonna destra, sticky, non supera la gallery */}
             {selectedProject.description && (
-              <div className={`hidden md:block w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-6 pr-12 pl-6 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+              <div className={`w-1/3 lg:w-1/4 sticky top-0 self-start h-screen independent-scroll px-3 md:px-6 md:pr-12 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
                 <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
                   {selectedProject.description}
                 </p>
               </div>
             )}
           </div>
-          {/* Descrizione mobile — sotto la gallery */}
-          {selectedProject.description && (
-            <div className={`md:hidden px-6 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
-              <p className="text-base leading-relaxed whitespace-pre-line project-text" lang="it">
-                {selectedProject.description}
-              </p>
-            </div>
-          )}
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
           {/* VIDEO — letto da content/about/ */}
           <section key="about-video" className="w-full relative">
-            <div className={`relative w-full h-[48vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center about-media-limit ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+            <div className={`relative w-full h-[56vh] md:h-[56vh] lg:h-[64vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -771,7 +763,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             </div>
 
             {/* CONTATTI — stessi margini del testo, distribuiti: sx, centro, dx */}
-            <div className={`w-full py-8 text-base ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+            <div className={`w-full py-8 text-xs md:text-sm ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
               <div className="flex items-center justify-between">
                 <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Telefono: <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="underline">{S.TELEFONO}</a></span>
                 <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Email: <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="underline">{S.EMAIL_DESTINATARIO}</a></span>
@@ -793,7 +785,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
               {/* FOTO GRANDE — letta da content/about/ (prima immagine trovata) */}
               <div className="w-full px-6 md:px-12 mt-16 md:mt-20">
-                <div className={`w-full h-[50vh] md:h-[65vh] overflow-hidden flex items-center justify-center about-media-limit ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
+                <div className={`w-full h-[55vh] md:h-[65vh] overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -911,7 +903,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       )}
 
       {/* FOOTER */}
-      <footer className={`w-full py-12 ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000" }}>
+      <footer className={`w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000" }}>
         <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
         <div className="text-xs font-normal">
           {S.DISCLAIMER}

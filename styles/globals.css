@@ -201,11 +201,12 @@ h1 { line-height: 1.05; }
   /* Header più compatto */
   header { padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; font-size: 12px !important; }
 
-  /* Testi e spaziature ridotti */
-  .project-text, .project-text-narrow { font-size: 12px !important; }
+  /* Footer stessa dimensione dell'header */
+  .mobile-footer { padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; font-size: 10px !important; }
+  .mobile-footer .space-y-2 > * + * { margin-top: 0.25rem !important; }
 
-  /* About: video e foto con larghezza massima */
-  .about-media-limit { max-width: 65vw !important; margin-left: auto !important; margin-right: auto !important; }
+  /* Testi e spaziature ridotti */
+  .project-text, .project-text-narrow { font-size: 11px !important; }
 }
 
 /* Protezione anti-salvataggio immagini mobile */
