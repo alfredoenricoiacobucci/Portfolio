@@ -706,18 +706,18 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* CONTENUTO PROGETTO — gallery scorre con la pagina, testo sticky a destra */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div className="flex flex-row items-stretch">
+          <div className="flex flex-row">
             {/* Gallery — colonna sinistra, scorre con la pagina */}
-            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
+            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 pt-8 pb-8`}>
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky, allineata alle foto */}
+            {/* Descrizione — colonna destra, sticky allineata alla prima foto */}
             {selectedProject.description && (
-              <div className={`w-1/3 lg:w-1/4 relative ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
-                <div className="sticky top-0 h-screen independent-scroll px-3 md:px-6 md:pr-12 py-8">
+              <div className={`w-1/3 lg:w-1/4 pt-8 pb-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
+                <div className="sticky top-0 max-h-screen overflow-y-auto independent-scroll px-3 md:px-6 md:pr-12 py-4">
                   <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
                     {selectedProject.description}
                   </p>
@@ -864,8 +864,23 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             </span>
           </div>
 
-          {/* Image area */}
-          <div className="relative flex-1 w-full flex items-center justify-center min-h-0">
+          {/* Image area — swipe support for mobile */}
+          <div className="relative flex-1 w-full flex items-center justify-center min-h-0"
+            onTouchStart={(e) => { e.currentTarget._swipeX = e.touches[0].clientX; }}
+            onTouchEnd={(e) => {
+              const startX = e.currentTarget._swipeX;
+              if (startX == null) return;
+              const endX = e.changedTouches[0].clientX;
+              const diff = startX - endX;
+              if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                  setViewerIndex((prev) => (prev + 1) % selectedProject.images.length);
+                } else {
+                  setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length);
+                }
+              }
+            }}
+          >
             {selectedProject.images.length > 1 && (
               <>
                 <button
