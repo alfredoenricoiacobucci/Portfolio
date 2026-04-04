@@ -706,7 +706,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       {/* CONTENUTO PROGETTO — due colonne indipendenti */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div className="flex flex-row">
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
             {/* Gallery — colonna sinistra, scorre con la pagina */}
             <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
               <JustifiedGallery
@@ -714,10 +714,11 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, sticky in alto, scroll indipendente */}
+            {/* Descrizione — colonna destra, si estende per tutta l'altezza della gallery.
+                Dentro: un div sticky che resta in alto e si scrolla indipendentemente. */}
             {selectedProject.description && (
-              <div className={`w-1/3 lg:w-1/4 ${mode === "professional" ? "text-white/60" : "text-black/50"}`}>
-                <div className="sticky top-0 max-h-screen overflow-y-auto independent-scroll px-3 md:px-6 md:pr-12 py-8">
+              <div className={`w-1/3 lg:w-1/4 ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ position: "relative" }}>
+                <div style={{ position: "sticky", top: 0, maxHeight: "100vh", overflowY: "auto" }} className="independent-scroll px-3 md:px-6 md:pr-12 py-8">
                   <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
                     {selectedProject.description}
                   </p>
