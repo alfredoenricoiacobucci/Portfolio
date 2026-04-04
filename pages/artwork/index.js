@@ -703,29 +703,26 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         </section>
       )}
 
-      {/* CONTENUTO PROGETTO — due colonne indipendenti */}
+      {/* CONTENUTO PROGETTO — due colonne con scroll indipendente */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full flex-1">
-          <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
-            {/* Gallery — colonna sinistra, scorre con la pagina */}
-            <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} px-4 md:pl-12 md:pr-6 py-8`}>
+        <div key={`project-${currentSlug}`} style={{ display: "flex", flexDirection: "row", height: "calc(100vh - var(--header-h, 80px))", width: "100%" }}>
+          {/* Gallery — colonna sinistra, scroll proprio */}
+          <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} independent-scroll`} style={{ overflowY: "auto", height: "100%" }}>
+            <div className="px-4 md:pl-12 md:pr-6 py-8">
               <JustifiedGallery
                 images={selectedProject.images || []}
                 onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
               />
             </div>
-            {/* Descrizione — colonna destra, si estende per tutta l'altezza della gallery.
-                Dentro: un div sticky che resta in alto e si scrolla indipendentemente. */}
-            {selectedProject.description && (
-              <div className={`w-1/3 lg:w-1/4 ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ position: "relative" }}>
-                <div style={{ position: "sticky", top: 0, maxHeight: "100vh", overflowY: "auto" }} className="independent-scroll px-3 md:px-6 md:pr-12 py-8">
-                  <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
-                    {selectedProject.description}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
+          {/* Testo — colonna destra, scroll proprio indipendente */}
+          {selectedProject.description && (
+            <div className={`w-1/3 lg:w-1/4 independent-scroll px-3 md:px-6 md:pr-12 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ overflowY: "auto", height: "100%" }}>
+              <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
+                {selectedProject.description}
+              </p>
+            </div>
+          )}
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
