@@ -41,6 +41,23 @@ export async function getServerSideProps() {
     const description = readText(pathMod.join(pDir, "descrizione.txt"));
     const banner = readText(pathMod.join(pDir, "banner.txt"));
 
+    // Dati tecnici da tecnica.txt (formato: chiave=valore, una per riga)
+    const techRaw = readText(pathMod.join(pDir, "tecnica.txt"));
+    let techData = null;
+    if (techRaw) {
+      techData = {};
+      techRaw.split("\n").forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) return;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx < 0) return;
+        const key = trimmed.slice(0, eqIdx).trim().toLowerCase();
+        const val = trimmed.slice(eqIdx + 1).trim();
+        if (key && val) techData[key] = val;
+      });
+      if (Object.keys(techData).length === 0) techData = null;
+    }
+
     const fotoDir = pathMod.join(pDir, "foto");
     let files = [];
     try {
@@ -56,7 +73,7 @@ export async function getServerSideProps() {
       bannerStartIndex = idx >= 0 ? idx : 0;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex };
+    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
   };
 
   let projects = [];
@@ -420,6 +437,9 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
+  // ===== TOGGLE BLOCCO TESTO SOTTO BANNER =====
+  const [textOpen, setTextOpen] = useState(false);
+
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
@@ -449,6 +469,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       if (!q) {
         setSelectedProject(null);
         setViewerOpen(false);
+        setTextOpen(false);
         window.scrollTo(0, 0);
         return;
       }
@@ -463,6 +484,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           video: about.video || "",
         });
         setViewerOpen(false);
+        setTextOpen(false);
         window.scrollTo(0, 0);
         return;
       }
@@ -475,6 +497,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           setPrevBannerIndex(null);
         }
         setViewerOpen(false);
+        setTextOpen(false);
         window.scrollTo(0, 0);
       }
     };
@@ -535,6 +558,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [selectedProject]);
+
+  // (lock/sticky rimosso: galleria e testo scorrono con la pagina)
 
   useEffect(() => {
     if (!isHome) { setGradientOpacity(0); return; }
@@ -604,29 +629,9 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           );
         })()}
 
-        {/* CENTRO: Pallino (home) o Triangolo (progetto/about) */}
+        {/* CENTRO: Pallino sempre — porta alla landing */}
         {(() => {
           const navColor = mode === "professional" ? "#ffffff" : "#000000";
-          if (selectedProject) {
-            return (
-              <button
-                onClick={() => {
-                  const prev = navHistoryRef.current.pop();
-                  if (prev) {
-                    router.push(`${basePath}?p=${prev}`, undefined, { shallow: true });
-                  } else {
-                    router.push(basePath, undefined, { shallow: true });
-                  }
-                }}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer tri-back-hover"
-                aria-label="Torna indietro"
-              >
-                <svg width={mode === "professional" ? "16" : "17"} height={mode === "professional" ? "14" : "15"} viewBox="0 0 20 18" className="tri-back-svg">
-                  <polygon points="0,9 17.32,0 17.32,18" fill={navColor} />
-                </svg>
-              </button>
-            );
-          }
           return (
             <button
               onClick={() => router.push("/")}
@@ -659,7 +664,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem + 80px)' }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -670,7 +675,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             priorityFirst
           />
           <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black/80" />
-          {/* Sfumatura leggera — arriva appena sopra la riga rossa, scompare allo scroll */}
+          {/* Sfumatura leggera in basso */}
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0"
             style={{
@@ -681,9 +686,9 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               transition: "opacity 250ms ease-out",
             }}
           />
-          <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
+          {/* Titolo — stessa posizione di About: items-end, mb-8 */}
+          <div className="absolute inset-0 z-50 flex items-end px-6 md:px-12" style={{ bottom: "80px" }}>
             <div className="mb-8 space-y-0 leading-tight">
-              {/* Righe titolo — bianche */}
               <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                 {selectedProject.name}
               </h2>
@@ -692,7 +697,6 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                   {line}
                 </h2>
               ))}
-              {/* Ultima riga — rossa (data e luogo) */}
               {selectedProject.datePlace && (
                 <p className="banner-title text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
                   {selectedProject.datePlace}
@@ -700,29 +704,96 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               )}
             </div>
           </div>
+          {/* Chevron — centrata nello spazio extra (80px) in fondo al banner */}
+          {(selectedProject.description || selectedProject.techData) && (
+            <div
+              className="absolute left-0 right-0 bottom-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none project-chevron-wrap"
+              style={{ height: "80px" }}
+              onClick={() => setTextOpen((v) => !v)}
+            >
+              {!textOpen && (
+                <span className="project-chevron-label text-xs tracking-wide text-white/70" style={{ marginBottom: "2px", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                  Scopri di più
+                </span>
+              )}
+              <svg
+                className={`project-chevron ${textOpen ? "project-chevron--open" : ""}`}
+                width="36" height="36" viewBox="0 0 24 24" fill="none"
+                style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
+              >
+                <polyline
+                  points="6 9 12 15 18 9"
+                  className="project-chevron__stroke"
+                  stroke="white"
+                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          )}
         </section>
       )}
 
-      {/* CONTENUTO PROGETTO — due colonne con scroll indipendente */}
+      {/* CONTENUTO PROGETTO — chevron toggle testo sotto banner, poi galleria, poi footer */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} style={{ display: "flex", flexDirection: "row", height: "calc(100vh - var(--header-h, 80px))", width: "100%" }}>
-          {/* Gallery — colonna sinistra, scroll proprio */}
-          <div className={`${selectedProject.description ? "w-2/3 lg:w-3/4" : "w-full"} independent-scroll`} style={{ overflowY: "auto", height: "100%" }}>
-            <div className="px-4 md:pl-12 md:pr-6 py-8">
-              <JustifiedGallery
-                images={selectedProject.images || []}
-                onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
-              />
-            </div>
-          </div>
-          {/* Testo — colonna destra, scroll proprio indipendente */}
-          {selectedProject.description && (
-            <div className={`w-1/3 lg:w-1/4 independent-scroll px-3 md:px-6 md:pr-12 py-8 ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ overflowY: "auto", height: "100%" }}>
-              <p className="leading-relaxed whitespace-pre-line project-text-narrow" lang="it">
-                {selectedProject.description}
-              </p>
+        <div key={`project-${currentSlug}`} className="w-full">
+          {/* Blocco testo — si rivela al click della chevron nel banner */}
+          {(selectedProject.description || selectedProject.techData) && (
+            <div style={{ paddingLeft: "8%", paddingRight: "8%" }}>
+              {/* Contenuto testo — si rivela al click */}
+              <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
+                <div className="flex flex-col md:flex-row pt-8 pb-0" style={{ gap: "4%" }}>
+                  {/* Descrizione — blocco unico */}
+                  {selectedProject.description && (
+                    <div className="flex-1 min-w-0">
+                      <p className="leading-relaxed whitespace-pre-line project-text text-base" lang="it">
+                        {selectedProject.description}
+                      </p>
+                    </div>
+                  )}
+                  {/* Micro colonna: dati tecnici in alto, copyright in basso */}
+                  <div className="md:w-[180px] shrink-0 mt-6 md:mt-0 flex flex-col justify-between">
+                    {/* Dati tecnici in alto */}
+                    {selectedProject.techData && (
+                      <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                        {selectedProject.techData.camera && (
+                          <div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Camera</div>
+                            <div>{selectedProject.techData.camera}</div>
+                          </div>
+                        )}
+                        {selectedProject.techData.ottica && (
+                          <div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Ottica</div>
+                            <div>{selectedProject.techData.ottica}</div>
+                          </div>
+                        )}
+                        {selectedProject.techData.luce && (
+                          <div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Luce</div>
+                            <div>{selectedProject.techData.luce}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Copyright in basso */}
+                    <div className={`text-xs leading-relaxed mt-6 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                      <div>Alfredo Enrico Iacobucci</div>
+                      <div>© {new Date().getFullYear()} Tutti i diritti riservati.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
+          {/* Gallery — margini 8% come About */}
+          <div className="pt-8 pb-4" style={{ paddingLeft: "8%", paddingRight: "8%" }}>
+            <JustifiedGallery
+              images={selectedProject.images || []}
+              onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
+            />
+          </div>
+          {/* Margine sotto la galleria */}
+          <div style={{ height: "2rem" }} />
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
@@ -773,8 +844,9 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               </div>
             </div>
 
-            {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional */}
-            <div className={`w-full py-20 md:py-28 ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`}>
+            {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional.
+                Spaziature uguali: sopra la citazione, tra citazione e foto, sotto la foto. */}
+            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`} style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
@@ -785,9 +857,9 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 </div>
               )}
 
-              {/* FOTO GRANDE — letta da content/about/ (prima immagine trovata) */}
-              <div className="w-full px-6 md:px-12 mt-16 md:mt-20">
-                <div className={`w-full h-[55vh] md:h-[65vh] about-photo overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`}>
+              {/* FOTO 3:2 — stessi margini laterali del testo (8%) */}
+              <div className="w-full about-photo-wrap" style={{ marginTop: "6rem", paddingLeft: "8%", paddingRight: "8%" }}>
+                <div className={`w-full about-photo overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`} style={{ aspectRatio: "3/2" }}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (

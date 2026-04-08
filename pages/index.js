@@ -103,6 +103,50 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   // area hover based on cursor position (left/right)
   const [hoverArea, setHoverArea] = useState(null);
 
+  // ===== GIROSCOPIO MOBILE =====
+  const [gyroArea, setGyroArea] = useState(null);
+  const [gyroActive, setGyroActive] = useState(false);
+  const [needsGyroPermission, setNeedsGyroPermission] = useState(false);
+  const gyroStarted = useRef(false);
+
+  const startGyro = () => {
+    if (gyroStarted.current) return;
+    gyroStarted.current = true;
+    const onOrientation = (e) => {
+      const gamma = e.gamma;
+      if (gamma == null) return;
+      if (gamma < -7) {
+        setGyroArea("artwork");
+      } else if (gamma > 7) {
+        setGyroArea("professional");
+      }
+      // dead zone: mantieni l'ultimo stato
+    };
+    window.addEventListener("deviceorientation", onOrientation, true);
+    setGyroActive(true);
+  };
+
+  const requestGyroPermission = async () => {
+    try {
+      const permission = await DeviceOrientationEvent.requestPermission();
+      if (permission === "granted") {
+        startGyro();
+        setNeedsGyroPermission(false);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!touch) return;
+    if (!window.DeviceOrientationEvent) return;
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      setNeedsGyroPermission(true);
+    } else {
+      startGyro();
+    }
+  }, []);
+
   // indices (advance once per entering an area)
   const artIndexRef = useRef(0);
   const profIndexRef = useRef(0);
@@ -111,8 +155,8 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
   const containerRef = useRef(null);
 
-  // compute displayed selection: hover overrides persistent mode
-  const displayMode = hoverArea ?? mode;
+  // compute displayed selection: giroscopio / hover / persistent
+  const displayMode = gyroArea ?? hoverArea ?? mode;
   const isDark = displayMode === "professional";
 
   // pointer handler on container: sets hoverArea to left/right and advances index only when crossing
@@ -157,26 +201,25 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     };
   }, []);
 
-  // Avanza l'immagine solo quando si INCROCIA dall'altro lato, non al primo ingresso
-  const prevHoverRef = useRef(null);
+  // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O giroscopio)
+  const prevDisplayRef = useRef(null);
 
   useEffect(() => {
-    const prev = prevHoverRef.current;
-    prevHoverRef.current = hoverArea;
+    const current = gyroArea ?? hoverArea;
+    const prev = prevDisplayRef.current;
+    prevDisplayRef.current = current;
 
-    // Non avanzare se arriviamo da null (primo ingresso nella pagina)
     if (prev === null) return;
 
-    // Avanza solo se il lato è cambiato (es. pro → art o art → pro)
-    if (hoverArea === "artwork" && prev === "professional" && filteredArt.length > 0) {
+    if (current === "artwork" && prev === "professional" && filteredArt.length > 0) {
       artIndexRef.current = (artIndexRef.current + 1) % filteredArt.length;
       setArtIndex(artIndexRef.current);
     }
-    if (hoverArea === "professional" && prev === "artwork" && filteredProf.length > 0) {
+    if (current === "professional" && prev === "artwork" && filteredProf.length > 0) {
       profIndexRef.current = (profIndexRef.current + 1) % filteredProf.length;
       setProfIndex(profIndexRef.current);
     }
-  }, [hoverArea, filteredArt.length, filteredProf.length]);
+  }, [gyroArea, hoverArea, filteredArt.length, filteredProf.length]);
 
   const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
   const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;
@@ -208,16 +251,16 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       ref={containerRef}
       className={`min-h-screen relative overflow-hidden bg-base ${isDark ? "landing--dark" : ""} flex items-center justify-center`}
     >
-      {/* BACKGROUND LAYERS */}
+      {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e giroscopio (mobile) */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        {/* artwork (white overlay stronger) — visibile di default quando nessun hover */}
-        <div className={`landing-bg landing-bg--artwork ${hoverArea !== "professional" ? "visible" : ""}`}>
+        {/* artwork (white overlay stronger) */}
+        <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
           {artSrc && <img key={artSrc} src={artSrc} alt="" className="landing-bg__img show" />}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
         {/* professional (black overlay stronger) */}
-        <div className={`landing-bg landing-bg--professional ${hoverArea === "professional" ? "visible" : ""}`}>
+        <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
           {profSrc && <img key={profSrc} src={profSrc} alt="" className="landing-bg__img show" />}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
@@ -225,12 +268,12 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
-        {/* Name — bianco su pro, nero su art */}
-        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isTouch ? "text-black" : isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+        {/* Name — colore reattivo a displayMode (hover, gyro, default) */}
+        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
           {landingName}
         </h1>
 
-        {/* SWITCH larger but text slightly smaller and closer to name */}
+        {/* SWITCH — reattivo a hover (desktop) e gyro (mobile) */}
         <div
           className="flex items-center justify-center text-[20px] md:text-[28px] select-none gap-4"
           onMouseMove={onSwitchPointerMove}
@@ -240,22 +283,39 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => !isTouch && setHoverArea("artwork")}
             onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${isTouch ? "opacity-100 text-black" : (displayMode === "artwork" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "artwork" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Artwork
           </span>
 
-          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isTouch ? "text-black" : isDark ? "text-white" : "text-black"}`}>/</span>
+          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`}>/</span>
 
           <span
             onMouseEnter={() => !isTouch && setHoverArea("professional")}
             onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${isTouch ? "opacity-100 text-black" : (displayMode === "professional" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
+            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "professional" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Professional
           </span>
         </div>
+
+        {/* Istruzione giroscopio mobile — si mostra finché il gyro non è attivo */}
+        {isTouch && !gyroActive && !needsGyroPermission && (
+          <p className={`text-xs transition-colors duration-700 ${isDark ? "text-white/40" : "text-black/30"}`}>
+            Inclina il telefono per esplorare
+          </p>
+        )}
+
+        {/* Prompt iOS: richiede permesso giroscopio con un tap */}
+        {needsGyroPermission && (
+          <button
+            onClick={requestGyroPermission}
+            className={`text-xs border px-4 py-2 rounded-full transition-colors duration-300 ${isDark ? "text-white/60 border-white/30" : "text-black/50 border-black/20"}`}
+          >
+            Tocca per attivare il giroscopio
+          </button>
+        )}
       </div>
 
       {/* CURTAIN: parte bianca (artwork default), sfuma via rivelando lo sfondo */}

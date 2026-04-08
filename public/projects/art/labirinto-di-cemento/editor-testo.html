@@ -21,6 +21,8 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .label {
@@ -30,35 +32,69 @@
     text-transform: uppercase;
   }
 
-  /*
-    La textarea ha ESATTAMENTE la stessa larghezza, font e padding
-    della sidebar progetto nel sito (25vw - padding).
-    Scrivi qui = quello che vedi nel sito.
-  */
+  .editor-row {
+    display: flex;
+    width: 84%; /* 100% - 8% margine sx - 8% margine dx */
+    gap: 4%;
+  }
+
   textarea {
-    width: calc(25vw - 72px); /* 25% viewport - pl:24px - pr:48px */
+    flex: 1;
     min-height: 70vh;
     background: transparent;
     color: rgba(255,255,255,0.6);
     border: none;
     border-left: 1px solid #222;
     border-right: 1px solid #222;
-    padding: 0;
+    padding: 0 8px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.625;
     text-align: justify;
-    word-spacing: -0.5px;
     resize: none;
     outline: none;
     overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
   }
   textarea::placeholder { color: #333; }
+
+  .tech-col {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: rgba(255,255,255,0.35);
+    font-size: 12px;
+    line-height: 1.5;
+    border-left: 1px solid #222;
+    padding-left: 12px;
+  }
+
+  .tech-col .tech-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tech-col .tech-label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+
+  .tech-col .copyright {
+    font-size: 12px;
+    margin-top: auto;
+  }
 
   .hint {
     color: #444;
     font-size: 11px;
-    max-width: calc(25vw - 72px);
+    max-width: 84%;
     text-align: center;
     line-height: 1.6;
   }
@@ -67,16 +103,35 @@
 <body>
 
 <div class="container">
-  <div class="label">larghezza colonna sito</div>
-  <textarea
-    id="editor"
-    placeholder="Scrivi qui..."
-    spellcheck="true"
-    lang="it"
-  ></textarea>
+  <div class="label">larghezza blocco testo sito (margini 8%)</div>
+  <div class="editor-row">
+    <textarea
+      id="editor"
+      placeholder="Scrivi qui la descrizione..."
+      spellcheck="true"
+      lang="it"
+    ></textarea>
+    <div class="tech-col">
+      <div class="tech-fields">
+        <div>
+          <div class="tech-label">Camera</div>
+          <div>—</div>
+        </div>
+        <div>
+          <div class="tech-label">Ottica</div>
+          <div>—</div>
+        </div>
+        <div>
+          <div class="tech-label">Luce</div>
+          <div>—</div>
+        </div>
+      </div>
+      <div class="copyright">Alfredo Enrico Iacobucci<br>&copy; 2026 Tutti i diritti riservati.</div>
+    </div>
+  </div>
   <div class="hint">
-    Questa area ha la stessa larghezza della colonna testo nel sito.<br>
-    Gli a-capo che metti qui = a-capo nel sito. Poi copia nel file .txt
+    Questa area replica il layout del sito: testo a sinistra + micro colonna tecnica a destra.<br>
+    Margini 8% come nel sito. Gli a-capo che metti qui = a-capo nel sito. Poi copia nel file descrizione.txt
   </div>
 </div>
 
