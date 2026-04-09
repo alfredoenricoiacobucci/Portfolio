@@ -35,7 +35,7 @@ export default function TopRotator({
   const timers = useRef({ dwell: null, fade: null });
   const mounted = useRef(false);
 
-  // Init: filtra verticali, poi mostra la prima immagine orizzontale
+  // Init: filtra verticali caricando solo le prime 8 immagini (performance)
   useEffect(() => {
     mounted.current = true;
     setReady(false);
@@ -45,9 +45,10 @@ export default function TopRotator({
     if (!images?.length) return;
 
     (async () => {
-      // Carica dimensioni di tutte le immagini
+      // Carica solo le prime 8 per non sovraccaricare la rete
+      const sample = images.slice(0, 8);
       const metas = await Promise.all(
-        images.map(
+        sample.map(
           (src) =>
             new Promise((resolve) => {
               const img = new window.Image();
@@ -62,7 +63,7 @@ export default function TopRotator({
 
       // Filtra: solo orizzontali (w >= h)
       const horiz = metas.filter((m) => m.w >= m.h).map((m) => m.src);
-      const finalList = horiz.length ? shuffle(horiz) : shuffle(images.slice());
+      const finalList = horiz.length ? shuffle(horiz) : shuffle(sample);
       slidesRef.current = finalList;
 
       // Parti da un indice random nella lista filtrata

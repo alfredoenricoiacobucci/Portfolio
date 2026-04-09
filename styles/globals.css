@@ -89,17 +89,13 @@ body {
   height: 100%;
   object-fit: cover;
   transform-origin: center;
-  /* less blur, more presence */
-  filter: blur(3px) saturate(1.05) contrast(1);
   opacity: 0;
-  transition: opacity 700ms ease, transform 700ms ease, filter 700ms ease;
-  transform: scale(1.02);
+  transition: opacity 700ms ease;
+  will-change: opacity;
 }
 
 .landing-bg__img.show {
   opacity: 1;
-  transform: scale(1);
-  filter: blur(0px) saturate(1.03) contrast(1.02);
 }
 
 /* overlays stronger for more coverage and slightly different for smooth crossfade */
@@ -112,8 +108,8 @@ body {
 }
 
 /* smoother crossfade: allow slight overlap and smoother timing */
-.landing-bg--artwork { z-index: 0; transition: opacity 700ms ease; }
-.landing-bg--professional { z-index: 1; transition: opacity 700ms ease; }
+.landing-bg--artwork { z-index: 0; transition: opacity 700ms ease; contain: paint; }
+.landing-bg--professional { z-index: 1; transition: opacity 700ms ease; contain: paint; }
 
 /* Landing dark modifier: force text white in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
@@ -311,4 +307,13 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+/* Riduce animazioni per dispositivi che lo richiedono */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+  }
 }

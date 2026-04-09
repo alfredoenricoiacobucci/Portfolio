@@ -329,7 +329,8 @@ function JustifiedGallery({ images = [], onImageClick }) {
               >
                 <img src={item.src} alt=""
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  loading={ri < 2 ? "eager" : "lazy"} />
+                  loading={ri < 2 ? "eager" : "lazy"}
+                  decoding="async" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200" />
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <span className="rounded px-3 py-1 text-white text-xs md:text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-150 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
