@@ -741,7 +741,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             <div style={{ paddingLeft: "8%", paddingRight: "8%" }}>
               {/* Contenuto testo — si rivela al click */}
               <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
-                <div className="flex flex-col md:flex-row pt-8 pb-0" style={{ gap: "4%" }}>
+                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: "4%" }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
                     <div className="flex-1 min-w-0">
@@ -828,7 +828,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE — margini laterali uguali, gap centrale più piccolo, centrato sulla metà pagina */}
-            <div className={`w-full py-12 about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%', paddingTop: '3rem', paddingBottom: '2.5rem' }}>
               <div className="grid grid-cols-1 md:grid-cols-2 text-base leading-relaxed" style={{ gap: '4%' }} lang="it">
                 <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
@@ -836,7 +836,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             </div>
 
             {/* CONTATTI — stessi margini del testo, distribuiti: sx, centro, dx */}
-            <div className={`w-full py-8 text-xs md:text-sm ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ paddingLeft: '8%', paddingRight: '8%' }}>
+            <div className={`w-full text-xs md:text-sm ${mode === "professional" ? "text-white/60" : "text-black/50"}`} style={{ paddingLeft: '8%', paddingRight: '8%', paddingTop: '0', paddingBottom: '2.5rem' }}>
               <div className="flex items-center justify-between">
                 <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Telefono: <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="underline">{S.TELEFONO}</a></span>
                 <span className="transition-colors duration-300 hover:text-[#c8102e] cursor-default">Email: <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="underline">{S.EMAIL_DESTINATARIO}</a></span>

@@ -103,35 +103,21 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   // area hover based on cursor position (left/right)
   const [hoverArea, setHoverArea] = useState(null);
 
-  // ===== SWIPE MOBILE =====
-  const [swipeArea, setSwipeArea] = useState(null);
-  const touchStartX = useRef(null);
+  // ===== AUTO-SWITCH MOBILE: alterna Artwork/Professional ogni 1.5s =====
+  const [mobileArea, setMobileArea] = useState(null);
 
   useEffect(() => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (!isTouch) return;
 
-    const onTouchStart = (e) => {
-      touchStartX.current = e.touches[0].clientX;
-    };
-    const onTouchMove = (e) => {
-      if (touchStartX.current == null) return;
-      const dx = e.touches[0].clientX - touchStartX.current;
-      if (dx < -30) setSwipeArea("professional");
-      else if (dx > 30) setSwipeArea("artwork");
-    };
-    const onTouchEnd = () => {
-      touchStartX.current = null;
-    };
-
-    document.addEventListener("touchstart", onTouchStart, { passive: true });
-    document.addEventListener("touchmove", onTouchMove, { passive: true });
-    document.addEventListener("touchend", onTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener("touchstart", onTouchStart);
-      document.removeEventListener("touchmove", onTouchMove);
-      document.removeEventListener("touchend", onTouchEnd);
-    };
+    const areas = ["artwork", "professional"];
+    let i = 0;
+    setMobileArea(areas[0]);
+    const interval = setInterval(() => {
+      i = (i + 1) % 2;
+      setMobileArea(areas[i]);
+    }, 1500);
+    return () => clearInterval(interval);
   }, []);
 
   // indices (advance once per entering an area)
@@ -142,8 +128,8 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
   const containerRef = useRef(null);
 
-  // compute displayed selection: swipe (mobile) / hover (desktop) / persistent
-  const displayMode = swipeArea ?? hoverArea ?? mode;
+  // compute displayed selection: hover (desktop) / auto-switch (mobile) / persistent
+  const displayMode = hoverArea ?? mobileArea ?? mode;
   const isDark = displayMode === "professional";
 
   // pointer handler on container: sets hoverArea to left/right and advances index only when crossing
@@ -188,11 +174,11 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     };
   }, []);
 
-  // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O swipe)
+  // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O auto-switch)
   const prevDisplayRef = useRef(null);
 
   useEffect(() => {
-    const current = swipeArea ?? hoverArea;
+    const current = hoverArea ?? mobileArea;
     const prev = prevDisplayRef.current;
     prevDisplayRef.current = current;
 
@@ -206,7 +192,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       profIndexRef.current = (profIndexRef.current + 1) % filteredProf.length;
       setProfIndex(profIndexRef.current);
     }
-  }, [swipeArea, hoverArea, filteredArt.length, filteredProf.length]);
+  }, [mobileArea, hoverArea, filteredArt.length, filteredProf.length]);
 
   const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
   const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;

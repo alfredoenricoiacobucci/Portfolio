@@ -171,14 +171,14 @@ export default function App({ Component, pageProps }) {
     };
   }, [isMobile, isPortrait, mobileEntered]);
 
-  // Loading bar for landscape gate (2.5s then auto-enter)
+  // Loading bar for landscape gate (2s then auto-enter)
   const [gateActive, setGateActive] = useState(false);
 
   useEffect(() => {
     if (isMobile && !isPortrait && !mobileEntered) {
       // Small delay to trigger CSS animation after mount
       requestAnimationFrame(() => setGateActive(true));
-      const t = setTimeout(() => setMobileEntered(true), 2500);
+      const t = setTimeout(() => setMobileEntered(true), 2000);
       return () => { clearTimeout(t); setGateActive(false); };
     } else {
       setGateActive(false);
@@ -243,7 +243,7 @@ export default function App({ Component, pageProps }) {
         <div style={{
           height: "100%", backgroundColor: "#ffffff", borderRadius: "2px",
           width: gateActive ? "100%" : "0%",
-          transition: "width 2.5s linear",
+          transition: "width 2s linear",
         }} />
       </div>
     </div>
