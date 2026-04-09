@@ -103,48 +103,35 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   // area hover based on cursor position (left/right)
   const [hoverArea, setHoverArea] = useState(null);
 
-  // ===== GIROSCOPIO MOBILE =====
-  const [gyroArea, setGyroArea] = useState(null);
-  const [gyroActive, setGyroActive] = useState(false);
-  const [needsGyroPermission, setNeedsGyroPermission] = useState(false);
-  const gyroStarted = useRef(false);
-
-  const startGyro = () => {
-    if (gyroStarted.current) return;
-    gyroStarted.current = true;
-    const onOrientation = (e) => {
-      const gamma = e.gamma;
-      if (gamma == null) return;
-      if (gamma < -7) {
-        setGyroArea("artwork");
-      } else if (gamma > 7) {
-        setGyroArea("professional");
-      }
-      // dead zone: mantieni l'ultimo stato
-    };
-    window.addEventListener("deviceorientation", onOrientation, true);
-    setGyroActive(true);
-  };
-
-  const requestGyroPermission = async () => {
-    try {
-      const permission = await DeviceOrientationEvent.requestPermission();
-      if (permission === "granted") {
-        startGyro();
-        setNeedsGyroPermission(false);
-      }
-    } catch {}
-  };
+  // ===== SWIPE MOBILE =====
+  const [swipeArea, setSwipeArea] = useState(null);
+  const touchStartX = useRef(null);
 
   useEffect(() => {
-    const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    if (!touch) return;
-    if (!window.DeviceOrientationEvent) return;
-    if (typeof DeviceOrientationEvent.requestPermission === "function") {
-      setNeedsGyroPermission(true);
-    } else {
-      startGyro();
-    }
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!isTouch) return;
+
+    const onTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+    };
+    const onTouchMove = (e) => {
+      if (touchStartX.current == null) return;
+      const dx = e.touches[0].clientX - touchStartX.current;
+      if (dx < -30) setSwipeArea("professional");
+      else if (dx > 30) setSwipeArea("artwork");
+    };
+    const onTouchEnd = () => {
+      touchStartX.current = null;
+    };
+
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
   }, []);
 
   // indices (advance once per entering an area)
@@ -155,8 +142,8 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
   const containerRef = useRef(null);
 
-  // compute displayed selection: giroscopio / hover / persistent
-  const displayMode = gyroArea ?? hoverArea ?? mode;
+  // compute displayed selection: swipe (mobile) / hover (desktop) / persistent
+  const displayMode = swipeArea ?? hoverArea ?? mode;
   const isDark = displayMode === "professional";
 
   // pointer handler on container: sets hoverArea to left/right and advances index only when crossing
@@ -201,11 +188,11 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     };
   }, []);
 
-  // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O giroscopio)
+  // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O swipe)
   const prevDisplayRef = useRef(null);
 
   useEffect(() => {
-    const current = gyroArea ?? hoverArea;
+    const current = swipeArea ?? hoverArea;
     const prev = prevDisplayRef.current;
     prevDisplayRef.current = current;
 
@@ -219,7 +206,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       profIndexRef.current = (profIndexRef.current + 1) % filteredProf.length;
       setProfIndex(profIndexRef.current);
     }
-  }, [gyroArea, hoverArea, filteredArt.length, filteredProf.length]);
+  }, [swipeArea, hoverArea, filteredArt.length, filteredProf.length]);
 
   const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
   const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;
@@ -251,7 +238,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       ref={containerRef}
       className={`min-h-screen relative overflow-hidden bg-base ${isDark ? "landing--dark" : ""} flex items-center justify-center`}
     >
-      {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e giroscopio (mobile) */}
+      {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e swipe (mobile) */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
         {/* artwork (white overlay stronger) */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
@@ -300,22 +287,14 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
           </span>
         </div>
 
-        {/* Istruzione giroscopio mobile — si mostra finché il gyro non è attivo */}
-        {isTouch && !gyroActive && !needsGyroPermission && (
-          <p className={`text-xs transition-colors duration-700 ${isDark ? "text-white/40" : "text-black/30"}`}>
-            Inclina il telefono per esplorare
-          </p>
-        )}
+      </div>
 
-        {/* Prompt iOS: richiede permesso giroscopio con un tap */}
-        {needsGyroPermission && (
-          <button
-            onClick={requestGyroPermission}
-            className={`text-xs border px-4 py-2 rounded-full transition-colors duration-300 ${isDark ? "text-white/60 border-white/30" : "text-black/50 border-black/20"}`}
-          >
-            Tocca per attivare il giroscopio
-          </button>
-        )}
+      {/* COPYRIGHT — fondo pagina, centrato, stesso grigio della colonna tecnica */}
+      <div
+        className={`absolute bottom-4 left-0 right-0 text-center text-xs transition-colors duration-700 ${isDark ? "text-white/40" : "text-black/35"}`}
+        style={{ zIndex: 10 }}
+      >
+        © {new Date().getFullYear()} Tutti i diritti riservati.
       </div>
 
       {/* CURTAIN: parte bianca (artwork default), sfuma via rivelando lo sfondo */}
