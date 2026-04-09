@@ -1,4 +1,4 @@
 camera= Leica SL2S
-ottica= Sigma Art 27-70 f2.8
-luce= controllata
+ottica= Sigma Art 24-70 f2.8 DG DN
+luce= Artificiale continua
 
