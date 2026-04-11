@@ -1,5 +1,0 @@
-camera= Leica SL2S
-Fujifilm XPRO2
-ottica= Sigma Art 24-70 f2.8 DG DN
-Fujifilm XF 23mm F2 R WR
-luce= Naturale

@@ -1,3 +1,0 @@
-camera=
-ottica=
-luce=

@@ -1,3 +1,0 @@
-camera= Sony Alpha 6000
-ottica= Sony SEL24-105 G f4.0
-luce= Naturale

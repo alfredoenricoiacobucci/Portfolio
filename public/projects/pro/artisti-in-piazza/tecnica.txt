@@ -1,3 +1,0 @@
-camera= Leica SL2S
-ottica= Sigma Art 24-70 f2.8 DG DN
-luce= Naturale
