@@ -14,12 +14,11 @@ Da qui puoi:
 
 ## Setup iniziale (una sola volta)
 
-1. **Riordina la cartella**: doppio clic su `Riordina cartella.command`. Nasconde dal Finder tutti i file tecnici di Next.js. Lo fai una volta sola.
-2. Apri `Manager sito AEI.html` nel browser
-3. Clicca in alto a destra su **"Impostazioni GitHub"**
-4. Vai su https://github.com/settings/tokens/new?scopes=repo (è un link anche nel modal)
-5. Dai un nome al token (es. "Manager portfolio"), conferma, e copia il token che inizia con `ghp_...`
-6. Incollalo nel Manager e clicca **Salva**
+1. Apri `Manager sito AEI.html` nel browser
+2. Clicca in alto a destra su **"Impostazioni GitHub"**
+3. Vai su https://github.com/settings/tokens/new?scopes=repo (è un link anche nel modal)
+4. Dai un nome al token (es. "Manager portfolio"), conferma, e copia il token che inizia con `ghp_...`
+5. Incollalo nel Manager e clicca **Salva**
 
 Il token resta salvato nel tuo browser: non lo dovrai più reinserire.
 
@@ -34,7 +33,7 @@ Il token resta salvato nel tuo browser: non lo dovrai più reinserire.
 
 ## Come è organizzata la cartella
 
-Dopo aver lanciato `Riordina cartella.command`, nel Finder vedi solo:
+Nel Finder vedi solo:
 
 ```
 Portfolio AEI/
@@ -48,13 +47,13 @@ Portfolio AEI/
     └── about/media         ← foto/video pagina About
 ```
 
-**`contenuti/` è l'unica cartella con cui interagisci.** Tutto il resto è infrastruttura del sito ed è nascosto.
+**`contenuti/` è l'unica cartella con cui interagisci.** Tutto il resto è infrastruttura del sito ed è nascosta dalla vista.
 
 ### Cosa c'è di nascosto e perché
 
-Next.js (il motore del sito) richiede obbligatoriamente al livello principale: `package.json`, `package-lock.json`, `next.config.js`, `tailwind.config.js`, `postcss.config.js`, `jsconfig.json`, le cartelle `public/`, `src/`, `node_modules/`, `.next/` e `.git/`. Se li sposti il sito non si compila più. Lo script `Riordina cartella.command` non li elimina: usa `chflags hidden` per nasconderli solo dalla vista del Finder. Sotto c'è anche un symlink `public/projects → contenuti` che permette a Next.js di servire le foto.
+Next.js (il motore del sito) richiede obbligatoriamente al livello principale: `package.json`, `package-lock.json`, `next.config.js`, `tailwind.config.js`, `postcss.config.js`, `jsconfig.json`, le cartelle `public/`, `src/`, `node_modules/`, `.next/` e `.git/`. Se li sposti il sito non si compila più. Sono nascosti dal Finder usando il flag `kIsInvisible` di macOS: i file restano funzionanti, semplicemente non li vedi. Sotto c'è anche un symlink `public/projects → contenuti` che permette a Next.js di servire le foto.
 
-Per rimostrarli (se mai ti servisse): apri Terminale nella cartella e scrivi `chflags nohidden <nome>`.
+Per rimostrarli (se mai ti servisse): apri Terminale nella cartella e scrivi `chflags nohidden <nome>` oppure premi `Cmd + Shift + .` nel Finder per mostrare temporaneamente tutti i file nascosti.
 
 ## Aggiungere nuovi progetti
 

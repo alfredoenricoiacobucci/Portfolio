@@ -5,14 +5,14 @@
 
 /* === Modalità colore per Artwork (chiaro) / Professional (scuro) === */
 :root {
-  --bg: #fafafa; /* Artwork (default chiaro) */
+  --bg: #f8f4ed; /* Artwork (bianco caldo) */
   --fg: #0a0a0a;
   --muted: #4a4a4a;
 }
 
 .mode-professional {
   --bg: #0a0a0a; /* Professional (scuro) */
-  --fg: #fafafa;
+  --fg: #f8f4ed;
   --muted: #a3a3a3;
 }
 
@@ -57,9 +57,9 @@ body {
   --border: #000000; /* artwork: bordo nero */
 }
 
-/* professional = sfondo scuro -> bordi bianchi */
+/* professional = sfondo scuro -> bordi bianchi (caldi) */
 .mode-professional {
-  --border: #ffffff;
+  --border: #f8f4ed;
 }
 
 /* utility per applicare il colore del bordo dinamico */
@@ -101,7 +101,7 @@ body {
 /* overlays stronger for more coverage and slightly different for smooth crossfade */
 .landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 700ms ease; }
 .landing-bg__overlay--light {
-  background: linear-gradient(180deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.78) 40%, rgba(255,255,255,0.72) 100%);
+  background: linear-gradient(180deg, rgba(248,244,237,0.80) 0%, rgba(248,244,237,0.78) 40%, rgba(248,244,237,0.72) 100%);
 }
 .landing-bg__overlay--dark {
   background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.9) 40%, rgba(0,0,0,0.85) 100%);
@@ -111,9 +111,9 @@ body {
 .landing-bg--artwork { z-index: 0; transition: opacity 700ms ease; contain: paint; }
 .landing-bg--professional { z-index: 1; transition: opacity 700ms ease; contain: paint; }
 
-/* Landing dark modifier: force text white in content when professional is active */
+/* Landing dark modifier: force text bianco caldo in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
-  color: white !important;
+  color: #f8f4ed !important;
 }
 
 /* small tweaks for sizes/spacings */

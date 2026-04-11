@@ -193,7 +193,7 @@ export default function App({ Component, pageProps }) {
       backgroundColor: mobileEntered ? "rgba(0,0,0,0.7)" : "#0a0a0a",
       backdropFilter: mobileEntered ? "blur(20px)" : "none",
       WebkitBackdropFilter: mobileEntered ? "blur(20px)" : "none",
-      color: "#ffffff", padding: "2rem", textAlign: "center",
+      color: "#f8f4ed", padding: "2rem", textAlign: "center",
       touchAction: "none",
     }}
       onTouchMove={(e) => e.preventDefault()}
@@ -229,7 +229,7 @@ export default function App({ Component, pageProps }) {
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      backgroundColor: "#0a0a0a", color: "#ffffff",
+      backgroundColor: "#0a0a0a", color: "#f8f4ed",
     }}>
       <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "2rem" }}>
         <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -237,11 +237,11 @@ export default function App({ Component, pageProps }) {
       </svg>
       {/* Loading bar */}
       <div style={{
-        width: "120px", height: "3px", backgroundColor: "rgba(255,255,255,0.15)",
+        width: "120px", height: "3px", backgroundColor: "rgba(248,244,237,0.15)",
         borderRadius: "2px", overflow: "hidden", marginTop: "1.5rem",
       }}>
         <div style={{
-          height: "100%", backgroundColor: "#ffffff", borderRadius: "2px",
+          height: "100%", backgroundColor: "#f8f4ed", borderRadius: "2px",
           width: gateActive ? "100%" : "0%",
           transition: "width 2s linear",
         }} />

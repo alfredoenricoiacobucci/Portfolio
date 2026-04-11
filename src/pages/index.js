@@ -290,7 +290,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
           position: "fixed",
           inset: 0,
           zIndex: 100,
-          backgroundColor: "#fafafa",
+          backgroundColor: "#f8f4ed",
           opacity: curtainVisible ? 1 : 0,
           transition: "opacity 800ms cubic-bezier(.25,.1,.25,1)",
           pointerEvents: "none",

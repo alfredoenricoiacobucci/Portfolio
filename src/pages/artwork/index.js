@@ -595,12 +595,12 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   }, [mode, isHome]);
 
   return (
-    <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? "#0a0a0a" : "#fafafa", color: mode === "professional" ? "#ffffff" : "#000000" }}>
+    <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? "#0a0a0a" : "#f8f4ed", color: mode === "professional" ? "#f8f4ed" : "#000000" }}>
       {/* HEADER */}
-      <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000", backgroundColor: mode === "professional" ? "#0a0a0a" : "#fafafa" }}>
+      <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? "#f8f4ed" : "#000000", backgroundColor: mode === "professional" ? "#0a0a0a" : "#f8f4ed" }}>
         {/* SINISTRA: Art / Pro */}
         {(() => {
-          const fg = mode === "professional" ? "#ffffff" : "#000000";
+          const fg = mode === "professional" ? "#f8f4ed" : "#000000";
           let artColor, proColor;
           if (hoverMode === "artwork") {
             artColor = "#c8102e"; proColor = fg;
@@ -633,7 +633,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
         {/* CENTRO: Pallino sempre — porta alla landing */}
         {(() => {
-          const navColor = mode === "professional" ? "#ffffff" : "#000000";
+          const navColor = mode === "professional" ? "#f8f4ed" : "#000000";
           return (
             <button
               onClick={() => router.push("/")}
@@ -907,7 +907,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             style={{
               background: mode === "professional"
                 ? "linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.6) 40%, transparent 100%)"
-                : "linear-gradient(to top, #fafafa 0%, rgba(250,250,250,0.35) 40%, transparent 100%)",
+                : "linear-gradient(to top, #f8f4ed 0%, rgba(248,244,237,0.35) 40%, transparent 100%)",
               opacity: gradientOpacity,
               transition: "opacity 200ms ease-out",
             }}
@@ -994,7 +994,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
       )}
 
       {/* FOOTER */}
-      <footer className={`w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#ffffff" : "#000000" }}>
+      <footer className={`w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#f8f4ed" : "#000000" }}>
         <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
         <div className="text-xs font-normal">
           {S.DISCLAIMER}
