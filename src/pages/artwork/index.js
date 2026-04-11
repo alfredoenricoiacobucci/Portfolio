@@ -92,16 +92,16 @@ export async function getServerSideProps() {
     projects = projects.concat(folders.map((f) => readProject(prefix, f)));
   }
 
-  // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/media/ ----
+  // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/ ----
   const aboutData = contenuti.about || {};
   const aboutText = (aboutData.text || "").trim();
   const aboutQuote = (aboutData.quote || "").trim();
 
   let aboutPhoto = "";
   let aboutVideo = "";
-  // Cerca media in public/projects/about/media/
+  // Cerca media in public/projects/about/
   try {
-    const aboutMediaDir = pathMod.join(projectsDir, "about", "media");
+    const aboutMediaDir = pathMod.join(projectsDir, "about");
     const aboutFiles = fsMod.readdirSync(aboutMediaDir);
     const photoFile = aboutData.photo && aboutFiles.includes(aboutData.photo)
       ? aboutData.photo
@@ -109,8 +109,8 @@ export async function getServerSideProps() {
     const videoFile = aboutData.video && aboutFiles.includes(aboutData.video)
       ? aboutData.video
       : aboutFiles.find((f) => VIDEO_EXT.has(pathMod.extname(f).toLowerCase()));
-    if (photoFile) aboutPhoto = `/projects/about/media/${photoFile}`;
-    if (videoFile) aboutVideo = `/projects/about/media/${videoFile}`;
+    if (photoFile) aboutPhoto = `/projects/about/${photoFile}`;
+    if (videoFile) aboutVideo = `/projects/about/${videoFile}`;
   } catch {}
 
   // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
