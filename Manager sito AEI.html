@@ -468,7 +468,7 @@
     <div class="field">
       <label>Slug (cartella - usa solo lettere minuscole, numeri e trattini)</label>
       <input type="text" id="newSlug" placeholder="generato automaticamente dal titolo">
-      <div class="hint">La cartella verrà creata in contenuti/SEZIONE/SLUG/foto/</div>
+      <div class="hint">La cartella verrà creata in contenuti/SEZIONE/SLUG/</div>
     </div>
     <div class="actions">
       <button id="btnNewCancel" class="ghost">Annulla</button>
@@ -892,7 +892,7 @@
         </div>
         <div class="upload-area" id="uploadArea">
           Trascina qui le foto (o clicca per scegliere)
-          <div class="hint2">Si caricheranno su GitHub in contenuti/${section}/${slug}/foto/</div>
+          <div class="hint2">Si caricheranno su GitHub in contenuti/${section}/${slug}/</div>
         </div>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         <div class="photos-grid" id="photosGrid">
@@ -913,7 +913,7 @@
 
     // Delete
     document.getElementById("btnDelete").onclick = () => {
-      if (!confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella foto verrà rimossa da GitHub al prossimo Salva.`)) return;
+      if (!confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella del progetto verrà rimossa da GitHub al prossimo Salva.`)) return;
       state.projects = state.projects.filter(x => !(x.section === section && x.slug === slug));
       markDirty();
       currentKey = null;
@@ -1013,7 +1013,7 @@
       return;
     }
     const [section, slug] = key.split("/");
-    const path = `contenuti/${section}/${slug}/foto`;
+    const path = `contenuti/${section}/${slug}`;
     try {
       const items = await ghListDir(path);
       const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
@@ -1083,7 +1083,7 @@
         e.stopPropagation();
         if (!confirm(`Eliminare ${photo.name} da GitHub?`)) return;
         try {
-          await ghDelete(`contenuti/${section}/${slug}/foto/${photo.name}`, photo.sha,
+          await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
             `editor: delete ${section}/${slug}/${photo.name}`);
           photosByProject[key] = photos.filter(x => x.name !== photo.name);
           renderPhotosGrid(key);
@@ -1155,7 +1155,7 @@
     if (key === "about") basePath = "contenuti/about";
     else {
       const [section, slug] = key.split("/");
-      basePath = `contenuti/${section}/${slug}/foto`;
+      basePath = `contenuti/${section}/${slug}`;
     }
     toast(`Caricamento di ${fileList.length} file…`, "");
     for (const file of fileList) {
@@ -1218,7 +1218,7 @@
     // Create placeholder file so the empty folder exists on GitHub
     if (getToken()) {
       try {
-        await ghPut(`contenuti/${newSection}/${slug}/foto/.gitkeep`, str2b64(""), `editor: create ${newSection}/${slug}`);
+        await ghPut(`contenuti/${newSection}/${slug}/.gitkeep`, str2b64(""), `editor: create ${newSection}/${slug}`);
       } catch(e) { /* ignore if exists */ }
     }
     markDirty();

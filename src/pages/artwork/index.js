@@ -66,14 +66,13 @@ export async function getServerSideProps() {
       if (Object.keys(techData).length === 0) techData = null;
     }
 
-    const fotoDir = pathMod.join(pDir, "foto");
     let files = [];
     try {
-      files = fsMod.readdirSync(fotoDir)
+      files = fsMod.readdirSync(pDir)
         .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()))
         .sort(natural.compare);
     } catch {}
-    const images = files.map((f) => `/projects/${id}/foto/${f}`);
+    const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {

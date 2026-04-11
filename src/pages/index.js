@@ -15,13 +15,13 @@ export async function getServerSideProps() {
 
   const readImages = (id) => {
     try {
-      const fotoDir = path.join(projectsRoot, id, "foto");
-      if (!fs.existsSync(fotoDir)) return [];
+      const pDir = path.join(projectsRoot, id);
+      if (!fs.existsSync(pDir)) return [];
       return fs
-        .readdirSync(fotoDir)
+        .readdirSync(pDir)
         .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f))
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-        .map((f) => `/projects/${id}/foto/${f}`);
+        .map((f) => `/projects/${id}/${f}`);
     } catch {
       return [];
     }
