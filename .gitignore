@@ -3,8 +3,6 @@
 node_modules/
 .DS_Store
 .env
-# Cartella di struttura (solo symlink locali — non vanno su GitHub)
-struttura/
 # build artifacts
 out/
 # log
