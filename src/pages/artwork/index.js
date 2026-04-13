@@ -69,9 +69,21 @@ export async function getServerSideProps() {
     let files = [];
     try {
       files = fsMod.readdirSync(pDir)
-        .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()))
-        .sort(natural.compare);
+        .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
     } catch {}
+    // Ordine custom da contenuti.json, poi alfabetico per i restanti
+    const ordine = data.ordine || [];
+    if (ordine.length > 0) {
+      const orderMap = new Map(ordine.map((n, i) => [n, i]));
+      files.sort((a, b) => {
+        const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
+        const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
+        if (ia !== ib) return ia - ib;
+        return natural.compare(a, b);
+      });
+    } else {
+      files.sort(natural.compare);
+    }
     const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;

@@ -308,6 +308,27 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
+  .photo-card .drag-handle {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    cursor: grab;
+    z-index: 2;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+    padding: 1px 5px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 180ms;
+  }
+  .photo-card:hover .drag-handle { opacity: 1; }
+  .photo-card.dragging { opacity: 0.4; }
+  .photo-card.drag-over {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
 
   .upload-area {
     border: 2px dashed var(--border-hi);
@@ -1057,11 +1078,28 @@
       grid.innerHTML = '<div style="color:var(--text3);font-size:12px;">Nessuna foto. Caricane una sopra.</div>';
       return;
     }
+
+    // Sort by custom order if available, otherwise alphabetical
+    const ordine = (p && p.ordine) || [];
+    const sorted = [...photos].sort((a, b) => {
+      const ia = ordine.indexOf(a.name);
+      const ib = ordine.indexOf(b.name);
+      if (ia >= 0 && ib >= 0) return ia - ib;
+      if (ia >= 0) return -1;
+      if (ib >= 0) return 1;
+      return a.name.localeCompare(b.name, undefined, { numeric: true });
+    });
+
     grid.innerHTML = "";
-    photos.forEach(photo => {
+    let dragSrcIndex = null;
+
+    sorted.forEach((photo, idx) => {
       const card = document.createElement("div");
       card.className = "photo-card" + (p.banner === photo.name ? " banner" : "");
+      card.draggable = true;
+      card.dataset.idx = idx;
       card.innerHTML = `
+        <div class="drag-handle">&#x2630;</div>
         ${p.banner === photo.name ? '<div class="banner-label">Banner</div>' : ''}
         <img src="${photo.url}" alt="" loading="lazy">
         <div class="overlay">
@@ -1072,6 +1110,43 @@
           </div>
         </div>
       `;
+
+      // Drag-and-drop for reordering
+      card.addEventListener("dragstart", (e) => {
+        dragSrcIndex = idx;
+        card.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      card.addEventListener("dragend", () => {
+        card.classList.remove("dragging");
+        grid.querySelectorAll(".photo-card").forEach(c => c.classList.remove("drag-over"));
+      });
+      card.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        card.classList.add("drag-over");
+      });
+      card.addEventListener("dragleave", () => {
+        card.classList.remove("drag-over");
+      });
+      card.addEventListener("drop", (e) => {
+        e.preventDefault();
+        card.classList.remove("drag-over");
+        const targetIdx = idx;
+        if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
+        // Reorder
+        const newOrder = sorted.map(ph => ph.name);
+        const [moved] = newOrder.splice(dragSrcIndex, 1);
+        newOrder.splice(targetIdx, 0, moved);
+        p.ordine = newOrder;
+        // Also reorder photosByProject to match
+        const reordered = newOrder.map(n => sorted.find(ph => ph.name === n)).filter(Boolean);
+        photosByProject[key] = reordered;
+        markDirty();
+        renderPhotosGrid(key);
+        toast("Ordine aggiornato.", "ok");
+      });
+
       card.querySelector('[data-act="banner"]').onclick = (e) => {
         e.stopPropagation();
         p.banner = photo.name;
@@ -1085,7 +1160,8 @@
         try {
           await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
             `editor: delete ${section}/${slug}/${photo.name}`);
-          photosByProject[key] = photos.filter(x => x.name !== photo.name);
+          photosByProject[key] = sorted.filter(x => x.name !== photo.name);
+          if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
           renderPhotosGrid(key);
           renderSidebar();
           toast("Foto eliminata.", "ok");
@@ -1293,6 +1369,33 @@
   updateTokenStatus();
   renderSidebar();
   if (dirty) toast("Bozza non salvata ripristinata.", "");
+
+  // Sync: all'apertura, se c'è il token e nessuna bozza, scarica contenuti.json fresco da GitHub
+  (async function syncFromGitHub() {
+    if (dirty) return; // don't overwrite unsaved draft
+    if (!getToken()) return;
+    try {
+      const remote = await ghGet("contenuti/contenuti.json");
+      if (!remote || !remote.content) return;
+      const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+      const remoteState = JSON.parse(decoded);
+      // Only update if remote has data
+      if (!remoteState.projects) return;
+      state.projects = remoteState.projects;
+      state.about = remoteState.about || state.about;
+      state.version = remoteState.version || state.version;
+      // Update embedded for next offline load
+      embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+      renderSidebar();
+      if (currentKey) {
+        if (currentKey === "about") renderAbout();
+        else renderProject(currentKey);
+      }
+    } catch(e) {
+      // Silent fail — use embedded data
+      console.warn("Sync da GitHub fallito:", e.message);
+    }
+  })();
 })();
 </script>
 </body>

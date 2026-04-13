@@ -13,15 +13,35 @@ export async function getServerSideProps() {
   const artworkIds = BY_MODE.artwork || [];
   const professionalIds = BY_MODE.professional || [];
 
+  // Leggi contenuti.json per ordine custom foto
+  let contenuti = { projects: [] };
+  try {
+    contenuti = JSON.parse(fs.readFileSync(path.join(process.cwd(), "contenuti", "contenuti.json"), "utf-8"));
+  } catch {}
+  const projByKey = new Map();
+  (contenuti.projects || []).forEach((p) => { projByKey.set(`${p.section}/${p.slug}`, p); });
+
   const readImages = (id) => {
     try {
       const pDir = path.join(projectsRoot, id);
       if (!fs.existsSync(pDir)) return [];
-      return fs
+      let files = fs
         .readdirSync(pDir)
-        .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f))
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-        .map((f) => `/projects/${id}/${f}`);
+        .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f));
+      const data = projByKey.get(id);
+      const ordine = data && data.ordine ? data.ordine : [];
+      if (ordine.length > 0) {
+        const orderMap = new Map(ordine.map((n, i) => [n, i]));
+        files.sort((a, b) => {
+          const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
+          const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
+          if (ia !== ib) return ia - ib;
+          return a.localeCompare(b, undefined, { numeric: true });
+        });
+      } else {
+        files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      }
+      return files.map((f) => `/projects/${id}/${f}`);
     } catch {
       return [];
     }
