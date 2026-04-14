@@ -259,8 +259,12 @@
     border: 1px solid var(--border);
     border-radius: 4px;
     overflow: hidden;
-    cursor: pointer;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  .photo-card:active { cursor: grabbing; }
+  .photo-card * { -webkit-user-drag: none; }
   .photo-card img {
     width: 100%;
     height: 100%;
@@ -313,17 +317,14 @@
     top: 4px;
     right: 4px;
     font-size: 14px;
-    color: rgba(255,255,255,0.5);
-    cursor: grab;
+    color: rgba(255,255,255,0.75);
     z-index: 2;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.55);
     border-radius: 3px;
-    padding: 1px 5px;
+    padding: 2px 6px;
     line-height: 1;
-    opacity: 0;
-    transition: opacity 180ms;
+    pointer-events: none;
   }
-  .photo-card:hover .drag-handle { opacity: 1; }
   .photo-card.dragging { opacity: 0.4; }
   .photo-card.drag-over {
     outline: 2px solid var(--red);
@@ -1101,7 +1102,7 @@
       card.innerHTML = `
         <div class="drag-handle">&#x2630;</div>
         ${p.banner === photo.name ? '<div class="banner-label">Banner</div>' : ''}
-        <img src="${photo.url}" alt="" loading="lazy">
+        <img src="${photo.url}" alt="" loading="lazy" draggable="false">
         <div class="overlay">
           <div class="name">${escapeHtml(photo.name)}</div>
           <div class="photo-actions">
