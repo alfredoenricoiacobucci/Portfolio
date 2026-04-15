@@ -1368,23 +1368,33 @@
   });
 
   updateTokenStatus();
-  renderSidebar();
-  if (dirty) toast("Bozza non salvata ripristinata.", "");
 
-  // Sync: all'apertura, se c'è il token e nessuna bozza, scarica contenuti.json fresco da GitHub
+  // Sync: se c'è token, scarica SEMPRE contenuti.json da GitHub (la verità è online).
+  // La bozza locale viene scartata: contenuti.json su GitHub è l'unica fonte affidabile.
   (async function syncFromGitHub() {
-    if (dirty) return; // don't overwrite unsaved draft
-    if (!getToken()) return;
+    if (!getToken()) {
+      renderSidebar();
+      if (dirty) toast("Bozza locale ripristinata (nessun token GitHub).", "");
+      return;
+    }
     try {
       const remote = await ghGet("contenuti/contenuti.json");
-      if (!remote || !remote.content) return;
+      if (!remote || !remote.content) {
+        renderSidebar();
+        return;
+      }
       const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
       const remoteState = JSON.parse(decoded);
-      // Only update if remote has data
-      if (!remoteState.projects) return;
+      if (!remoteState.projects) {
+        renderSidebar();
+        return;
+      }
+      // Sovrascrivi completamente lo state con i dati freschi da GitHub
       state.projects = remoteState.projects;
       state.about = remoteState.about || state.about;
       state.version = remoteState.version || state.version;
+      // Scarta la bozza vecchia: ora lo state è sincronizzato con GitHub
+      clearDirty();
       // Update embedded for next offline load
       embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
       renderSidebar();
@@ -1392,9 +1402,11 @@
         if (currentKey === "about") renderAbout();
         else renderProject(currentKey);
       }
+      toast("Sincronizzato con GitHub.", "ok");
     } catch(e) {
-      // Silent fail — use embedded data
       console.warn("Sync da GitHub fallito:", e.message);
+      renderSidebar();
+      if (dirty) toast("Bozza locale ripristinata (sync GitHub fallito).", "");
     }
   })();
 })();
