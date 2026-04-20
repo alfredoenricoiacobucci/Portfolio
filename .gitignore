@@ -5,6 +5,7 @@ node_modules/
 .env
 # build artifacts
 out/
+public/projects/
 # log
 npm-debug.log*
 yarn-debug.log*

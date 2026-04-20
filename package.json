@@ -2,7 +2,9 @@
   "name": "portfolio-next-clean",
   "version": "1.0.0",
   "scripts": {
+    "predev": "rm -rf public/projects && cp -r contenuti public/projects",
     "dev": "next dev",
+    "prebuild": "rm -rf public/projects && cp -r contenuti public/projects",
     "build": "next build",
     "start": "next start",
     "gen:images": "node scripts/generate-images.mjs"
