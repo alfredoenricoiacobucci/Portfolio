@@ -1,0 +1,3 @@
+{
+  "buildCommand": "rm -f public/projects 2>/dev/null; rm -rf public/projects; cp -r contenuti public/projects && next build"
+}

@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
  * Legge le immagini rappresentative (prima N) per Artwork / Professional
  */
 export async function getServerSideProps() {
-  const projectsRoot = path.join(process.cwd(), "public", "projects");
+  const projectsRoot = path.join(process.cwd(), "contenuti");
   const artworkIds = BY_MODE.artwork || [];
   const professionalIds = BY_MODE.professional || [];
 
