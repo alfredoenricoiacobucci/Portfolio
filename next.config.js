@@ -9,6 +9,15 @@ const nextConfig = {
   },
   // Compressione gzip automatica
   compress: true,
+  // Serve immagini da contenuti/ tramite API route
+  async rewrites() {
+    return [
+      {
+        source: "/projects/:path*",
+        destination: "/api/projects/:path*",
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
