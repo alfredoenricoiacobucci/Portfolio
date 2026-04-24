@@ -2,6 +2,7 @@
 import "@/styles/globals.css";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/router";
+import { useTrackPageView } from "@/lib/useAnalytics";
 
 /*
  * Transizione Art ↔ Pro — taglio netto:
@@ -18,6 +19,16 @@ export default function App({ Component, pageProps }) {
   const wrapRef = useRef(null);
   const pendingRef = useRef(null);
   const transitioning = useRef(false);
+
+  // ---- Analytics: traccia la pagina corrente ----
+  const trackPage = router.pathname.startsWith("/professional")
+    ? "pro"
+    : router.pathname.startsWith("/artwork")
+      ? "art"
+      : router.pathname === "/"
+        ? "landing"
+        : null;
+  useTrackPageView(trackPage);
 
   // ---- Protezione immagini ----
   useEffect(() => {

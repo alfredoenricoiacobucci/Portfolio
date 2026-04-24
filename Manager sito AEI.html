@@ -438,6 +438,9 @@
 
     <div class="section-title">Altro</div>
     <div id="listAbout"></div>
+
+    <div class="section-title">Statistiche</div>
+    <div id="listAnalytics"></div>
   </aside>
 
   <main id="content" class="content empty-state">
@@ -837,6 +840,15 @@
     aboutDiv.innerHTML = `<span>About (bio)</span>`;
     aboutDiv.onclick = () => selectProject("about");
     listAbout.appendChild(aboutDiv);
+
+    // Analytics sidebar item
+    const listAnalytics = document.getElementById("listAnalytics");
+    listAnalytics.innerHTML = "";
+    const analyticsDiv = document.createElement("div");
+    analyticsDiv.className = "item" + (currentKey === "analytics" ? " active" : "");
+    analyticsDiv.innerHTML = `<span>Analytics</span>`;
+    analyticsDiv.onclick = () => selectProject("analytics");
+    listAnalytics.appendChild(analyticsDiv);
   }
 
   function escapeHtml(s) {
@@ -852,10 +864,12 @@
     }
     currentKey = key;
     renderSidebar();
-    if (key === "about") renderAbout();
+    if (key === "analytics") renderAnalytics();
+    else if (key === "about") renderAbout();
     else renderProject(key);
     // Fetch photos asynchronously in background
-    if (key !== "about") fetchPhotos(key);
+    if (key === "analytics") { /* no photos to fetch */ }
+    else if (key !== "about") fetchPhotos(key);
     else fetchAboutMedia();
   }
 
@@ -1219,6 +1233,204 @@
       };
       grid.appendChild(card);
     });
+  }
+
+  // ========== ANALYTICS ==========
+  let analyticsCache = null;
+
+  async function fetchAnalyticsData() {
+    // Leggi dal branch "data" (separato da main per evitare conflitti)
+    try {
+      const token = getToken();
+      const repo = getRepo();
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/analytics.json?ref=data`,
+        { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" } }
+      );
+      if (res.ok) {
+        const remote = await res.json();
+        if (remote && remote.content) {
+          const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+          analyticsCache = JSON.parse(decoded);
+          return analyticsCache;
+        }
+      }
+    } catch (e) {
+      console.warn("Errore lettura analytics:", e.message);
+    }
+    return { views: { total: 0, art: 0, pro: 0, landing: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0 };
+  }
+
+  function renderAnalytics() {
+    const content = document.getElementById("content");
+    content.classList.remove("empty-state");
+    content.innerHTML = `
+      <div class="project-header">
+        <div>
+          <span class="badge about">Stats</span>
+          <div class="title">Analytics</div>
+          <div class="slug">Statistiche del portfolio</div>
+        </div>
+        <div class="actions">
+          <button id="btnRefreshAnalytics">Aggiorna</button>
+        </div>
+      </div>
+      <div id="analyticsContent" style="color: var(--text2); font-size: 13px;">
+        <p>Caricamento...</p>
+      </div>
+    `;
+    document.getElementById("btnRefreshAnalytics").onclick = () => {
+      analyticsCache = null;
+      loadAndRenderAnalytics();
+    };
+    loadAndRenderAnalytics();
+  }
+
+  async function loadAndRenderAnalytics() {
+    const container = document.getElementById("analyticsContent");
+    if (!container) return;
+
+    if (!getToken()) {
+      container.innerHTML = '<p style="color:#f87171;">Imposta il token GitHub per vedere le statistiche.</p>';
+      return;
+    }
+
+    container.innerHTML = '<p style="color:var(--text3);">Caricamento dati da GitHub...</p>';
+
+    const data = await fetchAnalyticsData();
+    if (!data || !data.views) {
+      container.innerHTML = '<p style="color:var(--text3);">Nessun dato disponibile. Le statistiche si popolano con le visite al sito.</p>';
+      return;
+    }
+
+    const v = data.views || {};
+    const totalViews = v.total || 0;
+    const artViews = v.art || 0;
+    const proViews = v.pro || 0;
+    const landingViews = v.landing || 0;
+    const contacts = data.contacts || 0;
+
+    // Art/Pro percentage
+    const artPct = totalViews > 0 ? Math.round((artViews / (artViews + proViews || 1)) * 100) : 0;
+    const proPct = totalViews > 0 ? Math.round((proViews / (artViews + proViews || 1)) * 100) : 0;
+
+    // Top projects
+    const projects = data.projects || {};
+    const topProjects = Object.entries(projects)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Top photos
+    const photos = data.photos || {};
+    const topPhotos = Object.entries(photos)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Daily data (last 30 days)
+    const daily = data.daily || {};
+    const days = Object.keys(daily).sort().slice(-30);
+    const maxDaily = Math.max(1, ...days.map(d => daily[d]?.total || 0));
+
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: var(--text);">${totalViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Visite totali</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #a78bfa;">${artViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Artwork (${artPct}%)</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #60a5fa;">${proViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Professional (${proPct}%)</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #fbbf24;">${contacts}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Contatti ricevuti</div>
+        </div>
+      </div>
+
+      ${days.length > 0 ? `
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+          Visite ultimi 30 giorni
+        </h3>
+        <div style="display: flex; align-items: flex-end; gap: 2px; height: 100px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px 8px;">
+          ${days.map(d => {
+            const t = daily[d]?.total || 0;
+            const h = Math.max(2, (t / maxDaily) * 80);
+            const art = daily[d]?.art || 0;
+            const pro = daily[d]?.pro || 0;
+            return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;" title="${d}: ${t} visite (art: ${art}, pro: ${pro})">
+              <div style="font-size:8px; color:var(--text3);">${t || ""}</div>
+              <div style="width:100%; max-width:20px; height:${h}px; background: var(--red); border-radius: 2px; opacity: 0.8;"></div>
+            </div>`;
+          }).join("")}
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); margin-top: 4px; padding: 0 8px;">
+          <span>${days[0] || ""}</span>
+          <span>${days[days.length - 1] || ""}</span>
+        </div>
+      </div>
+      ` : ""}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div>
+          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+            Classifica progetti
+          </h3>
+          ${topProjects.length > 0 ? `
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+            ${topProjects.map(([name, count], i) => {
+              const pct = topProjects[0][1] > 0 ? (count / topProjects[0][1]) * 100 : 0;
+              const label = name.replace(/^(art|pro)\//, (m) => `<span class="badge ${m.replace("/", "")}" style="font-size:8px; padding:1px 5px; margin-right:6px;">${m.replace("/", "")}</span>`);
+              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""} position: relative;">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background: var(--red); opacity: 0.06;"></div>
+                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+                <span style="font-size: 13px; color: var(--text); flex: 1; position: relative;">${label}</span>
+                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; position: relative;">${count}</span>
+              </div>`;
+            }).join("")}
+          </div>
+          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
+        </div>
+
+        <div>
+          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+            Foto più viste
+          </h3>
+          ${topPhotos.length > 0 ? `
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+            ${topPhotos.map(([path, count], i) => {
+              const filename = path.split("/").pop();
+              const project = path.split("/").slice(1, -1).join("/");
+              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""}">
+                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(filename)}</div>
+                  <div style="font-size: 10px; color: var(--text3);">${escapeHtml(project)}</div>
+                </div>
+                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums;">${count}</span>
+              </div>`;
+            }).join("")}
+          </div>
+          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
+        </div>
+      </div>
+
+      <div style="margin-top: 32px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 8px;">
+          Come funziona
+        </h3>
+        <p style="font-size: 12px; color: var(--text3); line-height: 1.6;">
+          Le statistiche vengono registrate automaticamente quando un visitatore naviga nel portfolio.
+          I dati vengono salvati in <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">contenuti/analytics.json</code> nel repository GitHub.
+          Ogni visita unica per sessione viene conteggiata una sola volta per evitare conteggi multipli.
+          Per funzionare, la variabile d'ambiente <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">GITHUB_TOKEN</code> deve essere configurata su Vercel.
+        </p>
+      </div>
+    `;
   }
 
   async function handleUpload(files, key) {

@@ -4,6 +4,7 @@ import Modal from "@/components/Modal";
 import { useRouter } from "next/router";
 import { BY_MODE } from "@/data/projects";
 import dynamic from "next/dynamic";
+import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
 
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
@@ -209,6 +210,7 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
       const data = await res.json();
       if (data.success) {
         setSent(true);
+        trackContact();
       } else {
         setError(S.ERRORE_INVIO || "Errore nell'invio. Riprova o scrivi direttamente a a.e.iacobucci@icloud.com");
       }
@@ -391,6 +393,13 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [showContact, setShowContact] = useState(false);
+
+  // ---- Analytics: traccia progetto selezionato e foto aperte ----
+  const trackPhoto = useTrackPhoto();
+  useTrackPageView(
+    selectedProject && selectedProject.name !== "About" ? (mode === "professional" ? "pro" : "art") : null,
+    selectedProject && selectedProject.name !== "About" ? selectedProject.id : undefined
+  );
 
   // ===== NAVIGATION HISTORY: stack per il triangolo back =====
   const navHistoryRef = useRef([]);
@@ -802,7 +811,13 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           <div className="pt-8 pb-4" style={{ paddingLeft: "8%", paddingRight: "8%" }}>
             <JustifiedGallery
               images={selectedProject.images || []}
-              onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true); }}
+              onImageClick={(i) => {
+                setViewerIndex(i);
+                setViewerOpen(true);
+                if (selectedProject?.images?.[i]) {
+                  trackPhoto(selectedProject.images[i], mode === "professional" ? "pro" : "art");
+                }
+              }}
             />
           </div>
           {/* Margine sotto la galleria */}
