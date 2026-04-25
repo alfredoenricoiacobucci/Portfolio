@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
 <title>Editor Portfolio — Alfredo Enrico Iacobucci</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -224,6 +225,24 @@
   }
   textarea { min-height: 80px; }
   textarea.large { min-height: 220px; }
+  /* Textarea che simula il rendering del sito (stessa font, size, line-height) */
+  textarea.site-preview {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.625;
+    padding: 16px 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    letter-spacing: 0;
+  }
+  textarea.site-preview-title {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    padding: 16px 20px;
+    letter-spacing: -0.01em;
+  }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
@@ -930,12 +949,12 @@
 
       <div class="field">
         <label>Titolo (1ª riga: titolo, 2ª riga: luogo/anno)</label>
-        <textarea id="f_titolo" rows="2">${escapeHtml(p.titolo || "")}</textarea>
+        <textarea id="f_titolo" rows="3" class="site-preview-title">${escapeHtml(p.titolo || "")}</textarea>
       </div>
 
       <div class="field">
         <label>Descrizione</label>
-        <textarea id="f_descrizione" class="large">${escapeHtml(p.descrizione || "")}</textarea>
+        <textarea id="f_descrizione" class="large site-preview">${escapeHtml(p.descrizione || "")}</textarea>
       </div>
 
       <div class="three-col">
@@ -1025,7 +1044,7 @@
 
       <div class="field">
         <label>Testo biografia</label>
-        <textarea id="f_text" class="large">${escapeHtml(a.text || "")}</textarea>
+        <textarea id="f_text" class="large site-preview">${escapeHtml(a.text || "")}</textarea>
         <div class="hint">Usa "---" su una riga per separare le due colonne.</div>
       </div>
 
