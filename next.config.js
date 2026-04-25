@@ -9,6 +9,13 @@ const nextConfig = {
   },
   // Compressione gzip automatica
   compress: true,
+  // Bundle contenuti/ into the serverless function so files are available
+  // at runtime on Vercel without a separate copy step in public/
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/projects/[...path]": ["./contenuti/**/*"],
+    },
+  },
   // Serve immagini da contenuti/ via API route con cache CDN
   async rewrites() {
     return [

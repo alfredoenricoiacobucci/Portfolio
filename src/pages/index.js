@@ -6,9 +6,11 @@ import fs from "fs";
 import { useRouter } from "next/router";
 
 /**
- * Legge le immagini rappresentative (prima N) per Artwork / Professional
+ * Legge le immagini rappresentative (prima N) per Artwork / Professional.
+ * Pre-filtra le orizzontali server-side → zero caricamento client per decidere orientamento.
  */
 export async function getServerSideProps() {
+  const { readImageDimensions } = require("../lib/imageDimensions");
   const projectsRoot = path.join(process.cwd(), "contenuti");
   const artworkIds = BY_MODE.artwork || [];
   const professionalIds = BY_MODE.professional || [];
@@ -41,7 +43,17 @@ export async function getServerSideProps() {
       } else {
         files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       }
-      return files.map((f) => `/projects/${id}/${f}`);
+      // Pre-filter: solo orizzontali (w >= h) usando dimensioni lette dai file header
+      const results = [];
+      for (const f of files) {
+        const filePath = path.join(pDir, f);
+        const dim = readImageDimensions(filePath);
+        if (dim && dim.width >= dim.height) {
+          results.push(`/projects/${id}/${f}`);
+        }
+      }
+      // Fallback: se nessuna orizzontale, usa tutte
+      return results.length > 0 ? results : files.map((f) => `/projects/${id}/${f}`);
     } catch {
       return [];
     }
@@ -70,43 +82,13 @@ export async function getServerSideProps() {
   };
 }
 
-// Filtra solo immagini orizzontali (w >= h)
-function useHorizontalImages(allImages) {
-  const [filtered, setFiltered] = useState([]);
-
-  useEffect(() => {
-    if (!allImages?.length) { setFiltered([]); return; }
-    let cancelled = false;
-
-    Promise.all(
-      allImages.map(
-        (src) =>
-          new Promise((resolve) => {
-            const img = new window.Image();
-            img.onload = () => resolve({ src, ok: img.naturalWidth >= img.naturalHeight });
-            img.onerror = () => resolve({ src, ok: false });
-            img.src = src;
-          })
-      )
-    ).then((results) => {
-      if (cancelled) return;
-      const horiz = results.filter((r) => r.ok).map((r) => r.src);
-      setFiltered(horiz.length ? horiz : allImages);
-    });
-
-    return () => { cancelled = true; };
-  }, [allImages]);
-
-  return filtered;
-}
-
 export default function Landing({ artworkImages = [], professionalImages = [], strings = {} }) {
   const landingName = strings.NOME || "Alfredo Enrico Iacobucci";
   const router = useRouter();
 
-  // Filtra verticali da entrambe le liste
-  const filteredArt = useHorizontalImages(artworkImages);
-  const filteredProf = useHorizontalImages(professionalImages);
+  // Immagini già pre-filtrate server-side (solo orizzontali)
+  const filteredArt = artworkImages;
+  const filteredProf = professionalImages;
 
   // ===== CURTAIN: overlay che scompare dopo il mount =====
   const [curtainVisible, setCurtainVisible] = useState(true);

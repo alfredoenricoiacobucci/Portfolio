@@ -13,7 +13,8 @@ function shuffle(a) {
 
 /**
  * Banner rotator con crossfade.
- * - Filtra le immagini verticali PRIMA di mostrare qualsiasi cosa.
+ * - Supporta sia stringhe (URL) che oggetti {src, w, h} (con dimensioni server-side).
+ * - Filtra immagini verticali usando dimensioni pre-calcolate (no client-side load).
  * - Start random dopo il filtro.
  * - Due layer stabili (no flash).
  */
@@ -28,14 +29,14 @@ export default function TopRotator({
   const [bufSrc, setBufSrc] = useState([null, null]);
   const [top, setTop] = useState(0);
   const [fading, setFading] = useState(false);
-  const [ready, setReady] = useState(false); // true dopo il filtro
+  const [ready, setReady] = useState(false);
 
   const slidesRef = useRef([]);
   const curIdxRef = useRef(0);
   const timers = useRef({ dwell: null, fade: null });
   const mounted = useRef(false);
 
-  // Init: filtra verticali caricando solo le prime 8 immagini (performance)
+  // Init: filtra verticali usando dimensioni server-side (istantaneo, no network)
   useEffect(() => {
     mounted.current = true;
     setReady(false);
@@ -44,10 +45,27 @@ export default function TopRotator({
 
     if (!images?.length) return;
 
-    (async () => {
-      // Carica solo le prime 8 per non sovraccaricare la rete
+    // Normalizza: supporta sia stringhe che {src, w, h}
+    const hasServerDims = typeof images[0] === "object" && images[0].w;
+
+    if (hasServerDims) {
+      // Usa dimensioni server-side — istantaneo, nessun caricamento
       const sample = images.slice(0, 8);
-      const metas = await Promise.all(
+      const horiz = sample.filter((m) => m.w >= m.h).map((m) => m.src);
+      const allSrcs = sample.map((m) => m.src);
+      const finalList = horiz.length ? shuffle(horiz) : shuffle(allSrcs);
+      slidesRef.current = finalList;
+
+      const rand = Math.floor(Math.random() * finalList.length);
+      curIdxRef.current = rand;
+      setBufSrc([finalList[rand], finalList[(rand + 1) % finalList.length]]);
+      setTop(0);
+      setFading(false);
+      setReady(true);
+    } else {
+      // Fallback: carica immagini client-side (per compatibilità con landing page)
+      const sample = images.slice(0, 8);
+      Promise.all(
         sample.map(
           (src) =>
             new Promise((resolve) => {
@@ -58,24 +76,20 @@ export default function TopRotator({
               img.src = src;
             })
         )
-      );
-      if (!mounted.current) return;
+      ).then((metas) => {
+        if (!mounted.current) return;
+        const horiz = metas.filter((m) => m.w >= m.h).map((m) => m.src);
+        const finalList = horiz.length ? shuffle(horiz) : shuffle(sample);
+        slidesRef.current = finalList;
 
-      // Filtra: solo orizzontali (w >= h)
-      const horiz = metas.filter((m) => m.w >= m.h).map((m) => m.src);
-      const finalList = horiz.length ? shuffle(horiz) : shuffle(sample);
-      slidesRef.current = finalList;
-
-      // Parti da un indice random nella lista filtrata
-      const rand = Math.floor(Math.random() * finalList.length);
-      const next = (rand + 1) % finalList.length;
-      curIdxRef.current = rand;
-
-      setBufSrc([finalList[rand], finalList[next] || finalList[0]]);
-      setTop(0);
-      setFading(false);
-      setReady(true);
-    })();
+        const rand = Math.floor(Math.random() * finalList.length);
+        curIdxRef.current = rand;
+        setBufSrc([finalList[rand], finalList[(rand + 1) % finalList.length]]);
+        setTop(0);
+        setFading(false);
+        setReady(true);
+      });
+    }
 
     return () => {
       mounted.current = false;

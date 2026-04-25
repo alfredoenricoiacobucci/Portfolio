@@ -15,6 +15,7 @@ export async function getServerSideProps() {
   const path = await import("path");
   const fsMod = await fs;
   const pathMod = await path;
+  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
   // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
@@ -85,7 +86,16 @@ export async function getServerSideProps() {
     } else {
       files.sort(natural.compare);
     }
-    const images = files.map((f) => `/projects/${id}/${f}`);
+    // Pre-compute image dimensions server-side (reads only file headers, very fast)
+    const images = files.map((f) => {
+      const filePath = pathMod.join(pDir, f);
+      const dim = readImageDimensions(filePath);
+      return {
+        src: `/projects/${id}/${f}`,
+        w: dim ? dim.width : 1000,
+        h: dim ? dim.height : 667,
+      };
+    });
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
@@ -251,7 +261,6 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
 function JustifiedGallery({ images = [], onImageClick }) {
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [dims, setDims] = useState(null);
   const GAP = 6;
 
   useEffect(() => {
@@ -264,20 +273,18 @@ function JustifiedGallery({ images = [], onImageClick }) {
     return () => ro.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!images.length) { setDims([]); return; }
-    let cancelled = false;
-    Promise.all(images.map((src, i) => new Promise((resolve) => {
-      const img = new window.Image();
-      img.onload = () => resolve({ src, ratio: img.naturalWidth / img.naturalHeight, idx: i });
-      img.onerror = () => resolve({ src, ratio: 1.5, idx: i });
-      img.src = src;
-    }))).then((d) => { if (!cancelled) setDims(d); });
-    return () => { cancelled = true; };
+  // Use server-provided dimensions — no client-side image loading needed
+  const dims = useMemo(() => {
+    if (!images.length) return [];
+    return images.map((img, i) => ({
+      src: typeof img === "string" ? img : img.src,
+      ratio: typeof img === "string" ? 1.5 : (img.w / img.h),
+      idx: i,
+    }));
   }, [images]);
 
   const rows = useMemo(() => {
-    if (!dims?.length || containerWidth <= 0) return [];
+    if (!dims.length || containerWidth <= 0) return [];
     const TARGET_H = containerWidth < 640 ? 360 : containerWidth < 1024 ? 500 : 640;
     const rawRows = [];
     let i = 0;
@@ -342,7 +349,7 @@ function JustifiedGallery({ images = [], onImageClick }) {
                 aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
               >
                 <img src={item.src} alt=""
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="absolute inset-0 w-full h-full object-cover"
                   loading={ri < 2 ? "eager" : "lazy"}
                   decoding="async" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200" />
@@ -815,7 +822,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 setViewerIndex(i);
                 setViewerOpen(true);
                 if (selectedProject?.images?.[i]) {
-                  trackPhoto(selectedProject.images[i], mode === "professional" ? "pro" : "art");
+                  trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
                 }
               }}
             />
@@ -960,7 +967,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           {/* Title bar */}
           <div className="w-full flex items-center justify-center h-[44px] shrink-0 pointer-events-none">
             <span className="text-white text-sm font-semibold text-center px-4 whitespace-nowrap">
-              {[selectedProject?.name, ...(selectedProject?.titleExtra || []), selectedProject?.datePlace].filter(Boolean).join(" ")}
+              {[selectedProject?.name, ...(selectedProject?.titleExtra || []), selectedProject?.datePlace].filter(Boolean).join(" - ")}
             </span>
           </div>
 
@@ -1000,7 +1007,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               </>
             )}
             <img
-              src={selectedProject.images[viewerIndex]}
+              src={selectedProject.images[viewerIndex]?.src || selectedProject.images[viewerIndex]}
               alt=""
               className="max-w-[95vw] max-h-full w-auto h-auto object-contain shadow-2xl select-none"
             />
