@@ -405,6 +405,42 @@
   .toast.ok { border-left-color: #4ade80; }
   .toast.err { border-left-color: #f87171; }
 
+  /* ---- TOPBAR NAV ---- */
+  .topbar-nav {
+    display: flex;
+    gap: 0;
+    margin-left: 24px;
+  }
+  .topbar-nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text3);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 180ms;
+  }
+  .topbar-nav-btn:hover { color: var(--text); border-color: transparent; }
+  .topbar-nav-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--red);
+  }
+
+  /* ---- FULL-WIDTH SECTIONS ---- */
+  .section-full {
+    min-height: calc(100vh - 61px);
+    padding: 0;
+  }
+  .section-full-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
   @media (max-width: 780px) {
     .main { grid-template-columns: 1fr; }
     .sidebar { max-height: none; position: relative; top: 0; }
@@ -419,14 +455,19 @@
 
 <div class="topbar">
   <h1>Editor Portfolio</h1>
-  <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
+  <nav class="topbar-nav" id="topbarNav">
+    <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
+    <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
+    <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
+  </nav>
   <div class="sep"></div>
+  <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
   <span id="tokenStatus" class="token-status">Token: <span id="tokenState">non impostato</span></span>
-  <button id="btnToken" class="ghost">Impostazioni GitHub</button>
   <button id="btnSave" class="primary">Salva e pubblica</button>
 </div>
 
-<div class="main">
+<!-- SEZIONE CONTENUTI (sidebar + content) -->
+<div id="sectionContenuti" class="main">
   <aside class="sidebar">
     <div class="section-title">Artwork</div>
     <div id="listArt"></div>
@@ -436,11 +477,8 @@
     <div id="listPro"></div>
     <button class="add-btn" data-section="pro">+ Nuovo progetto Professional</button>
 
-    <div class="section-title">Altro</div>
+    <div class="section-title">About</div>
     <div id="listAbout"></div>
-
-    <div class="section-title">Statistiche</div>
-    <div id="listAnalytics"></div>
   </aside>
 
   <main id="content" class="content empty-state">
@@ -448,32 +486,25 @@
   </main>
 </div>
 
-<!-- GitHub Settings Modal -->
+<!-- SEZIONE ANALYTICS (full width) -->
+<div id="sectionAnalytics" class="section-full" style="display:none;">
+  <div id="analyticsContent" class="section-full-inner">
+    <p style="color: var(--text3);">Caricamento...</p>
+  </div>
+</div>
+
+<!-- SEZIONE IMPOSTAZIONI (full width) -->
+<div id="sectionImpostazioni" class="section-full" style="display:none;">
+  <div id="impostazioniContent" class="section-full-inner"></div>
+</div>
+
+<!-- GitHub Settings Modal (legacy, kept for compatibility) -->
 <div id="tokenModal" class="modal-backdrop">
   <div class="modal">
     <h2>Impostazioni GitHub</h2>
-    <p>
-      Per pubblicare le modifiche online, incolla qui un
-      <a href="https://github.com/settings/tokens/new?scopes=repo&description=Portfolio%20AEI%20Editor" target="_blank" rel="noopener">
-        Personal Access Token
-      </a>
-      con permesso <strong>repo</strong>. Viene salvato solo nel tuo browser.
-    </p>
-    <div class="field">
-      <label>Repository</label>
-      <input type="text" id="repoInput" value="alfredoenricoiacobucci/Portfolio">
-    </div>
-    <div class="field">
-      <label>Branch</label>
-      <input type="text" id="branchInput" value="main">
-    </div>
-    <div class="field">
-      <label>Personal Access Token</label>
-      <input type="text" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx">
-    </div>
+    <p>Usa la sezione <strong>Impostazioni</strong> nella barra in alto per configurare il token.</p>
     <div class="actions">
-      <button id="btnClearToken" class="ghost">Cancella token</button>
-      <button id="btnSaveToken" class="primary">Salva</button>
+      <button id="btnSaveToken" class="ghost" onclick="document.getElementById('tokenModal').classList.remove('show');">Chiudi</button>
     </div>
   </div>
 </div>
@@ -814,6 +845,26 @@
       .replace(/(^-|-$)/g, "");
   }
 
+  // ========== SECTION NAVIGATION ==========
+  let activeSection = "contenuti";
+
+  function switchSection(section) {
+    activeSection = section;
+    document.querySelectorAll(".topbar-nav-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.section === section);
+    });
+    document.getElementById("sectionContenuti").style.display = section === "contenuti" ? "" : "none";
+    document.getElementById("sectionAnalytics").style.display = section === "analytics" ? "" : "none";
+    document.getElementById("sectionImpostazioni").style.display = section === "impostazioni" ? "" : "none";
+
+    if (section === "analytics") loadAndRenderAnalytics();
+    if (section === "impostazioni") renderImpostazioni();
+  }
+
+  document.querySelectorAll(".topbar-nav-btn").forEach(btn => {
+    btn.onclick = () => switchSection(btn.dataset.section);
+  });
+
   // ========== SIDEBAR RENDER ==========
   function renderSidebar() {
     const listArt = document.getElementById("listArt");
@@ -840,15 +891,6 @@
     aboutDiv.innerHTML = `<span>About (bio)</span>`;
     aboutDiv.onclick = () => selectProject("about");
     listAbout.appendChild(aboutDiv);
-
-    // Analytics sidebar item
-    const listAnalytics = document.getElementById("listAnalytics");
-    listAnalytics.innerHTML = "";
-    const analyticsDiv = document.createElement("div");
-    analyticsDiv.className = "item" + (currentKey === "analytics" ? " active" : "");
-    analyticsDiv.innerHTML = `<span>Analytics</span>`;
-    analyticsDiv.onclick = () => selectProject("analytics");
-    listAnalytics.appendChild(analyticsDiv);
   }
 
   function escapeHtml(s) {
@@ -859,17 +901,12 @@
 
   // ========== CONTENT RENDER ==========
   function selectProject(key) {
-    if (dirty) {
-      // Auto-save draft on switch: no confirm, draft already persisted
-    }
     currentKey = key;
     renderSidebar();
-    if (key === "analytics") renderAnalytics();
-    else if (key === "about") renderAbout();
+    if (key === "about") renderAbout();
     else renderProject(key);
     // Fetch photos asynchronously in background
-    if (key === "analytics") { /* no photos to fetch */ }
-    else if (key !== "about") fetchPhotos(key);
+    if (key !== "about") fetchPhotos(key);
     else fetchAboutMedia();
   }
 
@@ -1261,41 +1298,18 @@
     return { views: { total: 0, art: 0, pro: 0, landing: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0 };
   }
 
-  function renderAnalytics() {
-    const content = document.getElementById("content");
-    content.classList.remove("empty-state");
-    content.innerHTML = `
-      <div class="project-header">
-        <div>
-          <span class="badge about">Stats</span>
-          <div class="title">Analytics</div>
-          <div class="slug">Statistiche del portfolio</div>
-        </div>
-        <div class="actions">
-          <button id="btnRefreshAnalytics">Aggiorna</button>
-        </div>
-      </div>
-      <div id="analyticsContent" style="color: var(--text2); font-size: 13px;">
-        <p>Caricamento...</p>
-      </div>
-    `;
-    document.getElementById("btnRefreshAnalytics").onclick = () => {
-      analyticsCache = null;
-      loadAndRenderAnalytics();
-    };
-    loadAndRenderAnalytics();
-  }
+  // renderAnalytics is now just loadAndRenderAnalytics since section is separate
 
   async function loadAndRenderAnalytics() {
     const container = document.getElementById("analyticsContent");
     if (!container) return;
 
     if (!getToken()) {
-      container.innerHTML = '<p style="color:#f87171;">Imposta il token GitHub per vedere le statistiche.</p>';
+      container.innerHTML = '<div style="text-align:center; padding: 80px 20px; color: var(--text3);">Configura il token GitHub nella sezione <strong>Impostazioni</strong> per vedere le statistiche.</div>';
       return;
     }
 
-    container.innerHTML = '<p style="color:var(--text3);">Caricamento dati da GitHub...</p>';
+    container.innerHTML = '<div style="text-align:center; padding: 80px 20px; color: var(--text3);">Caricamento dati da GitHub...</div>';
 
     const data = await fetchAnalyticsData();
     if (!data || !data.views) {
@@ -1332,6 +1346,13 @@
     const maxDaily = Math.max(1, ...days.map(d => daily[d]?.total || 0));
 
     container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Analytics</h2>
+          <p style="font-size: 12px; color: var(--text3);">Statistiche di navigazione del portfolio</p>
+        </div>
+        <button class="ghost" id="btnRefreshAnalytics" style="font-size: 11px;">Aggiorna dati</button>
+      </div>
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
           <div style="font-size: 28px; font-weight: 700; color: var(--text);">${totalViews}</div>
@@ -1431,6 +1452,170 @@
         </p>
       </div>
     `;
+    const refreshBtn = document.getElementById("btnRefreshAnalytics");
+    if (refreshBtn) refreshBtn.onclick = () => { analyticsCache = null; loadAndRenderAnalytics(); };
+  }
+
+  // ========== IMPOSTAZIONI ==========
+  function renderImpostazioni() {
+    const container = document.getElementById("impostazioniContent");
+    if (!container) return;
+    const token = getToken();
+    const repo = getRepo();
+    const branch = getBranch();
+
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Impostazioni</h2>
+          <p style="font-size: 12px; color: var(--text3);">Configurazione GitHub, cache e diagnostica</p>
+        </div>
+      </div>
+
+      <!-- GITHUB -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">GitHub & Token</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div class="field"><label>Repository</label><input type="text" id="imp_repo" value="${escapeHtml(repo)}"></div>
+            <div class="field"><label>Branch</label><input type="text" id="imp_branch" value="${escapeHtml(branch)}"></div>
+          </div>
+          <div class="field" style="margin-bottom: 16px;">
+            <label>Personal Access Token</label>
+            <input type="password" id="imp_token" value="${token ? token : ""}" placeholder="ghp_xxxxxxxxxxxx" style="font-family: monospace;">
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 12px; color: var(--text3);">Stato:</span>
+            <span style="font-size: 12px; color: ${token ? "#4ade80" : "#f87171"}; font-weight: 600;">${token ? "Connesso" : "Non connesso"}</span>
+            ${token ? `<button class="ghost" id="imp_test" style="font-size: 11px; padding: 4px 10px;">Testa connessione</button>` : ""}
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="primary" id="imp_save_token">Salva impostazioni</button>
+            ${token ? `<button class="ghost" id="imp_clear_token" style="color: #f87171;">Disconnetti</button>` : ""}
+          </div>
+          <p style="font-size: 11px; color: var(--text3); margin-top: 12px;">
+            Il token viene salvato solo nel tuo browser (localStorage).
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Portfolio%20AEI%20Editor" target="_blank" style="color: var(--red);">Crea un nuovo token</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- CACHE & SINCRONIZZAZIONE -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Cache & Sincronizzazione</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <p style="font-size: 12px; color: var(--text2); margin-bottom: 16px;">
+            Se il sito non si aggiorna o il Manager mostra dati vecchi, usa questi strumenti per risincronizzare.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="ghost" id="imp_force_sync">Forza sincronizzazione da GitHub</button>
+            <button class="ghost" id="imp_clear_draft">Cancella bozza locale</button>
+            <button class="ghost" id="imp_clear_all" style="color: #f87171;">Reset completo (cancella tutto)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERCEL -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Vercel & Deploy</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <p style="font-size: 12px; color: var(--text2); margin-bottom: 12px;">
+            Ogni volta che salvi e pubblichi, viene creato un commit su GitHub che attiva automaticamente un deploy su Vercel.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/deployments" target="_blank" class="ghost" style="text-decoration: none; padding: 6px 14px; font-size: 12px; display: inline-block;">Apri dashboard Vercel</a>
+          </div>
+          <div id="imp_deploy_status" style="margin-top: 12px;"></div>
+        </div>
+      </div>
+
+      <!-- INFO -->
+      <div>
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Info</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; font-size: 12px; color: var(--text3); line-height: 1.8;">
+          <div><strong style="color:var(--text2);">Sito:</strong> alfredoenricoiacobucci.art</div>
+          <div><strong style="color:var(--text2);">Repository:</strong> ${escapeHtml(repo)}</div>
+          <div><strong style="color:var(--text2);">Branch:</strong> ${escapeHtml(branch)}</div>
+          <div><strong style="color:var(--text2);">Progetti:</strong> ${state.projects.length}</div>
+          <div><strong style="color:var(--text2);">Versione Manager:</strong> 2.0</div>
+        </div>
+      </div>
+    `;
+
+    // Event handlers
+    document.getElementById("imp_save_token").onclick = () => {
+      const t = document.getElementById("imp_token").value.trim();
+      const r = document.getElementById("imp_repo").value.trim();
+      const b = document.getElementById("imp_branch").value.trim();
+      if (t) localStorage.setItem("editor-token-github", t);
+      if (r) localStorage.setItem("editor-repo-github", r);
+      localStorage.setItem("editor-branch-github", b);
+      updateTokenStatus();
+      toast("Impostazioni salvate.", "ok");
+      renderImpostazioni();
+    };
+
+    const clearBtn = document.getElementById("imp_clear_token");
+    if (clearBtn) clearBtn.onclick = () => {
+      localStorage.removeItem("editor-token-github");
+      updateTokenStatus();
+      toast("Token rimosso.", "ok");
+      renderImpostazioni();
+    };
+
+    const testBtn = document.getElementById("imp_test");
+    if (testBtn) testBtn.onclick = async () => {
+      testBtn.textContent = "Testando...";
+      try {
+        const res = await fetch(`https://api.github.com/repos/${getRepo()}`, {
+          headers: { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" }
+        });
+        if (res.ok) {
+          toast("Connessione a GitHub riuscita!", "ok");
+        } else {
+          toast("Connessione fallita: " + res.status, "err");
+        }
+      } catch (e) {
+        toast("Errore: " + e.message, "err");
+      }
+      testBtn.textContent = "Testa connessione";
+    };
+
+    document.getElementById("imp_force_sync").onclick = async () => {
+      if (!getToken()) { toast("Imposta prima il token.", "err"); return; }
+      try {
+        const remote = await ghGet("contenuti/contenuti.json");
+        if (remote && remote.content) {
+          const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+          const remoteState = JSON.parse(decoded);
+          if (remoteState.projects) {
+            state.projects = remoteState.projects;
+            state.about = remoteState.about || state.about;
+            clearDirty();
+            embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+            renderSidebar();
+            toast("Sincronizzato con GitHub.", "ok");
+          }
+        }
+      } catch (e) { toast("Errore: " + e.message, "err"); }
+    };
+
+    document.getElementById("imp_clear_draft").onclick = () => {
+      localStorage.removeItem("editor-draft-contenuti");
+      clearDirty();
+      toast("Bozza locale cancellata. Ricarica la pagina.", "ok");
+    };
+
+    document.getElementById("imp_clear_all").onclick = () => {
+      if (!confirm("Sei sicuro? Questo cancellerà token, bozza e tutte le impostazioni locali.")) return;
+      localStorage.removeItem("editor-draft-contenuti");
+      localStorage.removeItem("editor-token-github");
+      localStorage.removeItem("editor-repo-github");
+      localStorage.removeItem("editor-branch-github");
+      clearDirty();
+      toast("Tutto cancellato. Ricarica la pagina.", "ok");
+      setTimeout(() => location.reload(), 1500);
+    };
   }
 
   async function handleUpload(files, key) {
@@ -1517,36 +1702,13 @@
     toast("Progetto creato. Ricorda di salvare.", "ok");
   };
 
-  // ========== TOKEN MODAL ==========
-  document.getElementById("btnToken").onclick = () => {
-    document.getElementById("tokenInput").value = getToken();
-    document.getElementById("repoInput").value = getRepo();
-    document.getElementById("branchInput").value = getBranch();
-    document.getElementById("tokenModal").classList.add("show");
-  };
-  document.getElementById("btnSaveToken").onclick = () => {
-    const t = document.getElementById("tokenInput").value.trim();
-    const r = document.getElementById("repoInput").value.trim();
-    const b = document.getElementById("branchInput").value.trim() || "main";
-    if (t) localStorage.setItem(STORAGE_TOKEN, t);
-    if (r) localStorage.setItem(STORAGE_REPO, r);
-    localStorage.setItem(STORAGE_BRANCH, b);
-    updateTokenStatus();
-    document.getElementById("tokenModal").classList.remove("show");
-    toast("Impostazioni salvate.", "ok");
-  };
-  document.getElementById("btnClearToken").onclick = () => {
-    localStorage.removeItem(STORAGE_TOKEN);
-    updateTokenStatus();
-    document.getElementById("tokenInput").value = "";
-    toast("Token cancellato.", "ok");
-  };
+  // ========== TOKEN (legacy modal — now in Impostazioni) ==========
 
   // ========== SAVE ==========
   document.getElementById("btnSave").onclick = async () => {
     if (!getToken()) {
-      toast("Imposta prima il token GitHub.", "err");
-      document.getElementById("btnToken").click();
+      toast("Imposta prima il token GitHub nella sezione Impostazioni.", "err");
+      switchSection("impostazioni");
       return;
     }
     if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
