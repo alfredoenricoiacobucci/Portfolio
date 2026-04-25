@@ -1,3 +1,10 @@
 {
-  "buildCommand": "rm -f public/projects 2>/dev/null; rm -rf public/projects; cp -r contenuti public/projects && next build"
+  "headers": [
+    {
+      "source": "/api/projects/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
 }

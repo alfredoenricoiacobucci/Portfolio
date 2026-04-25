@@ -913,14 +913,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                     className="marquee-seq"
                     onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
                   >
-                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" – ")} |`).join(" ")}
+                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
                   </span>
                   <span
                     className="marquee-seq"
                     aria-hidden="true"
                     onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
                   >
-                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" – ")} |`).join(" ")}
+                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
                   </span>
                 </div>
               </div>
