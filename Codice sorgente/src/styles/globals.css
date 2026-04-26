@@ -152,23 +152,20 @@ h1 { line-height: 1.05; }
   100% { transform: translateX(0) scaleX(1); }
 }
 
-/* Testo giustificato — colonne larghe (about) */
+/* Testo bandiera a sinistra — colonne larghe (about) */
 .project-text {
-  text-align: justify;
-  text-align-last: left;
+  text-align: left;
   hyphens: auto;
   -webkit-hyphens: auto;
   overflow-wrap: break-word;
 }
-/* Testo giustificato — sidebar stretta (progetti): font ridotto + spaziatura compatta */
+/* Testo bandiera a sinistra — sidebar stretta (progetti): font ridotto + spaziatura compatta */
 .project-text-narrow {
-  text-align: justify;
-  text-align-last: left;
+  text-align: left;
   hyphens: auto;
   -webkit-hyphens: auto;
   overflow-wrap: break-word;
   font-size: 14px;
-  word-spacing: -0.5px;
 }
 
 /* Chevron toggle per blocco testo sotto banner */
