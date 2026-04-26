@@ -1111,27 +1111,36 @@
   }
 
   // ========== SITE-WIDTH SYNC ==========
-  // Calcola le larghezze esatte delle colonne del sito al viewport corrente
-  // e le applica ai contenitori delle textarea nel Manager.
-  // Il sito usa: padding-left/right 8%, gap tra colonne 4% del viewport.
+  // Calcola le larghezze esatte delle colonne di testo del sito e le applica
+  // alle textarea del Manager, compensando padding e bordo della textarea
+  // così che il testo vada a capo nello stesso punto.
+  //
+  // Sito: padding-left/right = 8% del viewport → area contenuto = vw * 0.84
+  //       gap tra colonne = 4% dell'area contenuto (CSS gap in flex)
+  //       progetto: flex-1 + 180px tech col
+  //       about: flex-1 + flex-1
+  //
+  // Textarea: padding 20px/lato + border 1px/lato = 42px extra.
+  // Quindi: larghezza contenitore = colonna_sito + 42px
   function syncSiteWidths() {
     const vw = window.innerWidth;
-    const sitePadding = vw * 0.08;          // 8% per lato
-    const siteContent = vw - sitePadding * 2; // area contenuto del sito
-    const siteGap = vw * 0.04;              // gap 4% tra colonne
+    const siteContent = vw * 0.84;                   // 84% del viewport (8% padding per lato)
+    const siteGap = siteContent * 0.04;              // gap 4% dell'area contenuto
+    const textareaExtra = 20 * 2 + 1 * 2;           // padding + border della textarea
 
-    // Progetto: descrizione = siteContent - 180px (colonna tecnica) - gap
-    const projectDescW = siteContent - 180 - siteGap;
+    // Progetto: colonna testo = siteContent - 180px - gap
+    const projectTextCol = siteContent - 180 - siteGap;
+    const projectContainerW = projectTextCol + textareaExtra;
 
-    // About: due colonne uguali = (siteContent - gap) / 2
-    const aboutColW = (siteContent - siteGap) / 2;
+    // About: ogni colonna = (siteContent - gap) / 2
+    const aboutTextCol = (siteContent - siteGap) / 2;
+    const aboutContainerW = aboutTextCol + textareaExtra;
 
-    // Applica ai contenitori
     document.querySelectorAll(".site-col-text").forEach(el => {
-      el.style.width = Math.round(projectDescW) + "px";
+      el.style.width = Math.round(projectContainerW) + "px";
     });
     document.querySelectorAll(".site-col-half").forEach(el => {
-      el.style.width = Math.round(aboutColW) + "px";
+      el.style.width = Math.round(aboutContainerW) + "px";
     });
   }
   window.addEventListener("resize", syncSiteWidths);
