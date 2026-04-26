@@ -1,0 +1,19 @@
+#!/bin/bash
+# Manager Portfolio — apre il Manager come app standalone
+
+# Trova il percorso del file Manager relativo all'app
+APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+MANAGER="$APP_DIR/Manager Portfolio.html"
+
+if [ ! -f "$MANAGER" ]; then
+  # Fallback: cerca sul Desktop
+  MANAGER="$HOME/Desktop/Portfolio AEI/Manager Portfolio.html"
+fi
+
+if [ ! -f "$MANAGER" ]; then
+  osascript -e 'display alert "Manager non trovato" message "Il file \"Manager Portfolio.html\" non è stato trovato nella cartella Portfolio AEI." as critical'
+  exit 1
+fi
+
+# Apri con il browser predefinito
+open "$MANAGER"

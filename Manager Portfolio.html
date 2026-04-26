@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>Editor Portfolio — Alfredo Enrico Iacobucci</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111;
+    --panel: #141414;
+    --border: #222;
+    --border-hi: #2a2a2a;
+    --text: rgba(255,255,255,0.85);
+    --text2: rgba(255,255,255,0.55);
+    --text3: rgba(255,255,255,0.35);
+    --red: #c8102e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ---- HEADER ---- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .topbar h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+  .topbar .sep { flex: 1; }
+  .status-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .status-badge.ok { border-color: #1e4620; color: #4ade80; }
+  .status-badge.err { border-color: #4a1f1f; color: #f87171; }
+  .status-badge.work { border-color: #3a3a1a; color: #fbbf24; }
+
+  button, .btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: all 180ms ease;
+  }
+  button:hover { border-color: var(--red); }
+  button.primary {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    font-weight: 600;
+  }
+  button.primary:hover { background: #a50d25; }
+  button.ghost { color: var(--text2); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ---- LAYOUT ---- */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 61px);
+  }
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 18px 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 61px);
+    position: sticky;
+    top: 61px;
+  }
+  .sidebar .section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    padding: 14px 20px 6px;
+    font-weight: 600;
+  }
+  .sidebar .item {
+    padding: 9px 20px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    color: var(--text2);
+    font-size: 13px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar .item:hover { background: #1a1a1a; color: var(--text); }
+  .sidebar .item.active {
+    background: #1a1a1a;
+    border-left-color: var(--red);
+    color: var(--text);
+    font-weight: 500;
+  }
+  .sidebar .item .photo-count {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text3);
+    font-variant-numeric: tabular-nums;
+  }
+  .sidebar .add-btn {
+    margin: 14px 20px;
+    width: calc(100% - 40px);
+    padding: 10px;
+    font-size: 12px;
+    color: var(--red);
+    border: 1px dashed var(--red);
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .sidebar .add-btn:hover { background: rgba(200,16,46,0.08); }
+
+  .content {
+    padding: 30px 40px 60px;
+    max-width: 1200px;
+    width: 100%;
+  }
+  .content.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text3);
+    font-size: 14px;
+    min-height: 60vh;
+  }
+
+  .project-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .project-header .badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+  .badge.art { color: #a78bfa; border: 1px solid #a78bfa; }
+  .badge.pro { color: #60a5fa; border: 1px solid #60a5fa; }
+  .badge.about { color: #fbbf24; border: 1px solid #fbbf24; }
+  .project-header .title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .project-header .slug {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: "SF Mono", Menlo, monospace;
+    margin-top: 3px;
+  }
+  .project-header .actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .field {
+    margin-bottom: 22px;
+  }
+  .field label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+  input[type="text"], textarea, select {
+    width: 100%;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 4px;
+    outline: none;
+    line-height: 1.55;
+    resize: vertical;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--red);
+  }
+  textarea { min-height: 80px; }
+  textarea.large { min-height: 220px; }
+  /* Textarea che simula il rendering del sito (stessa font, size, line-height) */
+  textarea.site-preview {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.625;
+    padding: 16px 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    letter-spacing: 0;
+    text-align: justify;
+  }
+  textarea.site-preview-title {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    padding: 16px 20px;
+    letter-spacing: -0.01em;
+  }
+
+  /* Layout progetto: descrizione a sinistra, colonna tecnica 180px a destra (come nel sito) */
+  .site-layout-project {
+    display: flex;
+    gap: 4%;
+  }
+  .site-layout-project .site-col-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .site-layout-project .site-col-tech {
+    width: 180px;
+    flex-shrink: 0;
+  }
+
+  /* Layout About: due colonne uguali (come nel sito) */
+  .site-layout-about {
+    display: flex;
+    gap: 4%;
+  }
+  .site-layout-about .site-col-half {
+    flex: 1;
+    min-width: 0;
+  }
+  .site-layout-about .site-col-half textarea.site-preview {
+    width: 100%;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+  /* ---- PHOTOS ---- */
+  .photos-section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .photos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .photos-header h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    font-weight: 600;
+  }
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .photo-card {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .photo-card:active { cursor: grabbing; }
+  .photo-card * { -webkit-user-drag: none; }
+  .photo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .photo-card .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    opacity: 0;
+    transition: opacity 180ms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-direction: column;
+  }
+  .photo-card:hover .overlay { opacity: 1; }
+  .photo-card .name {
+    font-size: 10px;
+    color: var(--text2);
+    font-family: monospace;
+    padding: 0 8px;
+    text-align: center;
+    word-break: break-all;
+  }
+  .photo-card .photo-actions { display: flex; gap: 6px; }
+  .photo-card button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  .photo-card.banner {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red);
+  }
+  .photo-card .banner-label {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 9px;
+    background: var(--red);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .photo-card .drag-handle {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    z-index: 2;
+    background: rgba(0,0,0,0.55);
+    border-radius: 3px;
+    padding: 2px 6px;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .photo-card.dragging { opacity: 0.4; }
+  .photo-card.drag-over {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+
+  .upload-area {
+    border: 2px dashed var(--border-hi);
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 180ms;
+    margin-bottom: 14px;
+  }
+  .upload-area:hover, .upload-area.drag {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(200,16,46,0.04);
+  }
+  .upload-area .hint2 { font-size: 11px; margin-top: 4px; }
+
+  /* ---- MODAL ---- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .modal h2 {
+    font-size: 14px;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .modal p { font-size: 12px; color: var(--text2); margin-bottom: 14px; }
+  .modal .field { margin-bottom: 14px; }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal a { color: var(--red); text-decoration: underline; }
+
+  .token-status {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ---- NOTIFICATIONS ---- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    padding: 12px 18px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text);
+    max-width: 360px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    transform: translateX(400px);
+    transition: transform 300ms ease;
+    z-index: 2000;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.ok { border-left-color: #4ade80; }
+  .toast.err { border-left-color: #f87171; }
+
+  /* ---- TOPBAR NAV ---- */
+  .topbar-nav {
+    display: flex;
+    gap: 0;
+    margin-left: 24px;
+  }
+  .topbar-nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text3);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 180ms;
+  }
+  .topbar-nav-btn:hover { color: var(--text); border-color: transparent; }
+  .topbar-nav-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--red);
+  }
+
+  /* ---- FULL-WIDTH SECTIONS ---- */
+  .section-full {
+    min-height: calc(100vh - 61px);
+    padding: 0;
+  }
+  .section-full-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  @media (max-width: 780px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { max-height: none; position: relative; top: 0; }
+    .content { padding: 20px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .project-header { flex-direction: column; }
+    .project-header .actions { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Editor Portfolio</h1>
+  <nav class="topbar-nav" id="topbarNav">
+    <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
+    <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
+    <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
+  </nav>
+  <div class="sep"></div>
+  <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
+  <span id="tokenStatus" class="token-status">Token: <span id="tokenState">non impostato</span></span>
+  <button id="btnSave" class="primary">Salva e pubblica</button>
+</div>
+
+<!-- SEZIONE CONTENUTI (sidebar + content) -->
+<div id="sectionContenuti" class="main">
+  <aside class="sidebar">
+    <div class="section-title">Artwork</div>
+    <div id="listArt"></div>
+    <button class="add-btn" data-section="art">+ Nuovo progetto Artwork</button>
+
+    <div class="section-title">Professional</div>
+    <div id="listPro"></div>
+    <button class="add-btn" data-section="pro">+ Nuovo progetto Professional</button>
+
+    <div class="section-title">About</div>
+    <div id="listAbout"></div>
+  </aside>
+
+  <main id="content" class="content empty-state">
+    Seleziona un progetto dalla lista a sinistra.
+  </main>
+</div>
+
+<!-- SEZIONE ANALYTICS (full width) -->
+<div id="sectionAnalytics" class="section-full" style="display:none;">
+  <div id="analyticsContent" class="section-full-inner">
+    <p style="color: var(--text3);">Caricamento...</p>
+  </div>
+</div>
+
+<!-- SEZIONE IMPOSTAZIONI (full width) -->
+<div id="sectionImpostazioni" class="section-full" style="display:none;">
+  <div id="impostazioniContent" class="section-full-inner"></div>
+</div>
+
+<!-- GitHub Settings Modal (legacy, kept for compatibility) -->
+<div id="tokenModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Impostazioni GitHub</h2>
+    <p>Usa la sezione <strong>Impostazioni</strong> nella barra in alto per configurare il token.</p>
+    <div class="actions">
+      <button id="btnSaveToken" class="ghost" onclick="document.getElementById('tokenModal').classList.remove('show');">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Project Modal -->
+<div id="newModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Nuovo progetto</h2>
+    <div class="field">
+      <label>Titolo</label>
+      <input type="text" id="newTitle" placeholder="Titolo del progetto">
+    </div>
+    <div class="field">
+      <label>Luogo / Anno (es. "Pesaro (PU) 2025")</label>
+      <input type="text" id="newDate">
+    </div>
+    <div class="field">
+      <label>Slug (cartella - usa solo lettere minuscole, numeri e trattini)</label>
+      <input type="text" id="newSlug" placeholder="generato automaticamente dal titolo">
+      <div class="hint">La cartella verrà creata in contenuti/SEZIONE/SLUG/</div>
+    </div>
+    <div class="actions">
+      <button id="btnNewCancel" class="ghost">Annulla</button>
+      <button id="btnNewCreate" class="primary">Crea</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Embedded data: will be updated by save ops -->
+<script id="embeddedContenuti" type="application/json">{
+  "version": 1,
+  "projects": [
+    {
+      "section": "art",
+      "slug": "benzina-senza-piombo",
+      "titolo": "Benzina senza piombo, morti senza ferro\nPesaro (PS) 2024",
+      "descrizione": "Un luogo orfano, abbandonato dall'uomo, divenuto una firma del vuoto che lascia ciò che prima era utile e ora è solo spazzatura. L'ordine ha ceduto il posto al caos, e quello che prima era utile ora è vivo, in divenire. E se l'esigenza di dare ordine al caos, per raggiungere uno scopo utilitaristico, fosse solo un inutile perdita di tempo?",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "benzina-01.jpg"
+    },
+    {
+      "section": "art",
+      "slug": "gemelli-cosmici",
+      "titolo": "Gemelli Cosmici\nRimini (RM) 2025",
+      "descrizione": "Il mio amico Teodoro ha fatto emergere un volto dalla sabbia, un volto per il quale ho provato compassione, siamo entrati in connessione. La sua immobilità mi spaventa e mi affascina quasi quanto il suo essere così reale e così effimero, almeno quanto me stesso. L'esigenza di immortalare questo volto di sabbia scaturisce da un ragionamento: alla base degli elementi che compongono la materia vi sono le particelle elementari, cariche elettriche in equilibrio all'interno di legami, il numero e la disposizione di queste cariche determinano l'elemento specifico. Dunque la materia non è altro che energia potenziale, ergo l'intero universo è un'unica unità di energia. In quest'ottica, i confini che abbiamo messo tra noi e gli altri, tra noi e le cose e tra lo cose stesse svaniscono. Il mio volto non ha nulla di differente da quello che emerge dalla sabbia, entrambi sono espressioni temporanee dello stesso magma universale. \"Portiamo in noi l'infanzia dell'universo\" (E. Coccia)",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "gemelli-1.jpg"
+    },
+    {
+      "section": "art",
+      "slug": "labirinto-di-cemento",
+      "titolo": "Labirinto di cemento\nJesi (AN) 2024",
+      "descrizione": "É freddo, non so dove andare, mi sono perso. Nel labirinto ho incontrato qualcuno che conoscevo già, era il mio riflesso di qualche anno fa. Dopo essermi avventurato in qualcosa di più grande di me ho capito che o sarei morto li o avrei raggiunto un mondo nuovo, proprio quando stavo per mollare ho incontrato colui che sarei diventato dopo, mi ha preso per mano e mi ha accompagnato fuori. Ora sono qui.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "cimitero-01.jpg"
+    },
+    {
+      "section": "art",
+      "slug": "le-radici-ca-tieni",
+      "titolo": "Le radici ca tieni\nMartano (LE) 2024",
+      "descrizione": "Le radici sono il nostro patrimonio, nel sangue c'è la memoria della catena di eventi che arriva fino alla nostra nascita, la quale proseguirà lasciando la sua eredità alle generazioni a venire. Per intuire la nostra strada è necessario conoscere da dove siamo venuti. In questo viaggio ho incontrato un male sconosciuto, di cui tutti hanno paura perchè ha portato morte nella terra e nelle menti del Salento, tornerò per conoscerlo meglio, lo devo ai miei antenati.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "radici-001.jpg"
+    },
+    {
+      "section": "art",
+      "slug": "totem",
+      "titolo": "Totem\nOasi Cocchiola (AR) 2024",
+      "descrizione": "Ho messo in discussione la natura della mia realtà, e ad un tratto l'ho visto li che mi guardava, calmo, pacato, sentivo il suo respiro e lo vedevo muoversi. Non so da dove venisse ne che intenzioni avesse; non so se mi conoscesse già o se mi ha incontrato per caso. So solo che quando ci siamo incontrati ho compreso che la realtà è molto più complessa di quello che vediamo con i nostri occhi distratti e limitati.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "totem-1.jpg"
+    },
+    {
+      "section": "art",
+      "slug": "xylella",
+      "titolo": "Xylella, Bellezza Fragile\nMartano (LE) 2025",
+      "descrizione": "L'uomo è parte dell'ecosistema terrestre. In ogni ecosistema la più piccola variazione può rompere un anello e l'intera catena si spezzerà. L'epidemia di Xylella, ha mandato in rovina secoli di lavoro e sacrifici di generazioni di famiglie di un'intera regione. E a noi non rimane che osservare inermi, a raccogliere i cocci. Ho cercato cercato di smascherare questa epidemia, scavando fino alla sua anima per guardarla negli occhi: ho visto che forma ha, come si muove e mi ha parlato.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "xylella-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "artisti-in-piazza",
+      "titolo": "Artisti in Piazza\nPennabilli (RN) 2025",
+      "descrizione": "Ogni anno la città di Pennabilli diventa la capitale dell’arte e dello spettacolo: 50 compagnie internazionali, si esibiscono per 5 giorni, nelle vie, piazze, vicoli e giardini del centro storico: esibizioni di musica, performance di teatro, nuovo circo, walking act, clownerie, giocoleria, concerti e performance da tutto il mondo.\n\nIl Festival Internazionale di Arti Performative “Artisti in Piazza” fin dal ’97 si è contraddistinto come uno dei più importanti festival di arte di strada in programma in Italia attirando di anno in anno sempre più pubblico fino ad arrivare a circa 40.000 presenze. Con il passare del tempo si è evoluto in festival multidisciplinare, ospitando ogni genere di arti performative esibite in strada. Ogni edizione è caratterizzata da debutti nazionali ed internazionali.",
+      "camera": "Leica SL2S",
+      "ottica": "Sigma Art 24-70 f2.8 DG DN",
+      "luce": "Naturale",
+      "banner": "artisti-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "benevierre-store",
+      "titolo": "Benevierre Store\nPesaro (PU) 2025",
+      "descrizione": "Campagna visiva commerciale per Benevierre, brand italiano di moda sartoriale con sede a Milano, Corso Porta Ticinese 76 (MI) 20123 e a Pesaro, Via Zongo 39 (PU) 61121.",
+      "camera": "Leica SL2S\nFujifilm XPRO2",
+      "ottica": "Sigma Art 24-70 f2.8 DG DN\nFujifilm XF 23mm F2 R WR",
+      "luce": "Naturale",
+      "banner": "benevierre-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "cult-ca-romanino",
+      "titolo": "CULT Ca' Romanino\nUrbino (PU) 2025",
+      "descrizione": "In occasione della Giornata Mondiale della Danza, organizzata da Indipendance in collaborazione con la Fondazione Ca’ Romanino, abbiamo sviluppato un percorso di ricerca e creazione lavorando all’interno degli spazi della residenza Ca’ Romanino, progettata dall’architetto Giancarlo De Carlo.\n\nSituata sulle colline di Urbino, Ca’ Romanino è una celebre residenza brutalista realizzata negli anni ’60 per gli amici Sichirollo. L’edificio si distingue per il forte dialogo tra la struttura in cemento armato e il paesaggio circostante: sorge infatti sulla sommità di un colle, immerso nella campagna, con vista sulla zona di San Cassiano. Oggi sede della Fondazione Ca’ Romanino, la casa rappresenta un esempio unico di architettura integrata nel territorio ed è utilizzata come spazio culturale per soggiorni, seminari e pratiche artistiche, configurandosi come una vera e propria “casa dell’utopia”, in cui architettura, natura e pensiero si incontrano.\n\nLa residenza ha offerto uno sguardo sul processo creativo dall’esterno all’interno, valorizzando il rapporto tra corpo, spazio e paesaggio.\nL’iniziativa fa parte del progetto C.U.L.T – Coreografie Urbane, Linguaggi dei Territori, realizzato grazie al sostegno di ERDIS Marche e con il patrocinio del Comune di Urbino, dell’Università degli Studi di Urbino Carlo Bo, dell’ISIA Urbino e di Tensione U.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "cult1-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "cult-tridente",
+      "titolo": "CULT #1 Tridente\nUrbino (PU) 2025",
+      "descrizione": "Performance site specific esito del progetto C.U.L.T – Coreografie Urbane, Linguaggi dei Territori, organizzato da IMAGO in collaborazione con Indipendance, con il sostegno di ERDIS Marche e il patrocinio del Comune di Urbino, dell’Università degli Studi di Urbino Carlo Bo, della Fondazione Ca’ Romanino, dell’ISIA Urbino e di Tensione U.\nIl progetto si è sviluppato all’interno dei collegi universitari di Urbino, situati sul Colle dei Cappuccini, un complesso architettonico di rilievo internazionale progettato da Giancarlo De Carlo tra il 1962 e il 1983 su incarico del rettore Carlo Bo. Pensati come una “città nella città”, i collegi nascono per integrare la vita studentesca nel paesaggio collinare urbinate, superando il modello tradizionale di residenza universitaria e proponendo una nuova idea di comunità e spazio condiviso.\nL’architettura si articola in diversi nuclei — tra cui Il Colle, il Tridente, l’Aquilone-Serpentine e la Vela — per un totale di oltre mille alloggi. L’uso del mattone a vista e del cemento armato, insieme alla progettazione attenta ai percorsi pedonali e agli spazi comuni, crea un dialogo continuo tra costruito e paesaggio, seguendo le curve naturali del colle e favorendo l’incontro tra le persone.\nAll’interno di questo contesto abbiamo sviluppato un percorso di ricerca durato quattro mesi, lavorando con un gruppo di studenti provenienti da diverse facoltà dell’Università di Urbino, molti dei quali alla loro prima esperienza con il movimento. Abbiamo abitato questi spazi con il corpo, la voce e l’immaginazione, costruendo un dialogo diretto con l’architettura di De Carlo.\nCi siamo mossi tra spalti, ringhiere, legno e cemento, attraversando e trasformando lo spazio. Il corpo è diventato parte del luogo: ogni passo, ogni appoggio, ogni sguardo restituiva una storia, facendo emergere la memoria di chi quei luoghi li ha pensati, costruiti e vissuti. Nel muoverci, abbiamo ritrovato anche qualcosa di noi.\nLa performance finale, CULT #1 Tridente, è stata un momento di incontro tra pubblico e performer. Lo sguardo si è fatto vicino, partecipe, fino ad annullare la distanza e trasformare lo spazio in un’esperienza condivisa.\nUn dialogo tra materia e movimento, tra memoria e presenza, che restituisce ai luoghi la loro natura viva: non solo architetture, ma corpi capaci di accogliere, trasformare e generare nuove possibilità.",
+      "camera": "",
+      "ottica": "",
+      "luce": "",
+      "banner": "cult2-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "signorina-belletti",
+      "titolo": "Signorina, Performance di Sofia Belletti\nColline delle Cesane (PU) 2025",
+      "descrizione": "Documentazione fotografica e visiva di una performance dedicata alla relazione tra corpo e paesaggio sonoro. Il gesto come linguaggio, il respiro come ritmo visivo.",
+      "camera": "Leica SL2S",
+      "ottica": "Sigma Art 24-70 f2.8 DG DN",
+      "luce": "Naturale",
+      "banner": "belletti-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "sono-manifesto-1-fantini",
+      "titolo": "SONO MANIFESTO #1, \nWorkshop con Ivan Fantini\nPalazzo Odasi Urbino (PU) 2024",
+      "descrizione": "Proiezione del documentario su Ivan Fantini “Cosa c’è di strano in tutto questo?” (2022), un mediometraggio di 36 minuti, diretto da Mauro Bartoli. A seguire, dialogo degli studenti e delle studentesse con Ivan Fantini e baratto di prodotti del Boscost’orto* (vedi nota biografica) con i partecipanti.\n\nProgetto didattico a cura della prof.ssa Roberta Baldaro.\n\nIvan Fantini è un cuoco “eterodosso e dimissionario” e scrittore per urgenza. Nel culmine del successo, abbandona tutto per abbracciare le colline romagnole dove crea Boscost’orto, un orto nato dal disboscamento di un bosco, garantendosi una certa autonomia alimentare. Con il baratto di marmellate, succhi di frutta, sottaceti, sciroppi e liquori riceve in cambio prodotti che non riesce a prodursi (come il caffè, il riso, la farina di farro).\nAutore di “Anonimo fra gli anonimi”, “Educarsi all’abbandono”, “Io la vedevo, dovevo”, “A parte il resto, tutto bene” e “Animanimale”, pratica la scrittura come una necessità e quando il clima non permette di lavorare all’aperto.",
+      "camera": "Sony Alpha 7III",
+      "ottica": "Sony SEL24-105 G f4.0",
+      "luce": "Interni",
+      "banner": "fantini-1.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "sono-manifesto-2-bianchi",
+      "titolo": "SONO MANIFESTO #2, \nWorkshop con Paola Bianchi\nCinema Ducale Urbino (PU) 2025",
+      "descrizione": "Paola Bianchi è corpo parlante, manifestazione fisica di un pensiero, è un'idea che si esprime con gesti - ma anche con fiato, fruscii, urti - e che, di volta in volta, diventa iconografia, evocazione, messaggio. Paola Bianchi è una forma dinamica che parla di politica, di società, di collettività attraverso torsioni nodose, posture articolate e tensioni urgenti. Per conoscere meglio il suo FARSI MANIFESTO si propone un workshop di 2 giorni, rivolto ad un numero prestabilito di partecipanti (indicato dall'artista), che si completerà con una performance finale.\n\nProgetto didattico a cura della prof.ssa Roberta Baldaro.\n\nPaola Bianchi, coreografa e danzatrice, è attiva sulla scena della danza contemporanea a partire dalla fine degli anni ottanta. Con i suoi spettacoli partecipa a festival nazionali e internazionali. conduce laboratori di ricerca coreografica e tiene lezioni teoriche presso alcuni atenei italiani. Attenta alla teorizzazione delle pratiche corporee nel 2014 scrive “Corpo politico. Distopia del gesto, utopia del movimento”, volume pubblicato da Editoria & Spettacolo e curato da Silvia Bottiroli e Silvia Parlagreco. Ha scritto numerosi saggi brevi incentrati sul tema del corpo e della danza, pubblicati in libri e riviste. Nel 2020 vince il Premio Rete Critica 9 e ¾ con il progetto elp. nello stesso anno Teatro Akropolis realizza \"La parte maledetta. Viaggio ai confini del teatro. Paola Bianchi\", progetto cinematografico che restituisce in forma di intervista il percorso artistico della coreografa.",
+      "camera": "Leica SL2S",
+      "ottica": "Sigma Art 24-70 f2.8 DG DN",
+      "luce": "Artificiale continua",
+      "banner": "PB-01.jpg"
+    },
+    {
+      "section": "pro",
+      "slug": "untitled-comelli",
+      "titolo": "Untitled, Performance di Giovanni Comelli\nColline delle Cesane (PU) 2025",
+      "descrizione": "Un'indagine sul movimento e sulla fragilità del corpo. Le immagini catturano la tensione tra equilibrio e collasso, tra intenzione e abbandono.",
+      "camera": "Sony Alpha 6000",
+      "ottica": "Sony SEL24-105 G f4.0",
+      "luce": "Naturale",
+      "banner": "comelli-1.jpg"
+    }
+  ],
+  "about": {
+    "text": "Sono Alfredo Enrico Iacobucci, nato a Urbino nel 2002.\nIl mio percorso nasce dalla necessità di esplorare la percezione, la memoria e la materia visiva come strumenti per comprendere la realtà.\nUtilizzo fotografia, installazione e linguaggi misti per indagare la relazione tra corpo, immagine e spazio.\nIl mio lavoro si sviluppa attraverso serie fotografiche, progetti site-specific e collaborazioni professionali in ambito commerciale, editoriale e performativo.\nMi occupo di direzione creativa, fotografia e post-produzione, con un approccio attento alla coerenza visiva e al racconto identitario.\nOgni progetto nasce dal dialogo e si sviluppa attraverso soluzioni visive personalizzate.",
+    "quote": "Scommetto che ti sentiresti solo, \nse fossi l'unico sano di mente",
+    "photo": "",
+    "video": ""
+  }
+}</script>
+
+<script>
+(function() {
+  "use strict";
+
+  // ========== STATE ==========
+  const STORAGE_TOKEN = "editor-github-token";
+  const STORAGE_REPO = "editor-github-repo";
+  const STORAGE_BRANCH = "editor-github-branch";
+  const STORAGE_DRAFT = "editor-draft-contenuti";
+
+  // Seed from embedded JSON (file contents)
+  const embeddedEl = document.getElementById("embeddedContenuti");
+  let embeddedData;
+  try { embeddedData = JSON.parse(embeddedEl.textContent); }
+  catch(e) { embeddedData = { version: 1, projects: [], about: { text: "", quote: "", photo: "", video: "" } }; }
+
+  // Load draft from localStorage if present (user had unsaved changes)
+  const draftRaw = localStorage.getItem(STORAGE_DRAFT);
+  let state = draftRaw ? JSON.parse(draftRaw) : JSON.parse(JSON.stringify(embeddedData));
+  state.projects = state.projects || [];
+  state.about = state.about || { text: "", quote: "", photo: "", video: "" };
+
+  // Track photos per project: { [section/slug]: [{name, sha, url}] }
+  const photosByProject = {};
+  // About media
+  let aboutMedia = [];
+
+  let currentKey = null; // "art/slug" or "pro/slug" or "about"
+  let dirty = draftRaw !== null;
+
+  // ========== GITHUB SETTINGS ==========
+  function getToken() { return localStorage.getItem(STORAGE_TOKEN) || ""; }
+  function getRepo() { return localStorage.getItem(STORAGE_REPO) || "alfredoenricoiacobucci/Portfolio"; }
+  function getBranch() { return localStorage.getItem(STORAGE_BRANCH) || "main"; }
+
+  function updateTokenStatus() {
+    const el = document.getElementById("tokenState");
+    el.textContent = getToken() ? "impostato" : "non impostato";
+    el.style.color = getToken() ? "#4ade80" : "#f87171";
+  }
+
+  // ========== GITHUB API ==========
+  async function ghGet(path) {
+    const token = getToken();
+    if (!token) throw new Error("Token GitHub mancante. Clicca su 'Impostazioni GitHub'.");
+    const url = `https://api.github.com/repos/${getRepo()}/contents/${path}?ref=${getBranch()}`;
+    const res = await fetch(url, {
+      headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github+json" }
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`GitHub GET ${path}: ${res.status}`);
+    return res.json();
+  }
+
+  async function ghPut(path, contentB64, message, sha) {
+    const token = getToken();
+    if (!token) throw new Error("Token GitHub mancante.");
+    const url = `https://api.github.com/repos/${getRepo()}/contents/${path}`;
+    const body = {
+      message,
+      content: contentB64,
+      branch: getBranch(),
+    };
+    if (sha) body.sha = sha;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`GitHub PUT ${path}: ${res.status} — ${err.substring(0, 200)}`);
+    }
+    return res.json();
+  }
+
+  async function ghDelete(path, sha, message) {
+    const token = getToken();
+    const url = `https://api.github.com/repos/${getRepo()}/contents/${path}`;
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message, sha, branch: getBranch() })
+    });
+    if (!res.ok) throw new Error(`GitHub DELETE: ${res.status}`);
+    return res.json();
+  }
+
+  async function ghListDir(path) {
+    const token = getToken();
+    if (!token) return [];
+    const url = `https://api.github.com/repos/${getRepo()}/contents/${path}?ref=${getBranch()}`;
+    const res = await fetch(url, {
+      headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github+json" }
+    });
+    if (res.status === 404) return [];
+    if (!res.ok) throw new Error(`GitHub LIST ${path}: ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
+
+  function str2b64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function file2b64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        const b64 = result.split(",")[1];
+        resolve(b64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ========== DRAFT / DIRTY ==========
+  function markDirty() {
+    dirty = true;
+    localStorage.setItem(STORAGE_DRAFT, JSON.stringify(state));
+    document.getElementById("dirtyBadge").style.display = "inline-block";
+    document.getElementById("dirtyBadge").className = "status-badge work";
+    document.getElementById("dirtyBadge").textContent = "Modifiche non salvate";
+  }
+  function clearDirty() {
+    dirty = false;
+    localStorage.removeItem(STORAGE_DRAFT);
+    document.getElementById("dirtyBadge").style.display = "none";
+  }
+
+  // ========== TOAST ==========
+  function toast(msg, type = "") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show " + type;
+    setTimeout(() => { t.className = "toast " + type; }, 3500);
+  }
+
+  // ========== SLUG ==========
+  function slugify(s) {
+    return (s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  }
+
+  // ========== SECTION NAVIGATION ==========
+  let activeSection = "contenuti";
+
+  function switchSection(section) {
+    activeSection = section;
+    document.querySelectorAll(".topbar-nav-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.section === section);
+    });
+    document.getElementById("sectionContenuti").style.display = section === "contenuti" ? "" : "none";
+    document.getElementById("sectionAnalytics").style.display = section === "analytics" ? "" : "none";
+    document.getElementById("sectionImpostazioni").style.display = section === "impostazioni" ? "" : "none";
+
+    if (section === "analytics") loadAndRenderAnalytics();
+    if (section === "impostazioni") renderImpostazioni();
+  }
+
+  document.querySelectorAll(".topbar-nav-btn").forEach(btn => {
+    btn.onclick = () => switchSection(btn.dataset.section);
+  });
+
+  // ========== SIDEBAR RENDER ==========
+  function renderSidebar() {
+    const listArt = document.getElementById("listArt");
+    const listPro = document.getElementById("listPro");
+    const listAbout = document.getElementById("listAbout");
+    listArt.innerHTML = "";
+    listPro.innerHTML = "";
+    listAbout.innerHTML = "";
+
+    state.projects.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "item" + (currentKey === `${p.section}/${p.slug}` ? " active" : "");
+      const title = (p.titolo || p.slug).split("\n")[0] || p.slug;
+      const photoCount = (photosByProject[`${p.section}/${p.slug}`] || []).length;
+      div.innerHTML = `<span>${escapeHtml(title)}</span>` +
+        (photoCount ? `<span class="photo-count">${photoCount}</span>` : "");
+      div.onclick = () => selectProject(`${p.section}/${p.slug}`);
+      if (p.section === "art") listArt.appendChild(div);
+      else listPro.appendChild(div);
+    });
+
+    const aboutDiv = document.createElement("div");
+    aboutDiv.className = "item" + (currentKey === "about" ? " active" : "");
+    aboutDiv.innerHTML = `<span>About (bio)</span>`;
+    aboutDiv.onclick = () => selectProject("about");
+    listAbout.appendChild(aboutDiv);
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement("div");
+    div.textContent = s || "";
+    return div.innerHTML;
+  }
+
+  // ========== CONTENT RENDER ==========
+  function selectProject(key) {
+    currentKey = key;
+    renderSidebar();
+    if (key === "about") renderAbout();
+    else renderProject(key);
+    // Fetch photos asynchronously in background
+    if (key !== "about") fetchPhotos(key);
+    else fetchAboutMedia();
+  }
+
+  function renderProject(key) {
+    const [section, slug] = key.split("/");
+    const p = state.projects.find(x => x.section === section && x.slug === slug);
+    if (!p) return;
+    const content = document.getElementById("content");
+    content.classList.remove("empty-state");
+    content.innerHTML = `
+      <div class="project-header">
+        <div>
+          <div class="badge ${section}">${section === "art" ? "Artwork" : "Professional"}</div>
+          <div class="title">${escapeHtml((p.titolo || "").split("\n")[0] || slug)}</div>
+          <div class="slug">contenuti/${section}/${slug}/</div>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="btnDelete">Elimina progetto</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Titolo (1ª riga: titolo, 2ª riga: luogo/anno)</label>
+        <textarea id="f_titolo" rows="3" class="site-preview-title">${escapeHtml(p.titolo || "")}</textarea>
+      </div>
+
+      <div class="site-layout-project">
+        <div class="site-col-text">
+          <div class="field">
+            <label>Descrizione</label>
+            <textarea id="f_descrizione" class="large site-preview">${escapeHtml(p.descrizione || "")}</textarea>
+          </div>
+        </div>
+        <div class="site-col-tech">
+          <div class="field">
+            <label>Camera</label>
+            <textarea id="f_camera">${escapeHtml(p.camera || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>Ottica</label>
+            <textarea id="f_ottica">${escapeHtml(p.ottica || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>Luce</label>
+            <textarea id="f_luce">${escapeHtml(p.luce || "")}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Banner (nome file foto di copertina)</label>
+        <input type="text" id="f_banner" value="${escapeHtml(p.banner || "")}">
+        <div class="hint">Clicca su una foto qui sotto per impostarla come banner.</div>
+      </div>
+
+      <div class="photos-section">
+        <div class="photos-header">
+          <h3>Foto del progetto</h3>
+        </div>
+        <div class="upload-area" id="uploadArea">
+          Trascina qui le foto (o clicca per scegliere)
+          <div class="hint2">Si caricheranno su GitHub in contenuti/${section}/${slug}/</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+        <div class="photos-grid" id="photosGrid">
+          <div style="color:var(--text3);font-size:12px;">Caricamento foto da GitHub…</div>
+        </div>
+      </div>
+    `;
+
+    // Wire fields
+    ["titolo","descrizione","camera","ottica","luce","banner"].forEach(field => {
+      const el = document.getElementById(`f_${field}`);
+      el.addEventListener("input", () => {
+        p[field] = el.value;
+        markDirty();
+        if (field === "titolo") renderSidebar();
+      });
+    });
+
+    // Delete
+    document.getElementById("btnDelete").onclick = () => {
+      if (!confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella del progetto verrà rimossa da GitHub al prossimo Salva.`)) return;
+      state.projects = state.projects.filter(x => !(x.section === section && x.slug === slug));
+      markDirty();
+      currentKey = null;
+      renderSidebar();
+      document.getElementById("content").className = "content empty-state";
+      document.getElementById("content").innerHTML = "Seleziona un progetto dalla lista a sinistra.";
+      toast("Progetto rimosso. Salva per rendere effettivo.", "ok");
+    };
+
+    // Upload area
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("fileInput");
+    uploadArea.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => handleUpload(e.target.files, key);
+    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add("drag"); };
+    uploadArea.ondragleave = () => uploadArea.classList.remove("drag");
+    uploadArea.ondrop = (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("drag");
+      handleUpload(e.dataTransfer.files, key);
+    };
+  }
+
+  function renderAbout() {
+    const a = state.about;
+    const content = document.getElementById("content");
+    content.classList.remove("empty-state");
+
+    // Calcola le due colonne del testo About
+    const fullText = a.text || "";
+    let col1Text, col2Text;
+    if (fullText.includes("---")) {
+      const parts = fullText.split("---");
+      col1Text = parts[0].trim();
+      col2Text = parts.slice(1).join("---").trim();
+    } else {
+      const paragraphs = fullText.split("\n").filter(Boolean);
+      const mid = Math.ceil(paragraphs.length / 2);
+      col1Text = paragraphs.slice(0, mid).join("\n");
+      col2Text = paragraphs.slice(mid).join("\n");
+    }
+
+    content.innerHTML = `
+      <div class="project-header">
+        <div>
+          <div class="badge about">About</div>
+          <div class="title">Pagina About (biografia)</div>
+          <div class="slug">contenuti/about/</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Testo biografia — due colonne (come nel sito)</label>
+        <div class="site-layout-about">
+          <div class="site-col-half">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:4px;">Colonna sinistra</div>
+            <textarea id="f_text_col1" class="large site-preview">${escapeHtml(col1Text)}</textarea>
+          </div>
+          <div class="site-col-half">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:4px;">Colonna destra</div>
+            <textarea id="f_text_col2" class="large site-preview">${escapeHtml(col2Text)}</textarea>
+          </div>
+        </div>
+        <div class="hint">Le due textarea corrispondono alle due colonne nel sito.</div>
+      </div>
+
+      <div class="field">
+        <label>Citazione</label>
+        <textarea id="f_quote">${escapeHtml(a.quote || "")}</textarea>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Foto (nome file nella cartella media/)</label>
+          <input type="text" id="f_photo" value="${escapeHtml(a.photo || "")}">
+        </div>
+        <div class="field">
+          <label>Video (nome file nella cartella media/)</label>
+          <input type="text" id="f_video" value="${escapeHtml(a.video || "")}">
+        </div>
+      </div>
+
+      <div class="photos-section">
+        <div class="photos-header">
+          <h3>Media (foto + video)</h3>
+        </div>
+        <div class="upload-area" id="uploadArea">
+          Trascina qui foto o video (o clicca)
+          <div class="hint2">Si caricheranno in contenuti/about/</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;">
+        <div class="photos-grid" id="photosGrid">
+          <div style="color:var(--text3);font-size:12px;">Caricamento media da GitHub…</div>
+        </div>
+      </div>
+    `;
+
+    // Bind colonne About: ricombina col1 + "---" + col2
+    const col1El = document.getElementById("f_text_col1");
+    const col2El = document.getElementById("f_text_col2");
+    const updateAboutText = () => {
+      a.text = col1El.value.trim() + "\n---\n" + col2El.value.trim();
+      markDirty();
+    };
+    col1El.addEventListener("input", updateAboutText);
+    col2El.addEventListener("input", updateAboutText);
+
+    ["quote","photo","video"].forEach(f => {
+      const el = document.getElementById(`f_${f}`);
+      el.addEventListener("input", () => { a[f] = el.value; markDirty(); });
+    });
+
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("fileInput");
+    uploadArea.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => handleUpload(e.target.files, "about");
+    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add("drag"); };
+    uploadArea.ondragleave = () => uploadArea.classList.remove("drag");
+    uploadArea.ondrop = (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("drag");
+      handleUpload(e.dataTransfer.files, "about");
+    };
+  }
+
+  // ========== PHOTOS ==========
+  async function fetchPhotos(key) {
+    if (!getToken()) {
+      document.getElementById("photosGrid").innerHTML =
+        '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire le foto.</div>';
+      return;
+    }
+    const [section, slug] = key.split("/");
+    const path = `contenuti/${section}/${slug}`;
+    try {
+      const items = await ghListDir(path);
+      const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
+      photosByProject[key] = imgs.map(i => ({
+        name: i.name,
+        sha: i.sha,
+        url: i.download_url
+      }));
+      if (currentKey === key) renderPhotosGrid(key);
+      renderSidebar();
+    } catch(e) {
+      document.getElementById("photosGrid").innerHTML =
+        `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  async function fetchAboutMedia() {
+    if (!getToken()) {
+      document.getElementById("photosGrid").innerHTML =
+        '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire i media.</div>';
+      return;
+    }
+    try {
+      const items = await ghListDir("contenuti/about");
+      aboutMedia = items.filter(i => i.type === "file").map(i => ({
+        name: i.name, sha: i.sha, url: i.download_url
+      }));
+      if (currentKey === "about") renderAboutMediaGrid();
+    } catch(e) {
+      document.getElementById("photosGrid").innerHTML =
+        `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  function renderPhotosGrid(key) {
+    const [section, slug] = key.split("/");
+    const p = state.projects.find(x => x.section === section && x.slug === slug);
+    const grid = document.getElementById("photosGrid");
+    const photos = photosByProject[key] || [];
+    if (!photos.length) {
+      grid.innerHTML = '<div style="color:var(--text3);font-size:12px;">Nessuna foto. Caricane una sopra.</div>';
+      return;
+    }
+
+    // Sort by custom order if available, otherwise alphabetical
+    const ordine = (p && p.ordine) || [];
+    const sorted = [...photos].sort((a, b) => {
+      const ia = ordine.indexOf(a.name);
+      const ib = ordine.indexOf(b.name);
+      if (ia >= 0 && ib >= 0) return ia - ib;
+      if (ia >= 0) return -1;
+      if (ib >= 0) return 1;
+      return a.name.localeCompare(b.name, undefined, { numeric: true });
+    });
+
+    grid.innerHTML = "";
+    let dragSrcIndex = null;
+
+    sorted.forEach((photo, idx) => {
+      const card = document.createElement("div");
+      card.className = "photo-card" + (p.banner === photo.name ? " banner" : "");
+      card.draggable = true;
+      card.dataset.idx = idx;
+      card.innerHTML = `
+        <div class="drag-handle">&#x2630;</div>
+        ${p.banner === photo.name ? '<div class="banner-label">Banner</div>' : ''}
+        <img src="${photo.url}" alt="" loading="lazy" draggable="false">
+        <div class="overlay">
+          <div class="name">${escapeHtml(photo.name)}</div>
+          <div class="photo-actions">
+            <button data-act="banner">Banner</button>
+            <button data-act="delete">Elimina</button>
+          </div>
+        </div>
+      `;
+
+      // Drag-and-drop for reordering
+      card.addEventListener("dragstart", (e) => {
+        dragSrcIndex = idx;
+        card.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      card.addEventListener("dragend", () => {
+        card.classList.remove("dragging");
+        grid.querySelectorAll(".photo-card").forEach(c => c.classList.remove("drag-over"));
+      });
+      card.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        card.classList.add("drag-over");
+      });
+      card.addEventListener("dragleave", () => {
+        card.classList.remove("drag-over");
+      });
+      card.addEventListener("drop", (e) => {
+        e.preventDefault();
+        card.classList.remove("drag-over");
+        const targetIdx = idx;
+        if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
+        // Reorder
+        const newOrder = sorted.map(ph => ph.name);
+        const [moved] = newOrder.splice(dragSrcIndex, 1);
+        newOrder.splice(targetIdx, 0, moved);
+        p.ordine = newOrder;
+        // Also reorder photosByProject to match
+        const reordered = newOrder.map(n => sorted.find(ph => ph.name === n)).filter(Boolean);
+        photosByProject[key] = reordered;
+        markDirty();
+        renderPhotosGrid(key);
+        toast("Ordine aggiornato.", "ok");
+      });
+
+      card.querySelector('[data-act="banner"]').onclick = (e) => {
+        e.stopPropagation();
+        p.banner = photo.name;
+        document.getElementById("f_banner").value = photo.name;
+        markDirty();
+        renderPhotosGrid(key);
+      };
+      card.querySelector('[data-act="delete"]').onclick = async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Eliminare ${photo.name} da GitHub?`)) return;
+        try {
+          await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+            `editor: delete ${section}/${slug}/${photo.name}`);
+          photosByProject[key] = sorted.filter(x => x.name !== photo.name);
+          if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
+          renderPhotosGrid(key);
+          renderSidebar();
+          toast("Foto eliminata.", "ok");
+        } catch(err) { toast("Errore: " + err.message, "err"); }
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function renderAboutMediaGrid() {
+    const grid = document.getElementById("photosGrid");
+    if (!aboutMedia.length) {
+      grid.innerHTML = '<div style="color:var(--text3);font-size:12px;">Nessun media. Caricane uno sopra.</div>';
+      return;
+    }
+    grid.innerHTML = "";
+    aboutMedia.forEach(media => {
+      const isVideo = /\.(mp4|webm|mov)$/i.test(media.name);
+      const card = document.createElement("div");
+      card.className = "photo-card";
+      card.innerHTML = `
+        ${isVideo
+          ? `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a1a1a;color:var(--text3);font-size:10px;">VIDEO</div>`
+          : `<img src="${media.url}" alt="" loading="lazy">`}
+        <div class="overlay">
+          <div class="name">${escapeHtml(media.name)}</div>
+          <div class="photo-actions">
+            <button data-act="set">${isVideo ? "Usa video" : "Usa foto"}</button>
+            <button data-act="delete">Elimina</button>
+          </div>
+        </div>
+      `;
+      card.querySelector('[data-act="set"]').onclick = (e) => {
+        e.stopPropagation();
+        if (isVideo) {
+          state.about.video = media.name;
+          document.getElementById("f_video").value = media.name;
+        } else {
+          state.about.photo = media.name;
+          document.getElementById("f_photo").value = media.name;
+        }
+        markDirty();
+      };
+      card.querySelector('[data-act="delete"]').onclick = async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Eliminare ${media.name}?`)) return;
+        try {
+          await ghDelete(`contenuti/about/${media.name}`, media.sha,
+            `editor: delete about/${media.name}`);
+          aboutMedia = aboutMedia.filter(x => x.name !== media.name);
+          renderAboutMediaGrid();
+          toast("Media eliminato.", "ok");
+        } catch(err) { toast("Errore: " + err.message, "err"); }
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  // ========== ANALYTICS ==========
+  let analyticsCache = null;
+
+  async function fetchAnalyticsData() {
+    // Leggi dal branch "data" (separato da main per evitare conflitti)
+    try {
+      const token = getToken();
+      const repo = getRepo();
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/analytics.json?ref=data`,
+        { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" } }
+      );
+      if (res.ok) {
+        const remote = await res.json();
+        if (remote && remote.content) {
+          const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+          analyticsCache = JSON.parse(decoded);
+          return analyticsCache;
+        }
+      }
+    } catch (e) {
+      console.warn("Errore lettura analytics:", e.message);
+    }
+    return { views: { total: 0, art: 0, pro: 0, landing: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0 };
+  }
+
+  // renderAnalytics is now just loadAndRenderAnalytics since section is separate
+
+  async function loadAndRenderAnalytics() {
+    const container = document.getElementById("analyticsContent");
+    if (!container) return;
+
+    if (!getToken()) {
+      container.innerHTML = '<div style="text-align:center; padding: 80px 20px; color: var(--text3);">Configura il token GitHub nella sezione <strong>Impostazioni</strong> per vedere le statistiche.</div>';
+      return;
+    }
+
+    container.innerHTML = '<div style="text-align:center; padding: 80px 20px; color: var(--text3);">Caricamento dati da GitHub...</div>';
+
+    const data = await fetchAnalyticsData();
+    if (!data || !data.views) {
+      container.innerHTML = '<p style="color:var(--text3);">Nessun dato disponibile. Le statistiche si popolano con le visite al sito.</p>';
+      return;
+    }
+
+    const v = data.views || {};
+    const totalViews = v.total || 0;
+    const artViews = v.art || 0;
+    const proViews = v.pro || 0;
+    const landingViews = v.landing || 0;
+    const contacts = data.contacts || 0;
+
+    // Art/Pro percentage
+    const artPct = totalViews > 0 ? Math.round((artViews / (artViews + proViews || 1)) * 100) : 0;
+    const proPct = totalViews > 0 ? Math.round((proViews / (artViews + proViews || 1)) * 100) : 0;
+
+    // Top projects
+    const projects = data.projects || {};
+    const topProjects = Object.entries(projects)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Top photos
+    const photos = data.photos || {};
+    const topPhotos = Object.entries(photos)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Daily data (last 30 days)
+    const daily = data.daily || {};
+    const days = Object.keys(daily).sort().slice(-30);
+    const maxDaily = Math.max(1, ...days.map(d => daily[d]?.total || 0));
+
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Analytics</h2>
+          <p style="font-size: 12px; color: var(--text3);">Statistiche di navigazione del portfolio</p>
+        </div>
+        <button class="ghost" id="btnRefreshAnalytics" style="font-size: 11px;">Aggiorna dati</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: var(--text);">${totalViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Visite totali</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #a78bfa;">${artViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Artwork (${artPct}%)</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #60a5fa;">${proViews}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Professional (${proPct}%)</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 700; color: #fbbf24;">${contacts}</div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Contatti ricevuti</div>
+        </div>
+      </div>
+
+      ${days.length > 0 ? `
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+          Visite ultimi 30 giorni
+        </h3>
+        <div style="display: flex; align-items: flex-end; gap: 2px; height: 100px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px 8px;">
+          ${days.map(d => {
+            const t = daily[d]?.total || 0;
+            const h = Math.max(2, (t / maxDaily) * 80);
+            const art = daily[d]?.art || 0;
+            const pro = daily[d]?.pro || 0;
+            return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;" title="${d}: ${t} visite (art: ${art}, pro: ${pro})">
+              <div style="font-size:8px; color:var(--text3);">${t || ""}</div>
+              <div style="width:100%; max-width:20px; height:${h}px; background: var(--red); border-radius: 2px; opacity: 0.8;"></div>
+            </div>`;
+          }).join("")}
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); margin-top: 4px; padding: 0 8px;">
+          <span>${days[0] || ""}</span>
+          <span>${days[days.length - 1] || ""}</span>
+        </div>
+      </div>
+      ` : ""}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div>
+          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+            Classifica progetti
+          </h3>
+          ${topProjects.length > 0 ? `
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+            ${topProjects.map(([name, count], i) => {
+              const pct = topProjects[0][1] > 0 ? (count / topProjects[0][1]) * 100 : 0;
+              const label = name.replace(/^(art|pro)\//, (m) => `<span class="badge ${m.replace("/", "")}" style="font-size:8px; padding:1px 5px; margin-right:6px;">${m.replace("/", "")}</span>`);
+              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""} position: relative;">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background: var(--red); opacity: 0.06;"></div>
+                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+                <span style="font-size: 13px; color: var(--text); flex: 1; position: relative;">${label}</span>
+                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; position: relative;">${count}</span>
+              </div>`;
+            }).join("")}
+          </div>
+          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
+        </div>
+
+        <div>
+          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+            Foto più viste
+          </h3>
+          ${topPhotos.length > 0 ? `
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+            ${topPhotos.map(([path, count], i) => {
+              const filename = path.split("/").pop();
+              const project = path.split("/").slice(1, -1).join("/");
+              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""}">
+                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(filename)}</div>
+                  <div style="font-size: 10px; color: var(--text3);">${escapeHtml(project)}</div>
+                </div>
+                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums;">${count}</span>
+              </div>`;
+            }).join("")}
+          </div>
+          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
+        </div>
+      </div>
+
+      <div style="margin-top: 32px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 8px;">
+          Come funziona
+        </h3>
+        <p style="font-size: 12px; color: var(--text3); line-height: 1.6;">
+          Le statistiche vengono registrate automaticamente quando un visitatore naviga nel portfolio.
+          I dati vengono salvati in <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">contenuti/analytics.json</code> nel repository GitHub.
+          Ogni visita unica per sessione viene conteggiata una sola volta per evitare conteggi multipli.
+          Per funzionare, la variabile d'ambiente <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">GITHUB_TOKEN</code> deve essere configurata su Vercel.
+        </p>
+      </div>
+    `;
+    const refreshBtn = document.getElementById("btnRefreshAnalytics");
+    if (refreshBtn) refreshBtn.onclick = () => { analyticsCache = null; loadAndRenderAnalytics(); };
+  }
+
+  // ========== IMPOSTAZIONI ==========
+  function renderImpostazioni() {
+    const container = document.getElementById("impostazioniContent");
+    if (!container) return;
+    const token = getToken();
+    const repo = getRepo();
+    const branch = getBranch();
+
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Impostazioni</h2>
+          <p style="font-size: 12px; color: var(--text3);">Configurazione GitHub, cache e diagnostica</p>
+        </div>
+      </div>
+
+      <!-- GITHUB -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">GitHub & Token</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div class="field"><label>Repository</label><input type="text" id="imp_repo" value="${escapeHtml(repo)}"></div>
+            <div class="field"><label>Branch</label><input type="text" id="imp_branch" value="${escapeHtml(branch)}"></div>
+          </div>
+          <div class="field" style="margin-bottom: 16px;">
+            <label>Personal Access Token</label>
+            <input type="password" id="imp_token" value="${token ? token : ""}" placeholder="ghp_xxxxxxxxxxxx" style="font-family: monospace;">
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 12px; color: var(--text3);">Stato:</span>
+            <span style="font-size: 12px; color: ${token ? "#4ade80" : "#f87171"}; font-weight: 600;">${token ? "Connesso" : "Non connesso"}</span>
+            ${token ? `<button class="ghost" id="imp_test" style="font-size: 11px; padding: 4px 10px;">Testa connessione</button>` : ""}
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="primary" id="imp_save_token">Salva impostazioni</button>
+            ${token ? `<button class="ghost" id="imp_clear_token" style="color: #f87171;">Disconnetti</button>` : ""}
+          </div>
+          <p style="font-size: 11px; color: var(--text3); margin-top: 12px;">
+            Il token viene salvato solo nel tuo browser (localStorage).
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Portfolio%20AEI%20Editor" target="_blank" style="color: var(--red);">Crea un nuovo token</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- CACHE & SINCRONIZZAZIONE -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Cache & Sincronizzazione</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <p style="font-size: 12px; color: var(--text2); margin-bottom: 16px;">
+            Se il sito non si aggiorna o il Manager mostra dati vecchi, usa questi strumenti per risincronizzare.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="ghost" id="imp_force_sync">Forza sincronizzazione da GitHub</button>
+            <button class="ghost" id="imp_clear_draft">Cancella bozza locale</button>
+            <button class="ghost" id="imp_clear_all" style="color: #f87171;">Reset completo (cancella tutto)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERCEL -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Vercel & Deploy</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <p style="font-size: 12px; color: var(--text2); margin-bottom: 12px;">
+            Ogni volta che salvi e pubblichi, viene creato un commit su GitHub che attiva automaticamente un deploy su Vercel.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/deployments" target="_blank" class="ghost" style="text-decoration: none; padding: 6px 14px; font-size: 12px; display: inline-block;">Apri dashboard Vercel</a>
+          </div>
+          <div id="imp_deploy_status" style="margin-top: 12px;"></div>
+        </div>
+      </div>
+
+      <!-- INFO -->
+      <div>
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Info</h3>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; font-size: 12px; color: var(--text3); line-height: 1.8;">
+          <div><strong style="color:var(--text2);">Sito:</strong> alfredoenricoiacobucci.art</div>
+          <div><strong style="color:var(--text2);">Repository:</strong> ${escapeHtml(repo)}</div>
+          <div><strong style="color:var(--text2);">Branch:</strong> ${escapeHtml(branch)}</div>
+          <div><strong style="color:var(--text2);">Progetti:</strong> ${state.projects.length}</div>
+          <div><strong style="color:var(--text2);">Versione Manager:</strong> 2.0</div>
+        </div>
+      </div>
+    `;
+
+    // Event handlers
+    document.getElementById("imp_save_token").onclick = () => {
+      const t = document.getElementById("imp_token").value.trim();
+      const r = document.getElementById("imp_repo").value.trim();
+      const b = document.getElementById("imp_branch").value.trim();
+      if (t) localStorage.setItem("editor-token-github", t);
+      if (r) localStorage.setItem("editor-repo-github", r);
+      localStorage.setItem("editor-branch-github", b);
+      updateTokenStatus();
+      toast("Impostazioni salvate.", "ok");
+      renderImpostazioni();
+    };
+
+    const clearBtn = document.getElementById("imp_clear_token");
+    if (clearBtn) clearBtn.onclick = () => {
+      localStorage.removeItem("editor-token-github");
+      updateTokenStatus();
+      toast("Token rimosso.", "ok");
+      renderImpostazioni();
+    };
+
+    const testBtn = document.getElementById("imp_test");
+    if (testBtn) testBtn.onclick = async () => {
+      testBtn.textContent = "Testando...";
+      try {
+        const res = await fetch(`https://api.github.com/repos/${getRepo()}`, {
+          headers: { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" }
+        });
+        if (res.ok) {
+          toast("Connessione a GitHub riuscita!", "ok");
+        } else {
+          toast("Connessione fallita: " + res.status, "err");
+        }
+      } catch (e) {
+        toast("Errore: " + e.message, "err");
+      }
+      testBtn.textContent = "Testa connessione";
+    };
+
+    document.getElementById("imp_force_sync").onclick = async () => {
+      if (!getToken()) { toast("Imposta prima il token.", "err"); return; }
+      try {
+        const remote = await ghGet("contenuti/contenuti.json");
+        if (remote && remote.content) {
+          const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+          const remoteState = JSON.parse(decoded);
+          if (remoteState.projects) {
+            state.projects = remoteState.projects;
+            state.about = remoteState.about || state.about;
+            clearDirty();
+            embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+            renderSidebar();
+            toast("Sincronizzato con GitHub.", "ok");
+          }
+        }
+      } catch (e) { toast("Errore: " + e.message, "err"); }
+    };
+
+    document.getElementById("imp_clear_draft").onclick = () => {
+      localStorage.removeItem("editor-draft-contenuti");
+      clearDirty();
+      toast("Bozza locale cancellata. Ricarica la pagina.", "ok");
+    };
+
+    document.getElementById("imp_clear_all").onclick = () => {
+      if (!confirm("Sei sicuro? Questo cancellerà token, bozza e tutte le impostazioni locali.")) return;
+      localStorage.removeItem("editor-draft-contenuti");
+      localStorage.removeItem("editor-token-github");
+      localStorage.removeItem("editor-repo-github");
+      localStorage.removeItem("editor-branch-github");
+      clearDirty();
+      toast("Tutto cancellato. Ricarica la pagina.", "ok");
+      setTimeout(() => location.reload(), 1500);
+    };
+  }
+
+  async function handleUpload(files, key) {
+    if (!getToken()) {
+      toast("Imposta prima il token GitHub.", "err");
+      return;
+    }
+    const fileList = Array.from(files || []);
+    if (!fileList.length) return;
+    let basePath;
+    if (key === "about") basePath = "contenuti/about";
+    else {
+      const [section, slug] = key.split("/");
+      basePath = `contenuti/${section}/${slug}`;
+    }
+    toast(`Caricamento di ${fileList.length} file…`, "");
+    for (const file of fileList) {
+      try {
+        const b64 = await file2b64(file);
+        await ghPut(`${basePath}/${file.name}`, b64, `editor: upload ${file.name}`);
+      } catch(e) {
+        toast(`Errore su ${file.name}: ${e.message}`, "err");
+      }
+    }
+    toast("Caricamento completato.", "ok");
+    if (key === "about") await fetchAboutMedia();
+    else await fetchPhotos(key);
+  }
+
+  // ========== NEW PROJECT ==========
+  document.querySelectorAll(".add-btn[data-section]").forEach(btn => {
+    btn.onclick = () => openNewModal(btn.dataset.section);
+  });
+
+  let newSection = "art";
+  function openNewModal(section) {
+    newSection = section;
+    document.getElementById("newTitle").value = "";
+    document.getElementById("newDate").value = "";
+    document.getElementById("newSlug").value = "";
+    document.getElementById("newModal").classList.add("show");
+  }
+  document.getElementById("newTitle").oninput = (e) => {
+    const auto = slugify(e.target.value);
+    const slugEl = document.getElementById("newSlug");
+    if (!slugEl.dataset.manual) slugEl.value = auto;
+  };
+  document.getElementById("newSlug").oninput = (e) => {
+    e.target.dataset.manual = "1";
+  };
+  document.getElementById("btnNewCancel").onclick = () => {
+    document.getElementById("newModal").classList.remove("show");
+  };
+  document.getElementById("btnNewCreate").onclick = async () => {
+    const title = document.getElementById("newTitle").value.trim();
+    const dateP = document.getElementById("newDate").value.trim();
+    const slug = slugify(document.getElementById("newSlug").value.trim());
+    if (!title || !slug) { toast("Titolo e slug obbligatori.", "err"); return; }
+    if (state.projects.find(p => p.section === newSection && p.slug === slug)) {
+      toast("Uno slug con questo nome esiste già.", "err");
+      return;
+    }
+    const newProj = {
+      section: newSection,
+      slug,
+      titolo: dateP ? `${title}\n${dateP}` : title,
+      descrizione: "",
+      camera: "",
+      ottica: "",
+      luce: "",
+      banner: "",
+    };
+    state.projects.push(newProj);
+    // Create placeholder file so the empty folder exists on GitHub
+    if (getToken()) {
+      try {
+        await ghPut(`contenuti/${newSection}/${slug}/.gitkeep`, str2b64(""), `editor: create ${newSection}/${slug}`);
+      } catch(e) { /* ignore if exists */ }
+    }
+    markDirty();
+    document.getElementById("newModal").classList.remove("show");
+    renderSidebar();
+    selectProject(`${newSection}/${slug}`);
+    toast("Progetto creato. Ricorda di salvare.", "ok");
+  };
+
+  // ========== TOKEN (legacy modal — now in Impostazioni) ==========
+
+  // ========== SAVE ==========
+  document.getElementById("btnSave").onclick = async () => {
+    if (!getToken()) {
+      toast("Imposta prima il token GitHub nella sezione Impostazioni.", "err");
+      switchSection("impostazioni");
+      return;
+    }
+    if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
+    const btn = document.getElementById("btnSave");
+    btn.disabled = true;
+    btn.textContent = "Salvataggio...";
+    try {
+      // Get current sha of contenuti.json
+      const existing = await ghGet("contenuti/contenuti.json");
+      const sha = existing ? existing.sha : undefined;
+      const newJson = JSON.stringify(state, null, 2) + "\n";
+      await ghPut("contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
+      clearDirty();
+      // Update embedded data for next page load
+      embeddedEl.textContent = newJson;
+      toast("Salvato! Il sito si aggiornerà in ~1 minuto (Vercel).", "ok");
+    } catch(e) {
+      toast("Errore salvataggio: " + e.message, "err");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Salva e pubblica";
+    }
+  };
+
+  // ========== INIT ==========
+  window.addEventListener("beforeunload", (e) => {
+    if (dirty) {
+      e.preventDefault();
+      e.returnValue = "Hai modifiche non salvate. Uscire comunque?";
+    }
+  });
+
+  updateTokenStatus();
+
+  // Sync: se c'è token, scarica SEMPRE contenuti.json da GitHub (la verità è online).
+  // La bozza locale viene scartata: contenuti.json su GitHub è l'unica fonte affidabile.
+  (async function syncFromGitHub() {
+    if (!getToken()) {
+      renderSidebar();
+      if (dirty) toast("Bozza locale ripristinata (nessun token GitHub).", "");
+      return;
+    }
+    try {
+      const remote = await ghGet("contenuti/contenuti.json");
+      if (!remote || !remote.content) {
+        renderSidebar();
+        return;
+      }
+      const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+      const remoteState = JSON.parse(decoded);
+      if (!remoteState.projects) {
+        renderSidebar();
+        return;
+      }
+      // Sovrascrivi completamente lo state con i dati freschi da GitHub
+      state.projects = remoteState.projects;
+      state.about = remoteState.about || state.about;
+      state.version = remoteState.version || state.version;
+      // Scarta la bozza vecchia: ora lo state è sincronizzato con GitHub
+      clearDirty();
+      // Update embedded for next offline load
+      embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+      renderSidebar();
+      if (currentKey) {
+        if (currentKey === "about") renderAbout();
+        else renderProject(currentKey);
+      }
+      toast("Sincronizzato con GitHub.", "ok");
+    } catch(e) {
+      console.warn("Sync da GitHub fallito:", e.message);
+      renderSidebar();
+      if (dirty) toast("Bozza locale ripristinata (sync GitHub fallito).", "");
+    }
+  })();
+})();
+</script>
+</body>
+</html>
