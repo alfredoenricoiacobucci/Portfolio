@@ -1481,10 +1481,12 @@
 
     grid.innerHTML = "";
 
+    // Rimuovi barra precedente
+    grid.parentNode.querySelectorAll(".selection-bar").forEach(el => el.remove());
+
     // Barra selezione (visibile solo se c'è selezione)
     const selBar = document.createElement("div");
     selBar.className = "selection-bar";
-    selBar.id = "selectionBar";
     selBar.style.display = selectedPhotos.size > 0 ? "flex" : "none";
     selBar.innerHTML = `
       <span><strong>${selectedPhotos.size}</strong> foto selezionate — trascina una delle selezionate per spostarle tutte</span>
@@ -1492,40 +1494,35 @@
       <button id="selClear">Deseleziona</button>
     `;
     grid.parentNode.insertBefore(selBar, grid);
-    document.getElementById("selClear")?.addEventListener("click", () => {
+    document.getElementById("selClear").addEventListener("click", () => {
       selectedPhotos.clear();
       lastClickedIdx = null;
       renderPhotosGrid(key);
     });
-    document.getElementById("selDeleteAll")?.addEventListener("click", async () => {
+    document.getElementById("selDeleteAll").addEventListener("click", async () => {
       const indices = Array.from(selectedPhotos).sort((a, b) => a - b);
       const names = indices.map(i => sorted[i].name);
       if (!confirm(`Eliminare ${names.length} foto da GitHub?\n\n${names.join("\n")}`)) return;
-      let ok = 0, errors = 0;
+      const deletedNames = [];
       for (const i of indices) {
         const photo = sorted[i];
         try {
           await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
             `editor: delete ${section}/${slug}/${photo.name}`);
-          ok++;
-        } catch (err) { errors++; toast("Errore: " + photo.name + " — " + err.message, "err"); }
+          deletedNames.push(photo.name);
+        } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
       }
-      // Aggiorna dati locali
-      const deletedNames = new Set(indices.filter((_, j) => j < ok + errors).map(i => sorted[i].name));
-      const remainingOk = indices.slice(0, ok).map(i => sorted[i].name);
-      photosByProject[key] = sorted.filter(x => !remainingOk.includes(x.name));
-      if (p.ordine) p.ordine = p.ordine.filter(n => !remainingOk.includes(n));
+      if (deletedNames.length > 0) {
+        const nameSet = new Set(deletedNames);
+        photosByProject[key] = sorted.filter(x => !nameSet.has(x.name));
+        if (p.ordine) p.ordine = p.ordine.filter(n => !nameSet.has(n));
+        toast(`${deletedNames.length} foto eliminate.`, "ok");
+      }
       selectedPhotos.clear();
       lastClickedIdx = null;
       renderPhotosGrid(key);
       renderSidebar();
-      if (ok > 0) toast(`${ok} foto eliminate.`, "ok");
-      if (errors > 0) toast(`${errors} foto non eliminate (errore).`, "err");
     });
-
-    // Rimuovi barra precedente (se esiste duplicato)
-    const oldBar = grid.parentNode.querySelectorAll(".selection-bar");
-    if (oldBar.length > 1) oldBar[0].remove();
 
     let dragSrcIndex = null;
 
@@ -1671,6 +1668,31 @@
       };
       grid.appendChild(card);
     });
+
+    // Cmd/Ctrl + Freccia per estendere la selezione
+    // Rimuovi listener precedente se esiste
+    if (grid._keyHandler) document.removeEventListener("keydown", grid._keyHandler);
+    grid._keyHandler = (e) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      e.preventDefault();
+      const maxIdx = sorted.length - 1;
+      if (maxIdx < 0) return;
+      // Calcola colonne dalla griglia per frecce su/giù
+      const gridStyle = window.getComputedStyle(grid);
+      const cols = gridStyle.getPropertyValue("grid-template-columns").split(" ").length || 1;
+      const delta = (e.key === "ArrowRight") ? 1 : (e.key === "ArrowLeft") ? -1 : (e.key === "ArrowDown") ? cols : -cols;
+      // Punto di partenza: ultimo indice cliccato, o estremo della selezione
+      let anchor = lastClickedIdx;
+      if (anchor === null || anchor === undefined) {
+        anchor = selectedPhotos.size > 0 ? Math.max(...selectedPhotos) : 0;
+      }
+      const next = Math.max(0, Math.min(maxIdx, anchor + delta));
+      selectedPhotos.add(next);
+      lastClickedIdx = next;
+      renderPhotosGrid(key);
+    };
+    document.addEventListener("keydown", grid._keyHandler);
   }
 
   function renderAboutMediaGrid() {
