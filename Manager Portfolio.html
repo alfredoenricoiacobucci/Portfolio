@@ -414,11 +414,53 @@
     line-height: 1;
     pointer-events: none;
   }
+  .photo-card.selected {
+    outline: 2px solid #60a5fa;
+    outline-offset: -2px;
+  }
+  .photo-card.selected .select-badge {
+    display: flex;
+  }
+  .photo-card .select-badge {
+    display: none;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    background: #60a5fa;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+  }
   .photo-card.dragging { opacity: 0.4; }
   .photo-card.drag-over {
     outline: 2px solid var(--red);
     outline-offset: -2px;
   }
+  .selection-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    background: rgba(96,165,250,0.1);
+    border: 1px solid rgba(96,165,250,0.3);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #60a5fa;
+  }
+  .selection-bar button {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-color: rgba(96,165,250,0.4);
+    color: #60a5fa;
+  }
+  .selection-bar button:hover { border-color: #60a5fa; }
 
   .upload-area {
     border: 2px dashed var(--border-hi);
@@ -1408,6 +1450,10 @@
     }
   }
 
+  // Set di indici selezionati (selezione multipla foto)
+  let selectedPhotos = new Set();
+  let lastClickedIdx = null;
+
   function renderPhotosGrid(key) {
     const [section, slug] = key.split("/");
     const p = state.projects.find(x => x.section === section && x.slug === slug);
@@ -1429,15 +1475,43 @@
       return a.name.localeCompare(b.name, undefined, { numeric: true });
     });
 
+    // Pulisci selezione se le foto sono cambiate
+    selectedPhotos.forEach(i => { if (i >= sorted.length) selectedPhotos.delete(i); });
+
     grid.innerHTML = "";
+
+    // Barra selezione (visibile solo se c'è selezione)
+    const selBar = document.createElement("div");
+    selBar.className = "selection-bar";
+    selBar.id = "selectionBar";
+    selBar.style.display = selectedPhotos.size > 0 ? "flex" : "none";
+    selBar.innerHTML = `
+      <span><strong>${selectedPhotos.size}</strong> foto selezionate — trascina una delle selezionate per spostarle tutte</span>
+      <button id="selClear">Deseleziona</button>
+    `;
+    grid.parentNode.insertBefore(selBar, grid);
+    document.getElementById("selClear")?.addEventListener("click", () => {
+      selectedPhotos.clear();
+      lastClickedIdx = null;
+      renderPhotosGrid(key);
+    });
+
+    // Rimuovi barra precedente (se esiste duplicato)
+    const oldBar = grid.parentNode.querySelectorAll(".selection-bar");
+    if (oldBar.length > 1) oldBar[0].remove();
+
     let dragSrcIndex = null;
 
     sorted.forEach((photo, idx) => {
       const card = document.createElement("div");
-      card.className = "photo-card" + (p.banner === photo.name ? " banner" : "");
+      const isSelected = selectedPhotos.has(idx);
+      card.className = "photo-card"
+        + (p.banner === photo.name ? " banner" : "")
+        + (isSelected ? " selected" : "");
       card.draggable = true;
       card.dataset.idx = idx;
       card.innerHTML = `
+        <div class="select-badge">${isSelected ? selectedPhotos.size > 1 ? Array.from(selectedPhotos).sort((a,b)=>a-b).indexOf(idx)+1 : "1" : ""}</div>
         <div class="drag-handle">&#x2630;</div>
         ${p.banner === photo.name ? '<div class="banner-label">Banner</div>' : ''}
         <img src="${photo.url}" alt="" loading="lazy" draggable="false">
@@ -1450,20 +1524,58 @@
         </div>
       `;
 
-      // Drag-and-drop for reordering
+      // Click per selezionare/deselezionare
+      card.addEventListener("click", (e) => {
+        if (e.target.closest('[data-act]')) return; // ignora click su bottoni
+
+        if (e.shiftKey && lastClickedIdx !== null) {
+          // Shift+click: seleziona range
+          const from = Math.min(lastClickedIdx, idx);
+          const to = Math.max(lastClickedIdx, idx);
+          for (let i = from; i <= to; i++) selectedPhotos.add(i);
+        } else if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl+click: toggle singolo
+          if (selectedPhotos.has(idx)) selectedPhotos.delete(idx);
+          else selectedPhotos.add(idx);
+        } else {
+          // Click semplice: seleziona solo questa (o deseleziona se era l'unica)
+          if (selectedPhotos.size === 1 && selectedPhotos.has(idx)) {
+            selectedPhotos.clear();
+          } else {
+            selectedPhotos.clear();
+            selectedPhotos.add(idx);
+          }
+        }
+        lastClickedIdx = idx;
+        renderPhotosGrid(key);
+      });
+
+      // Drag-and-drop (singolo o multiplo)
       card.addEventListener("dragstart", (e) => {
+        // Se trascino una foto non selezionata, seleziona solo quella
+        if (!selectedPhotos.has(idx)) {
+          selectedPhotos.clear();
+          selectedPhotos.add(idx);
+        }
         dragSrcIndex = idx;
         card.classList.add("dragging");
+        // Evidenzia tutte le selezionate come dragging
+        grid.querySelectorAll(".photo-card").forEach(c => {
+          if (selectedPhotos.has(parseInt(c.dataset.idx))) c.classList.add("dragging");
+        });
         e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", "");
       });
       card.addEventListener("dragend", () => {
-        card.classList.remove("dragging");
-        grid.querySelectorAll(".photo-card").forEach(c => c.classList.remove("drag-over"));
+        grid.querySelectorAll(".photo-card").forEach(c => {
+          c.classList.remove("dragging");
+          c.classList.remove("drag-over");
+        });
       });
       card.addEventListener("dragover", (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
-        card.classList.add("drag-over");
+        if (!selectedPhotos.has(idx)) card.classList.add("drag-over");
       });
       card.addEventListener("dragleave", () => {
         card.classList.remove("drag-over");
@@ -1472,18 +1584,41 @@
         e.preventDefault();
         card.classList.remove("drag-over");
         const targetIdx = idx;
-        if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
-        // Reorder
-        const newOrder = sorted.map(ph => ph.name);
-        const [moved] = newOrder.splice(dragSrcIndex, 1);
-        newOrder.splice(targetIdx, 0, moved);
-        p.ordine = newOrder;
-        // Also reorder photosByProject to match
-        const reordered = newOrder.map(n => sorted.find(ph => ph.name === n)).filter(Boolean);
+        if (dragSrcIndex === null) return;
+        if (selectedPhotos.has(targetIdx)) return; // drop su se stessa
+
+        // Sposta tutte le foto selezionate nella posizione di drop
+        const currentOrder = sorted.map(ph => ph.name);
+        const selIndices = Array.from(selectedPhotos).sort((a, b) => a - b);
+        const movedNames = selIndices.map(i => currentOrder[i]);
+
+        // Rimuovi le selezionate dall'ordine
+        const remaining = currentOrder.filter((_, i) => !selectedPhotos.has(i));
+
+        // Trova la posizione di inserimento nel remaining
+        const targetName = sorted[targetIdx].name;
+        let insertAt = remaining.indexOf(targetName);
+        if (insertAt < 0) insertAt = remaining.length;
+        // Inserisci dopo il target se il drag viene dal basso
+        if (selIndices[0] < targetIdx) insertAt++;
+
+        // Inserisci le selezionate
+        remaining.splice(insertAt, 0, ...movedNames);
+
+        p.ordine = remaining;
+        const reordered = remaining.map(n => sorted.find(ph => ph.name === n)).filter(Boolean);
         photosByProject[key] = reordered;
+
+        // Aggiorna la selezione ai nuovi indici
+        selectedPhotos.clear();
+        movedNames.forEach(name => {
+          const newIdx = remaining.indexOf(name);
+          if (newIdx >= 0) selectedPhotos.add(newIdx);
+        });
+
         markDirty();
         renderPhotosGrid(key);
-        toast("Ordine aggiornato.", "ok");
+        toast(`${movedNames.length} foto spostate.`, "ok");
       });
 
       card.querySelector('[data-act="banner"]').onclick = (e) => {
@@ -1501,6 +1636,7 @@
             `editor: delete ${section}/${slug}/${photo.name}`);
           photosByProject[key] = sorted.filter(x => x.name !== photo.name);
           if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
+          selectedPhotos.clear();
           renderPhotosGrid(key);
           renderSidebar();
           toast("Foto eliminata.", "ok");
