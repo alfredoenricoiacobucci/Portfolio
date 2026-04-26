@@ -461,6 +461,7 @@
     color: #60a5fa;
   }
   .selection-bar button:hover { border-color: #60a5fa; }
+  .selection-bar button[id="selDeleteAll"]:hover { border-color: #ef4444; background: rgba(239,68,68,0.1); }
 
   .upload-area {
     border: 2px dashed var(--border-hi);
@@ -1487,6 +1488,7 @@
     selBar.style.display = selectedPhotos.size > 0 ? "flex" : "none";
     selBar.innerHTML = `
       <span><strong>${selectedPhotos.size}</strong> foto selezionate — trascina una delle selezionate per spostarle tutte</span>
+      <button id="selDeleteAll" style="border-color:#ef4444;color:#ef4444;">Elimina selezionate</button>
       <button id="selClear">Deseleziona</button>
     `;
     grid.parentNode.insertBefore(selBar, grid);
@@ -1494,6 +1496,31 @@
       selectedPhotos.clear();
       lastClickedIdx = null;
       renderPhotosGrid(key);
+    });
+    document.getElementById("selDeleteAll")?.addEventListener("click", async () => {
+      const indices = Array.from(selectedPhotos).sort((a, b) => a - b);
+      const names = indices.map(i => sorted[i].name);
+      if (!confirm(`Eliminare ${names.length} foto da GitHub?\n\n${names.join("\n")}`)) return;
+      let ok = 0, errors = 0;
+      for (const i of indices) {
+        const photo = sorted[i];
+        try {
+          await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+            `editor: delete ${section}/${slug}/${photo.name}`);
+          ok++;
+        } catch (err) { errors++; toast("Errore: " + photo.name + " — " + err.message, "err"); }
+      }
+      // Aggiorna dati locali
+      const deletedNames = new Set(indices.filter((_, j) => j < ok + errors).map(i => sorted[i].name));
+      const remainingOk = indices.slice(0, ok).map(i => sorted[i].name);
+      photosByProject[key] = sorted.filter(x => !remainingOk.includes(x.name));
+      if (p.ordine) p.ordine = p.ordine.filter(n => !remainingOk.includes(n));
+      selectedPhotos.clear();
+      lastClickedIdx = null;
+      renderPhotosGrid(key);
+      renderSidebar();
+      if (ok > 0) toast(`${ok} foto eliminate.`, "ok");
+      if (errors > 0) toast(`${errors} foto non eliminate (errore).`, "err");
     });
 
     // Rimuovi barra precedente (se esiste duplicato)

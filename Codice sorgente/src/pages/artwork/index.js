@@ -814,8 +814,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               </div>
             </div>
           )}
-          {/* Gallery — margini 8% come About */}
-          <div className="pt-8 pb-4" style={{ paddingLeft: "8%", paddingRight: "8%" }}>
+          {/* Gallery — margini simmetrici sopra e sotto */}
+          <div style={{ paddingTop: "3rem", paddingLeft: "8%", paddingRight: "8%" }}>
             <JustifiedGallery
               images={selectedProject.images || []}
               onImageClick={(i) => {
@@ -827,8 +827,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               }}
             />
           </div>
-          {/* Margine sotto la galleria */}
-          <div style={{ height: "2rem" }} />
+          {/* Margine sotto la galleria — uguale al margine sopra (3rem) */}
+          <div style={{ height: "3rem" }} />
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
