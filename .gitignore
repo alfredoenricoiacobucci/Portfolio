@@ -1,6 +1,8 @@
 # Next.js
 Codice sorgente/.next/
 Codice sorgente/node_modules/
+node_modules/
+package-lock.json
 .DS_Store
 .env
 # build artifacts

@@ -1,0 +1,14 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd \"Codice sorgente\" && npm install",
+  "buildCommand": "cd \"Codice sorgente\" && npm run build",
+  "outputDirectory": "Codice sorgente/.next",
+  "headers": [
+    {
+      "source": "/api/projects/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
