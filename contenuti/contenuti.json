@@ -41,7 +41,27 @@
       "camera": "Sony Alpha 6000",
       "ottica": "Sony SEL24-105 G f4.0",
       "luce": "Naturale",
-      "banner": "cimitero-01.jpg"
+      "banner": "cimitero-06.jpg",
+      "ordine": [
+        "cimitero-14.jpg",
+        "cimitero-07.jpg",
+        "cimitero-10.jpg",
+        "cimitero-16.jpg",
+        "cimitero-18.jpg",
+        "cimitero-01.jpg",
+        "cimitero-03.jpg",
+        "cimitero-04.jpg",
+        "cimitero-06.jpg",
+        "cimitero-08.jpg",
+        "cimitero-17.jpg",
+        "cimitero-15.jpg",
+        "cimitero-13.jpg",
+        "cimitero-12.jpg",
+        "cimitero-02.jpg",
+        "cimitero-11.jpg",
+        "cimitero-05.jpg",
+        "cimitero-09.jpg"
+      ]
     },
     {
       "section": "art",
