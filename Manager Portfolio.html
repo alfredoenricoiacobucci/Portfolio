@@ -245,28 +245,31 @@
     letter-spacing: -0.01em;
   }
 
-  /* Layout progetto: descrizione a sinistra, colonna tecnica 180px a destra (come nel sito) */
+  /* Layout che simula le proporzioni esatte del sito.
+     Le larghezze vengono calcolate da JS (syncSiteWidths) in base al viewport. */
   .site-layout-project {
     display: flex;
-    gap: 4%;
+    gap: 20px;
+    overflow-x: auto;
   }
   .site-layout-project .site-col-text {
-    flex: 1;
-    min-width: 0;
+    flex: none; /* larghezza impostata da JS */
+  }
+  .site-layout-project .site-col-text textarea.site-preview {
+    width: 100%;
   }
   .site-layout-project .site-col-tech {
     width: 180px;
     flex-shrink: 0;
   }
 
-  /* Layout About: due colonne uguali (come nel sito) */
   .site-layout-about {
     display: flex;
-    gap: 4%;
+    gap: 20px;
+    overflow-x: auto;
   }
   .site-layout-about .site-col-half {
-    flex: 1;
-    min-width: 0;
+    flex: none; /* larghezza impostata da JS */
   }
   .site-layout-about .site-col-half textarea.site-preview {
     width: 100%;
@@ -946,12 +949,40 @@
     return div.innerHTML;
   }
 
+  // ========== SITE-WIDTH SYNC ==========
+  // Calcola le larghezze esatte delle colonne del sito al viewport corrente
+  // e le applica ai contenitori delle textarea nel Manager.
+  // Il sito usa: padding-left/right 8%, gap tra colonne 4% del viewport.
+  function syncSiteWidths() {
+    const vw = window.innerWidth;
+    const sitePadding = vw * 0.08;          // 8% per lato
+    const siteContent = vw - sitePadding * 2; // area contenuto del sito
+    const siteGap = vw * 0.04;              // gap 4% tra colonne
+
+    // Progetto: descrizione = siteContent - 180px (colonna tecnica) - gap
+    const projectDescW = siteContent - 180 - siteGap;
+
+    // About: due colonne uguali = (siteContent - gap) / 2
+    const aboutColW = (siteContent - siteGap) / 2;
+
+    // Applica ai contenitori
+    document.querySelectorAll(".site-col-text").forEach(el => {
+      el.style.width = Math.round(projectDescW) + "px";
+    });
+    document.querySelectorAll(".site-col-half").forEach(el => {
+      el.style.width = Math.round(aboutColW) + "px";
+    });
+  }
+  window.addEventListener("resize", syncSiteWidths);
+
   // ========== CONTENT RENDER ==========
   function selectProject(key) {
     currentKey = key;
     renderSidebar();
     if (key === "about") renderAbout();
     else renderProject(key);
+    // Calcola larghezze textarea corrispondenti al sito
+    syncSiteWidths();
     // Fetch photos asynchronously in background
     if (key !== "about") fetchPhotos(key);
     else fetchAboutMedia();
