@@ -83,6 +83,41 @@
   button.ghost { color: var(--text2); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* ---- DEPLOY BAR ---- */
+  #deployBar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+  }
+  .deploy-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .deploy-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .deploy-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background: var(--red);
+    transition: width 600ms ease-out, background-color 400ms ease;
+  }
+  .deploy-bar-fill.success { background: #4ade80; }
+  .deploy-bar-fill.error { background: #f87171; }
+  .deploy-bar-label {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+    min-width: 180px;
+    text-align: right;
+  }
+
   /* ---- LAYOUT ---- */
   .main {
     display: grid;
@@ -516,6 +551,16 @@
   <button id="btnSave" class="primary">Salva e pubblica</button>
 </div>
 
+<!-- DEPLOY PROGRESS BAR -->
+<div id="deployBar" style="display:none;">
+  <div class="deploy-bar-inner">
+    <div class="deploy-bar-track">
+      <div class="deploy-bar-fill" id="deployFill"></div>
+    </div>
+    <span class="deploy-bar-label" id="deployLabel">Deploy in corso…</span>
+  </div>
+</div>
+
 <!-- SEZIONE CONTENUTI (sidebar + content) -->
 <div id="sectionContenuti" class="main">
   <aside class="sidebar">
@@ -849,6 +894,122 @@
 
   function str2b64(str) {
     return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  // ========== DEPLOY TRACKING ==========
+  // Dopo un commit, fa polling sui commit statuses di GitHub (dove Vercel posta il risultato).
+  // Mostra una barra di progresso animata con stato finale (successo/errore).
+  async function trackDeploy(commitSha) {
+    const bar = document.getElementById("deployBar");
+    const fill = document.getElementById("deployFill");
+    const label = document.getElementById("deployLabel");
+
+    bar.style.display = "block";
+    fill.className = "deploy-bar-fill";
+    fill.style.width = "5%";
+    label.textContent = "Commit inviato, in attesa di Vercel…";
+
+    const token = getToken();
+    const repo = getRepo();
+    const startTime = Date.now();
+    const MAX_WAIT = 5 * 60 * 1000; // 5 minuti massimo
+    let progress = 5;
+
+    const poll = async () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed > MAX_WAIT) {
+        fill.style.width = "100%";
+        fill.className = "deploy-bar-fill error";
+        label.textContent = "Timeout — controlla Vercel Dashboard.";
+        setTimeout(() => { bar.style.display = "none"; }, 8000);
+        return;
+      }
+
+      try {
+        // Controlla i deployment checks (Vercel posta come check run o commit status)
+        const statusRes = await fetch(
+          `https://api.github.com/repos/${repo}/commits/${commitSha}/status`,
+          { headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github+json" } }
+        );
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          // statusData.state: "pending" | "success" | "failure" | "error"
+          const vercelStatus = statusData.statuses?.find(s =>
+            s.context?.toLowerCase().includes("vercel") ||
+            s.context?.toLowerCase().includes("deployment")
+          );
+
+          if (vercelStatus) {
+            if (vercelStatus.state === "success") {
+              fill.style.width = "100%";
+              fill.className = "deploy-bar-fill success";
+              label.textContent = "Deploy completato!";
+              setTimeout(() => { bar.style.display = "none"; }, 5000);
+              return;
+            }
+            if (vercelStatus.state === "failure" || vercelStatus.state === "error") {
+              fill.style.width = "100%";
+              fill.className = "deploy-bar-fill error";
+              label.textContent = "Deploy fallito — " + (vercelStatus.description || "controlla Vercel.");
+              setTimeout(() => { bar.style.display = "none"; }, 10000);
+              return;
+            }
+            // pending — aggiorna label
+            label.textContent = vercelStatus.description || "Build in corso…";
+          }
+        }
+
+        // Controlla anche check runs (alcune config Vercel usano questo)
+        const checksRes = await fetch(
+          `https://api.github.com/repos/${repo}/commits/${commitSha}/check-runs`,
+          { headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github+json" } }
+        );
+        if (checksRes.ok) {
+          const checksData = await checksRes.json();
+          const vercelCheck = checksData.check_runs?.find(c =>
+            c.app?.slug?.includes("vercel") ||
+            c.name?.toLowerCase().includes("vercel") ||
+            c.name?.toLowerCase().includes("deployment")
+          );
+          if (vercelCheck) {
+            if (vercelCheck.conclusion === "success") {
+              fill.style.width = "100%";
+              fill.className = "deploy-bar-fill success";
+              label.textContent = "Deploy completato!";
+              setTimeout(() => { bar.style.display = "none"; }, 5000);
+              return;
+            }
+            if (vercelCheck.conclusion === "failure" || vercelCheck.conclusion === "cancelled") {
+              fill.style.width = "100%";
+              fill.className = "deploy-bar-fill error";
+              label.textContent = "Deploy fallito — " + (vercelCheck.output?.title || "controlla Vercel.");
+              setTimeout(() => { bar.style.display = "none"; }, 10000);
+              return;
+            }
+            if (vercelCheck.status === "in_progress") {
+              label.textContent = "Build in corso…";
+            }
+          }
+        }
+      } catch (e) {
+        // Errore di rete — continua il polling silenziosamente
+      }
+
+      // Avanza la barra gradualmente (rallenta man mano)
+      progress = Math.min(90, progress + (90 - progress) * 0.08);
+      fill.style.width = Math.round(progress) + "%";
+
+      // Aggiorna il label con il tempo trascorso
+      const secs = Math.round(elapsed / 1000);
+      if (secs > 10 && !label.textContent.includes("Build")) {
+        label.textContent = `In attesa del deploy… (${secs}s)`;
+      }
+
+      setTimeout(poll, 4000); // controlla ogni 4 secondi
+    };
+
+    // Aspetta 3s prima del primo check (Vercel impiega un po' a partire)
+    setTimeout(poll, 3000);
   }
   function file2b64(file) {
     return new Promise((resolve, reject) => {
@@ -1835,11 +1996,18 @@
       const existing = await ghGet("contenuti/contenuti.json");
       const sha = existing ? existing.sha : undefined;
       const newJson = JSON.stringify(state, null, 2) + "\n";
-      await ghPut("contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
+      const result = await ghPut("contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
       clearDirty();
       // Update embedded data for next page load
       embeddedEl.textContent = newJson;
-      toast("Salvato! Il sito si aggiornerà in ~1 minuto (Vercel).", "ok");
+      toast("Salvato su GitHub! Monitoraggio deploy…", "ok");
+      // Avvia il tracking del deploy Vercel
+      const commitSha = result?.commit?.sha;
+      if (commitSha) {
+        trackDeploy(commitSha);
+      } else {
+        toast("Salvato! Impossibile tracciare il deploy (SHA mancante).", "ok");
+      }
     } catch(e) {
       toast("Errore salvataggio: " + e.message, "err");
     } finally {
