@@ -1,4 +1,8 @@
 {
+  "framework": "nextjs",
+  "installCommand": "cd codice-sorgente && npm install",
+  "buildCommand": "cd codice-sorgente && npm run build",
+  "outputDirectory": "codice-sorgente/.next",
   "headers": [
     {
       "source": "/api/projects/(.*)",

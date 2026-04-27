@@ -1,12 +1,14 @@
 # Next.js
-.next/
+codice-sorgente/.next/
+codice-sorgente/node_modules/
+codice-sorgente/package-lock.json
 node_modules/
 package-lock.json
 .DS_Store
 .env
 # build artifacts
-out/
-public/projects/
+codice-sorgente/out/
+codice-sorgente/public/projects/
 # log
 npm-debug.log*
 yarn-debug.log*

@@ -1391,7 +1391,7 @@
       return;
     }
     const [section, slug] = key.split("/");
-    const path = `contenuti/${section}/${slug}`;
+    const path = `codice-sorgente/contenuti/${section}/${slug}`;
     try {
       const items = await ghListDir(path);
       const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
@@ -1415,7 +1415,7 @@
       return;
     }
     try {
-      const items = await ghListDir("contenuti/about");
+      const items = await ghListDir("codice-sorgente/contenuti/about");
       aboutMedia = items.filter(i => i.type === "file").map(i => ({
         name: i.name, sha: i.sha, url: i.download_url
       }));
@@ -1482,7 +1482,7 @@
       for (const i of indices) {
         const photo = sorted[i];
         try {
-          await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+          await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
             `editor: delete ${section}/${slug}/${photo.name}`);
           deletedNames.push(photo.name);
         } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
@@ -1631,7 +1631,7 @@
         e.stopPropagation();
         if (!confirm(`Eliminare ${photo.name} da GitHub?`)) return;
         try {
-          await ghDelete(`contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+          await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
             `editor: delete ${section}/${slug}/${photo.name}`);
           photosByProject[key] = sorted.filter(x => x.name !== photo.name);
           if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
@@ -1708,7 +1708,7 @@
         e.stopPropagation();
         if (!confirm(`Eliminare ${media.name}?`)) return;
         try {
-          await ghDelete(`contenuti/about/${media.name}`, media.sha,
+          await ghDelete(`codice-sorgente/contenuti/about/${media.name}`, media.sha,
             `editor: delete about/${media.name}`);
           aboutMedia = aboutMedia.filter(x => x.name !== media.name);
           renderAboutMediaGrid();
@@ -2031,7 +2031,7 @@
     document.getElementById("imp_force_sync").onclick = async () => {
       if (!getToken()) { toast("Imposta prima il token.", "err"); return; }
       try {
-        const remote = await ghGet("contenuti/contenuti.json");
+        const remote = await ghGet("codice-sorgente/contenuti/contenuti.json");
         if (remote && remote.content) {
           const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
           const remoteState = JSON.parse(decoded);
@@ -2073,10 +2073,10 @@
     const fileList = Array.from(files || []);
     if (!fileList.length) return;
     let basePath;
-    if (key === "about") basePath = "contenuti/about";
+    if (key === "about") basePath = "codice-sorgente/contenuti/about";
     else {
       const [section, slug] = key.split("/");
-      basePath = `contenuti/${section}/${slug}`;
+      basePath = `codice-sorgente/contenuti/${section}/${slug}`;
     }
     toast(`Caricamento di ${fileList.length} file…`, "");
     for (const file of fileList) {
@@ -2139,7 +2139,7 @@
     // Create placeholder file so the empty folder exists on GitHub
     if (getToken()) {
       try {
-        await ghPut(`contenuti/${newSection}/${slug}/.gitkeep`, str2b64(""), `editor: create ${newSection}/${slug}`);
+        await ghPut(`codice-sorgente/contenuti/${newSection}/${slug}/.gitkeep`, str2b64(""), `editor: create ${newSection}/${slug}`);
       } catch(e) { /* ignore if exists */ }
     }
     markDirty();
@@ -2164,10 +2164,10 @@
     btn.textContent = "Salvataggio...";
     try {
       // Get current sha of contenuti.json
-      const existing = await ghGet("contenuti/contenuti.json");
+      const existing = await ghGet("codice-sorgente/contenuti/contenuti.json");
       const sha = existing ? existing.sha : undefined;
       const newJson = JSON.stringify(state, null, 2) + "\n";
-      const result = await ghPut("contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
+      const result = await ghPut("codice-sorgente/contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
       clearDirty();
       // Update embedded data for next page load
       embeddedEl.textContent = newJson;
@@ -2206,7 +2206,7 @@
       return;
     }
     try {
-      const remote = await ghGet("contenuti/contenuti.json");
+      const remote = await ghGet("codice-sorgente/contenuti/contenuti.json");
       if (!remote || !remote.content) {
         renderSidebar();
         return;

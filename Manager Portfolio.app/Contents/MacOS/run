@@ -2,37 +2,28 @@
 # Manager Portfolio — apre il Manager come app standalone
 # Funziona sia dalla cartella Portfolio AEI che da /Applications
 
-MANAGER_NAME="Manager Portfolio.html"
-
-# 1. Cerca accanto all'app (quando l'app è dentro Portfolio AEI)
 APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-MANAGER="$APP_DIR/$MANAGER_NAME"
+MANAGER=""
 
-# 2. Cerca sul Desktop
-if [ ! -f "$MANAGER" ]; then
-  MANAGER="$HOME/Desktop/Portfolio AEI/$MANAGER_NAME"
-fi
+for NAME in ".Manager Portfolio.html" "Manager Portfolio.html"; do
+  for DIR in "$APP_DIR" "$HOME/Desktop/Portfolio AEI" "$HOME/Documents/Portfolio AEI" "$HOME/Portfolio AEI"; do
+    if [ -f "$DIR/$NAME" ]; then
+      MANAGER="$DIR/$NAME"
+      break 2
+    fi
+  done
+done
 
-# 3. Cerca in Documenti
-if [ ! -f "$MANAGER" ]; then
-  MANAGER="$HOME/Documents/Portfolio AEI/$MANAGER_NAME"
-fi
-
-# 4. Cerca nella home
-if [ ! -f "$MANAGER" ]; then
-  MANAGER="$HOME/Portfolio AEI/$MANAGER_NAME"
-fi
-
-# 5. Cerca con Spotlight (ultimo tentativo)
-if [ ! -f "$MANAGER" ]; then
-  FOUND=$(mdfind -name "$MANAGER_NAME" 2>/dev/null | head -1)
+# Spotlight come ultimo tentativo
+if [ -z "$MANAGER" ]; then
+  FOUND=$(mdfind -name ".Manager Portfolio.html" 2>/dev/null | head -1)
   if [ -n "$FOUND" ] && [ -f "$FOUND" ]; then
     MANAGER="$FOUND"
   fi
 fi
 
-if [ ! -f "$MANAGER" ]; then
-  osascript -e 'display alert "Manager non trovato" message "Il file \"Manager Portfolio.html\" non è stato trovato. Assicurati che la cartella Portfolio AEI sia sul Desktop o in Documenti." as critical'
+if [ -z "$MANAGER" ]; then
+  osascript -e 'display alert "Manager non trovato" message "Il file Manager Portfolio.html non è stato trovato. Assicurati che la cartella Portfolio AEI sia sul Desktop o in Documenti." as critical'
   exit 1
 fi
 

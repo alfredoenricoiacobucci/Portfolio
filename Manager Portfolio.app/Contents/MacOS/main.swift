@@ -3,32 +3,36 @@ import WebKit
 
 // ─── Trova il file HTML ───
 func findManagerHTML() -> URL? {
-    let name = "Manager Portfolio.html"
+    let names = [".Manager Portfolio.html", "Manager Portfolio.html"]
     let fm = FileManager.default
     let home = fm.homeDirectoryForCurrentUser.path
 
-    // 1. Accanto all'app (quando l'app è dentro Portfolio AEI)
     let execURL = URL(fileURLWithPath: CommandLine.arguments[0])
     let appDir = execURL
         .deletingLastPathComponent()  // MacOS
         .deletingLastPathComponent()  // Contents
         .deletingLastPathComponent()  // .app
-    let beside = appDir.appendingPathComponent(name)
-    if fm.fileExists(atPath: beside.path) { return beside }
 
-    // 2. Desktop
-    let desktop = URL(fileURLWithPath: home + "/Desktop/Portfolio AEI/" + name)
-    if fm.fileExists(atPath: desktop.path) { return desktop }
+    for name in names {
+        // 1. Accanto all'app
+        let beside = appDir.appendingPathComponent(name)
+        if fm.fileExists(atPath: beside.path) { return beside }
 
-    // 3. Documenti
-    let docs = URL(fileURLWithPath: home + "/Documents/Portfolio AEI/" + name)
-    if fm.fileExists(atPath: docs.path) { return docs }
+        // 2. Desktop
+        let desktop = URL(fileURLWithPath: home + "/Desktop/Portfolio AEI/" + name)
+        if fm.fileExists(atPath: desktop.path) { return desktop }
 
-    // 4. Home
-    let homeDir = URL(fileURLWithPath: home + "/Portfolio AEI/" + name)
-    if fm.fileExists(atPath: homeDir.path) { return homeDir }
+        // 3. Documenti
+        let docs = URL(fileURLWithPath: home + "/Documents/Portfolio AEI/" + name)
+        if fm.fileExists(atPath: docs.path) { return docs }
+
+        // 4. Home
+        let homeDir = URL(fileURLWithPath: home + "/Portfolio AEI/" + name)
+        if fm.fileExists(atPath: homeDir.path) { return homeDir }
+    }
 
     // 5. Spotlight
+    let name = names[0]
     let task = Process()
     let pipe = Pipe()
     task.executableURL = URL(fileURLWithPath: "/usr/bin/mdfind")
