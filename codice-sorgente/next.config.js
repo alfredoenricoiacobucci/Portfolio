@@ -2,10 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    // Abilita ottimizzazione immagini Next.js
     formats: ["image/webp"],
-    deviceSizes: [640, 828, 1200, 1920],
-    imageSizes: [128, 256, 384],
+    deviceSizes: [640, 828, 1200, 1920, 2560],
+    imageSizes: [256, 384, 640, 1024],
+    minimumCacheTTL: 31536000,
   },
   // Compressione gzip automatica
   compress: true,

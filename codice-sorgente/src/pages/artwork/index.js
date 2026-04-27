@@ -1,5 +1,6 @@
 // pages/artwork/index.js
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/router";
 import { BY_MODE } from "@/data/projects";
@@ -348,10 +349,12 @@ function JustifiedGallery({ images = [], onImageClick }) {
                 onClick={() => onImageClick?.(item.idx)}
                 aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
               >
-                <img src={item.src} alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                <Image src={item.src} alt=""
+                  fill
+                  sizes={`${Math.round(w)}px`}
+                  quality={80}
                   loading={ri < 2 ? "eager" : "lazy"}
-                  decoding="async" />
+                  className="object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200" />
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <span className="rounded px-3 py-1 text-white text-xs md:text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-150 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
@@ -423,20 +426,6 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   // ===== HEADER AUTO-HIDE su progetto e about =====
   const [headerHidden, setHeaderHidden] = useState(false);
   const lastScrollY = useRef(0);
-  useEffect(() => {
-    if (!selectedProject) { setHeaderHidden(false); return; }
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y > lastScrollY.current && y > 48) {
-        setHeaderHidden(true);
-      } else {
-        setHeaderHidden(false);
-      }
-      lastScrollY.current = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [selectedProject]);
 
   // ===== CAMBIO MODO: semplice fade out → naviga → fade in =====
   const navigatingRef = useRef(false);
@@ -578,32 +567,44 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
   // Gradiente bottom banner: svanisce appena si scrolla
   const [bannerFadeOpacity, setBannerFadeOpacity] = useState(1);
+
+  // ===== SCROLL UNIFICATO con rAF throttle =====
+  const rafRef = useRef(null);
   useEffect(() => {
-    if (!selectedProject || selectedProject.name === "About") { setBannerFadeOpacity(1); return; }
     const onScroll = () => {
-      const opacity = Math.min(1, Math.max(0, 1 - window.scrollY / 150));
-      setBannerFadeOpacity(opacity);
+      if (rafRef.current) return;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const y = window.scrollY;
+        // Header auto-hide
+        if (selectedProject) {
+          setHeaderHidden(y > lastScrollY.current && y > 48);
+        }
+        // Banner fade
+        if (selectedProject && selectedProject.name !== "About") {
+          setBannerFadeOpacity(Math.min(1, Math.max(0, 1 - y / 150)));
+        }
+        // Gradient home
+        if (isHome) {
+          const distFromBottom = document.documentElement.scrollHeight - y - window.innerHeight;
+          setGradientOpacity(Math.min(1, Math.max(0, distFromBottom / 200)));
+        }
+        lastScrollY.current = y;
+      });
     };
+    if (!selectedProject && !isHome) {
+      setHeaderHidden(false);
+      setBannerFadeOpacity(1);
+      setGradientOpacity(0);
+      return;
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [selectedProject]);
-
-  // (lock/sticky rimosso: galleria e testo scorrono con la pagina)
-
-  useEffect(() => {
-    if (!isHome) { setGradientOpacity(0); return; }
-
-    const onScroll = () => {
-      const distFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      // Sfuma tra 200px e 0px dal fondo
-      const opacity = Math.min(1, Math.max(0, distFromBottom / 200));
-      setGradientOpacity(opacity);
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // calcola subito
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [selectedProject, isHome]);
 
   // ===== MARQUEE: imposta durate =====
   useEffect(() => {
@@ -842,6 +843,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                   muted
                   loop
                   autoPlay
+                  preload="metadata"
                   src={selectedProject.video}
                 />
               ) : (
@@ -1018,11 +1020,17 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 </button>
               </>
             )}
-            <img
-              src={selectedProject.images[viewerIndex]?.src || selectedProject.images[viewerIndex]}
-              alt=""
-              className="max-w-[95vw] max-h-full w-auto h-auto object-contain shadow-2xl select-none"
-            />
+            <div className="relative max-w-[95vw] max-h-full w-full h-full">
+              <Image
+                src={selectedProject.images[viewerIndex]?.src || selectedProject.images[viewerIndex]}
+                alt=""
+                fill
+                sizes="95vw"
+                quality={85}
+                priority
+                className="object-contain shadow-2xl select-none"
+              />
+            </div>
           </div>
 
           {/* Close button */}

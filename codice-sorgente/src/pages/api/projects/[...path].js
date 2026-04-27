@@ -28,6 +28,7 @@ export default function handler(req, res) {
   const stat = fs.statSync(filePath);
   res.setHeader("Content-Type", contentType);
   res.setHeader("Content-Length", stat.size);
+  // Cache 1 anno — le immagini non cambiano (il nome file cambia se il contenuto cambia)
   res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   fs.createReadStream(filePath).pipe(res);
 }
