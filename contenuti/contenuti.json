@@ -291,7 +291,7 @@
       "camera": "Leica SL2S",
       "ottica": "Sigma Art 24-70 f2.8 DG DN",
       "luce": "Naturale",
-      "banner": "L1010504.jpg"
+      "banner": "cult1-1.jpg"
     },
     {
       "section": "pro",
@@ -311,7 +311,7 @@
       "camera": "Leica SL2S",
       "ottica": "Sigma Art 24-70 f2.8 DG DN",
       "luce": "Naturale",
-      "banner": "L1070724.jpg"
+      "banner": "L1070722.jpg"
     },
     {
       "section": "pro",
@@ -342,16 +342,6 @@
       "ottica": "Sony SEL24-105 G f4.0",
       "luce": "Naturale",
       "banner": "comelli-1.jpg"
-    },
-    {
-      "section": "pro",
-      "slug": "metalinguaggio-somatico",
-      "titolo": "Metalinguaggio Somatico\nRampa Elicoidale Urbino (PU) 2026",
-      "descrizione": "",
-      "camera": "",
-      "ottica": "",
-      "luce": "",
-      "banner": ""
     }
   ],
   "about": {

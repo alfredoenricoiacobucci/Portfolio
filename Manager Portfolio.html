@@ -1311,19 +1311,7 @@
     const content = document.getElementById("content");
     content.classList.remove("empty-state");
 
-    // Calcola le due colonne del testo About
     const fullText = a.text || "";
-    let col1Text, col2Text;
-    if (fullText.includes("---")) {
-      const parts = fullText.split("---");
-      col1Text = parts[0].trim();
-      col2Text = parts.slice(1).join("---").trim();
-    } else {
-      const paragraphs = fullText.split("\n").filter(Boolean);
-      const mid = Math.ceil(paragraphs.length / 2);
-      col1Text = paragraphs.slice(0, mid).join("\n");
-      col2Text = paragraphs.slice(mid).join("\n");
-    }
 
     content.innerHTML = `
       <div class="project-header">
@@ -1335,18 +1323,9 @@
       </div>
 
       <div class="field">
-        <label>Testo biografia — due colonne (come nel sito)</label>
-        <div class="site-layout-about">
-          <div class="site-col-half">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:4px;">Colonna sinistra</div>
-            <textarea id="f_text_col1" class="large site-preview" lang="it">${escapeHtml(col1Text)}</textarea>
-          </div>
-          <div class="site-col-half">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:4px;">Colonna destra</div>
-            <textarea id="f_text_col2" class="large site-preview" lang="it">${escapeHtml(col2Text)}</textarea>
-          </div>
-        </div>
-        <div class="hint">Le due textarea corrispondono alle due colonne nel sito.</div>
+        <label>Testo biografia</label>
+        <textarea id="f_text" class="large site-preview" lang="it">${escapeHtml(fullText)}</textarea>
+        <div class="hint">Usa <strong>---</strong> su una riga per separare colonna sinistra e destra nel sito.</div>
       </div>
 
       <div class="field">
@@ -1380,15 +1359,9 @@
       </div>
     `;
 
-    // Bind colonne About: ricombina col1 + "---" + col2
-    const col1El = document.getElementById("f_text_col1");
-    const col2El = document.getElementById("f_text_col2");
-    const updateAboutText = () => {
-      a.text = col1El.value.trim() + "\n---\n" + col2El.value.trim();
-      markDirty();
-    };
-    col1El.addEventListener("input", updateAboutText);
-    col2El.addEventListener("input", updateAboutText);
+    // Bind testo About
+    const textEl = document.getElementById("f_text");
+    textEl.addEventListener("input", () => { a.text = textEl.value; markDirty(); });
 
     ["quote","photo","video"].forEach(f => {
       const el = document.getElementById(`f_${f}`);

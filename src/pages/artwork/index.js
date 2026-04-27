@@ -869,25 +869,25 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 </div>
-                {/* Colonna destra — testo + contatti in basso */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between mt-6 md:mt-0">
+                {/* Colonna destra — testo */}
+                <div className="flex-1 min-w-0 mt-6 md:mt-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
-                  {/* Contatti — stile dati tecnici progetti */}
-                  <div className={`text-xs leading-relaxed space-y-3 mt-8 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
-                    <div>
-                      <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Telefono</div>
-                      <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="transition-colors duration-300 hover:text-[#c8102e]">{S.TELEFONO}</a>
-                    </div>
-                    <div>
-                      <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Email</div>
-                      <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="transition-colors duration-300 hover:text-[#c8102e]">{S.EMAIL_DESTINATARIO}</a>
-                    </div>
-                    <div>
-                      <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Instagram</div>
-                      <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="transition-colors duration-300 hover:text-[#c8102e]">{S.INSTAGRAM_HANDLE}</a>
-                    </div>
-                  </div>
                 </div>
+              </div>
+              {/* Contatti — sotto la bio, con icone */}
+              <div className={`flex flex-wrap items-center text-sm ${mode === "professional" ? "text-white/50" : "text-white/40"}`} style={{ marginTop: "3.5rem", gap: "2rem" }}>
+                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  {S.TELEFONO}
+                </a>
+                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  {S.EMAIL_DESTINATARIO}
+                </a>
+                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+                  {S.INSTAGRAM_HANDLE}
+                </a>
               </div>
             </div>
 
