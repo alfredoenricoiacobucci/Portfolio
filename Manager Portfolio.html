@@ -1324,8 +1324,10 @@
 
       <div class="field">
         <label>Testo biografia</label>
-        <textarea id="f_text" class="large site-preview" lang="it">${escapeHtml(fullText)}</textarea>
-        <div class="hint">Usa <strong>---</strong> su una riga per separare colonna sinistra e destra nel sito.</div>
+        <div class="site-col-half">
+          <textarea id="f_text" class="large site-preview" lang="it">${escapeHtml(fullText)}</textarea>
+        </div>
+        <div class="hint">La larghezza corrisponde a una colonna del sito. Il sito divide automaticamente il testo in due colonne uguali.</div>
       </div>
 
       <div class="field">
