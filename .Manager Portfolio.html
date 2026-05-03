@@ -589,6 +589,7 @@
   <h1>Editor Portfolio</h1>
   <nav class="topbar-nav" id="topbarNav">
     <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
+    <button class="topbar-nav-btn" data-section="aspetto">Aspetto</button>
     <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
     <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
   </nav>
@@ -626,6 +627,11 @@
   <main id="content" class="content empty-state">
     Seleziona un progetto dalla lista a sinistra.
   </main>
+</div>
+
+<!-- SEZIONE ASPETTO (full width) -->
+<div id="sectionAspetto" class="section-full" style="display:none;">
+  <div id="aspettoContent" class="section-full-inner"></div>
 </div>
 
 <!-- SEZIONE ANALYTICS (full width) -->
@@ -1112,9 +1118,11 @@
       b.classList.toggle("active", b.dataset.section === section);
     });
     document.getElementById("sectionContenuti").style.display = section === "contenuti" ? "" : "none";
+    document.getElementById("sectionAspetto").style.display = section === "aspetto" ? "" : "none";
     document.getElementById("sectionAnalytics").style.display = section === "analytics" ? "" : "none";
     document.getElementById("sectionImpostazioni").style.display = section === "impostazioni" ? "" : "none";
 
+    if (section === "aspetto") renderAspetto();
     if (section === "analytics") loadAndRenderAnalytics();
     if (section === "impostazioni") renderImpostazioni();
   }
@@ -1138,7 +1146,7 @@
       const title = (p.titolo || p.slug).split("\n")[0] || p.slug;
       const photoCount = (photosByProject[`${p.section}/${p.slug}`] || []).length;
       div.innerHTML = `<span>${escapeHtml(title)}</span>` +
-        (photoCount ? `<span class="photo-count">${photoCount}</span>` : "");
+        `<span class="photo-count">${photoCount}</span>`;
       div.onclick = () => selectProject(`${p.section}/${p.slug}`);
       if (p.section === "art") listArt.appendChild(div);
       else listPro.appendChild(div);
@@ -1747,6 +1755,94 @@
 
   // renderAnalytics is now just loadAndRenderAnalytics since section is separate
 
+  // Helper: disegna un donut chart su canvas
+  function drawDonut(canvasId, segments, size) {
+    setTimeout(() => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const cx = size / 2, cy = size / 2, r = size * 0.38, lineW = size * 0.15;
+      ctx.clearRect(0, 0, size, size);
+      let startAngle = -Math.PI / 2;
+      const total = segments.reduce((s, seg) => s + seg.value, 0);
+      if (total === 0) {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = "#333"; ctx.lineWidth = lineW; ctx.stroke();
+        return;
+      }
+      segments.forEach(seg => {
+        const slice = (seg.value / total) * Math.PI * 2;
+        ctx.beginPath(); ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+        ctx.strokeStyle = seg.color; ctx.lineWidth = lineW; ctx.stroke();
+        startAngle += slice;
+      });
+    }, 0);
+  }
+
+  // Helper: disegna un area chart su canvas
+  function drawAreaChart(canvasId, values, color, w, h) {
+    setTimeout(() => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      if (!values.length) return;
+      const max = Math.max(1, ...values);
+      const padT = 8, padB = 20, plotH = h - padT - padB;
+      const step = (w - 4) / Math.max(1, values.length - 1);
+      // area fill
+      ctx.beginPath();
+      ctx.moveTo(2, padT + plotH);
+      values.forEach((v, i) => {
+        const x = 2 + i * step;
+        const y = padT + plotH - (v / max) * plotH;
+        if (i === 0) ctx.lineTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.lineTo(2 + (values.length - 1) * step, padT + plotH);
+      ctx.closePath();
+      ctx.fillStyle = color + "18"; ctx.fill();
+      // line
+      ctx.beginPath();
+      values.forEach((v, i) => {
+        const x = 2 + i * step;
+        const y = padT + plotH - (v / max) * plotH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      // dots on hover points (first, mid, last)
+      [0, Math.floor(values.length / 2), values.length - 1].forEach(i => {
+        if (i >= values.length) return;
+        const x = 2 + i * step;
+        const y = padT + plotH - (values[i] / max) * plotH;
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+      });
+    }, 0);
+  }
+
+  // Helper: disegna barre orizzontali
+  function drawHBar(canvasId, items, w, h) {
+    setTimeout(() => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      if (!items.length) return;
+      const max = Math.max(1, items[0].value);
+      const barH = Math.min(24, (h - 4) / items.length - 4);
+      items.forEach((item, i) => {
+        const y = 2 + i * (barH + 4);
+        const barW = Math.max(4, (item.value / max) * (w - 4));
+        ctx.fillStyle = item.color || "#c8102e";
+        ctx.globalAlpha = 0.7;
+        ctx.beginPath();
+        ctx.roundRect(2, y, barW, barH, 3);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }, 0);
+  }
+
   async function loadAndRenderAnalytics() {
     const container = document.getElementById("analyticsContent");
     if (!container) return;
@@ -1769,28 +1865,57 @@
     const artViews = v.art || 0;
     const proViews = v.pro || 0;
     const landingViews = v.landing || 0;
+    const aboutViews = v.about || 0;
     const contacts = data.contacts || 0;
 
-    // Art/Pro percentage
-    const artPct = totalViews > 0 ? Math.round((artViews / (artViews + proViews || 1)) * 100) : 0;
-    const proPct = totalViews > 0 ? Math.round((proViews / (artViews + proViews || 1)) * 100) : 0;
+    // Percentuali Art/Pro
+    const artProTotal = artViews + proViews || 1;
+    const artPct = Math.round((artViews / artProTotal) * 100);
+    const proPct = 100 - artPct;
+
+    // Dispositivi
+    const devices = data.devices || {};
+    const deskViews = devices.desktop || 0;
+    const mobViews = devices.mobile || 0;
+    const tabViews = devices.tablet || 0;
+    const devTotal = deskViews + mobViews + tabViews || 1;
+
+    // Referrer
+    const referrers = data.referrers || {};
+    const topReferrers = Object.entries(referrers).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const refMax = topReferrers.length > 0 ? topReferrers[0][1] : 1;
+
+    // Tempo medio (secondi)
+    const avgTime = data.avgSessionTime || 0;
+    const avgMin = Math.floor(avgTime / 60);
+    const avgSec = Math.round(avgTime % 60);
+
+    // Bounce rate
+    const bounceRate = data.bounceRate || 0;
+
+    // Sessioni uniche
+    const uniqueSessions = data.uniqueSessions || 0;
 
     // Top projects
     const projects = data.projects || {};
-    const topProjects = Object.entries(projects)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
+    const topProjects = Object.entries(projects).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
     // Top photos
     const photos = data.photos || {};
-    const topPhotos = Object.entries(photos)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
+    const topPhotos = Object.entries(photos).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
     // Daily data (last 30 days)
     const daily = data.daily || {};
     const days = Object.keys(daily).sort().slice(-30);
-    const maxDaily = Math.max(1, ...days.map(d => daily[d]?.total || 0));
+    const dailyTotals = days.map(d => daily[d]?.total || 0);
+    const dailyArt = days.map(d => daily[d]?.art || 0);
+    const dailyPro = days.map(d => daily[d]?.pro || 0);
+
+    // Trend (confronto ultima settimana vs precedente)
+    const last7 = dailyTotals.slice(-7).reduce((s, v) => s + v, 0);
+    const prev7 = dailyTotals.slice(-14, -7).reduce((s, v) => s + v, 0);
+    const trendPct = prev7 > 0 ? Math.round(((last7 - prev7) / prev7) * 100) : 0;
+    const trendUp = trendPct >= 0;
 
     container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
@@ -1800,52 +1925,100 @@
         </div>
         <button class="ghost" id="btnRefreshAnalytics" style="font-size: 11px;">Aggiorna dati</button>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
-          <div style="font-size: 28px; font-weight: 700; color: var(--text);">${totalViews}</div>
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Visite totali</div>
+
+      <!-- KPI CARDS -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${totalViews}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Visite totali</div>
+          ${trendPct !== 0 ? `<div style="font-size: 10px; margin-top: 6px; color: ${trendUp ? "#4ade80" : "#f87171"};">${trendUp ? "&#9650;" : "&#9660;"} ${Math.abs(trendPct)}% vs sett. prec.</div>` : ""}
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
-          <div style="font-size: 28px; font-weight: 700; color: #a78bfa;">${artViews}</div>
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Artwork (${artPct}%)</div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${uniqueSessions || totalViews}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Sessioni uniche</div>
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
-          <div style="font-size: 28px; font-weight: 700; color: #60a5fa;">${proViews}</div>
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Professional (${proPct}%)</div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${avgTime > 0 ? avgMin + ":" + String(avgSec).padStart(2, "0") : "—"}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Tempo medio</div>
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center;">
-          <div style="font-size: 28px; font-weight: 700; color: #fbbf24;">${contacts}</div>
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Contatti ricevuti</div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+          <div style="font-size: 26px; font-weight: 700; color: ${bounceRate > 60 ? "#f87171" : "var(--text)"};">${bounceRate > 0 ? bounceRate + "%" : "—"}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Bounce rate</div>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+          <div style="font-size: 26px; font-weight: 700; color: #fbbf24;">${contacts}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Contatti</div>
         </div>
       </div>
 
+      <!-- AREA CHART: visite giornaliere -->
       ${days.length > 0 ? `
-      <div style="margin-bottom: 32px;">
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
-          Visite ultimi 30 giorni
+      <div style="margin-bottom: 28px;">
+        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
+          Visite — ultimi 30 giorni
         </h3>
-        <div style="display: flex; align-items: flex-end; gap: 2px; height: 100px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px 8px;">
-          ${days.map(d => {
-            const t = daily[d]?.total || 0;
-            const h = Math.max(2, (t / maxDaily) * 80);
-            const art = daily[d]?.art || 0;
-            const pro = daily[d]?.pro || 0;
-            return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;" title="${d}: ${t} visite (art: ${art}, pro: ${pro})">
-              <div style="font-size:8px; color:var(--text3);">${t || ""}</div>
-              <div style="width:100%; max-width:20px; height:${h}px; background: var(--red); border-radius: 2px; opacity: 0.8;"></div>
-            </div>`;
-          }).join("")}
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); margin-top: 4px; padding: 0 8px;">
-          <span>${days[0] || ""}</span>
-          <span>${days[days.length - 1] || ""}</span>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 12px 8px;">
+          <canvas id="chartDaily" width="880" height="140" style="width: 100%; height: 140px;"></canvas>
+          <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); padding: 4px 2px 0;">
+            <span>${days[0] || ""}</span>
+            <span>${days[Math.floor(days.length / 2)] || ""}</span>
+            <span>${days[days.length - 1] || ""}</span>
+          </div>
         </div>
       </div>
       ` : ""}
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <!-- DONUT + DISPOSITIVI + REFERRER -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+        <!-- Donut Art vs Pro -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Sezioni</h3>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <canvas id="donutArtPro" width="100" height="100" style="width:100px;height:100px;flex-shrink:0;"></canvas>
+            <div style="font-size: 12px; line-height: 2;">
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#a78bfa;margin-right:6px;"></span>Artwork <strong>${artViews}</strong> <span style="color:var(--text3);">(${artPct}%)</span></div>
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:6px;"></span>Professional <strong>${proViews}</strong> <span style="color:var(--text3);">(${proPct}%)</span></div>
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fbbf24;margin-right:6px;"></span>Landing <strong>${landingViews}</strong></div>
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#4ade80;margin-right:6px;"></span>About <strong>${aboutViews}</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut Dispositivi -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Dispositivi</h3>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <canvas id="donutDevices" width="100" height="100" style="width:100px;height:100px;flex-shrink:0;"></canvas>
+            <div style="font-size: 12px; line-height: 2;">
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:6px;"></span>Desktop <strong>${deskViews}</strong> <span style="color:var(--text3);">(${Math.round(deskViews / devTotal * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f472b6;margin-right:6px;"></span>Mobile <strong>${mobViews}</strong> <span style="color:var(--text3);">(${Math.round(mobViews / devTotal * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fbbf24;margin-right:6px;"></span>Tablet <strong>${tabViews}</strong> <span style="color:var(--text3);">(${Math.round(tabViews / devTotal * 100)}%)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referrer -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Provenienza</h3>
+          ${topReferrers.length > 0 ? topReferrers.map(([src, cnt]) => {
+            const pct = (cnt / refMax) * 100;
+            return `<div style="margin-bottom: 8px;">
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px;">
+                <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${escapeHtml(src)}</span>
+                <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
+              </div>
+              <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
+                <div style="height:100%; width:${pct}%; background:var(--red); border-radius:2px;"></div>
+              </div>
+            </div>`;
+          }).join("") : '<p style="color:var(--text3); font-size:11px;">Nessun dato</p>'}
+        </div>
+      </div>
+
+      <!-- CLASSIFICA PROGETTI + FOTO -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
         <div>
-          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
             Classifica progetti
           </h3>
           ${topProjects.length > 0 ? `
@@ -1853,11 +2026,11 @@
             ${topProjects.map(([name, count], i) => {
               const pct = topProjects[0][1] > 0 ? (count / topProjects[0][1]) * 100 : 0;
               const label = name.replace(/^(art|pro)\//, (m) => `<span class="badge ${m.replace("/", "")}" style="font-size:8px; padding:1px 5px; margin-right:6px;">${m.replace("/", "")}</span>`);
-              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""} position: relative;">
+              return `<div style="padding: 9px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""} position: relative;">
                 <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background: var(--red); opacity: 0.06;"></div>
-                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
-                <span style="font-size: 13px; color: var(--text); flex: 1; position: relative;">${label}</span>
-                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; position: relative;">${count}</span>
+                <span style="font-size: 11px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+                <span style="font-size: 12px; color: var(--text); flex: 1; position: relative;">${label}</span>
+                <span style="font-size: 11px; color: var(--text2); font-variant-numeric: tabular-nums; position: relative;">${count}</span>
               </div>`;
             }).join("")}
           </div>
@@ -1865,7 +2038,7 @@
         </div>
 
         <div>
-          <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
             Foto più viste
           </h3>
           ${topPhotos.length > 0 ? `
@@ -1873,13 +2046,13 @@
             ${topPhotos.map(([path, count], i) => {
               const filename = path.split("/").pop();
               const project = path.split("/").slice(1, -1).join("/");
-              return `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""}">
-                <span style="font-size: 12px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
+              return `<div style="padding: 9px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""}">
+                <span style="font-size: 11px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
                 <div style="flex: 1; min-width: 0;">
                   <div style="font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(filename)}</div>
                   <div style="font-size: 10px; color: var(--text3);">${escapeHtml(project)}</div>
                 </div>
-                <span style="font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums;">${count}</span>
+                <span style="font-size: 11px; color: var(--text2); font-variant-numeric: tabular-nums;">${count}</span>
               </div>`;
             }).join("")}
           </div>
@@ -1887,20 +2060,299 @@
         </div>
       </div>
 
-      <div style="margin-top: 32px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 8px;">
-          Come funziona
-        </h3>
-        <p style="font-size: 12px; color: var(--text3); line-height: 1.6;">
-          Le statistiche vengono registrate automaticamente quando un visitatore naviga nel portfolio.
-          I dati vengono salvati in <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">contenuti/analytics.json</code> nel repository GitHub.
-          Ogni visita unica per sessione viene conteggiata una sola volta per evitare conteggi multipli.
-          Per funzionare, la variabile d'ambiente <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">GITHUB_TOKEN</code> deve essere configurata su Vercel.
+      <!-- INFO -->
+      <div style="padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
+        <p style="font-size: 11px; color: var(--text3); line-height: 1.6; margin: 0;">
+          Le statistiche vengono registrate automaticamente con le visite al sito e salvate in <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">analytics.json</code> nel branch <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">data</code>.
+          La variabile <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">GITHUB_TOKEN</code> deve essere configurata su Vercel.
         </p>
       </div>
     `;
+
+    // Disegna grafici
+    drawAreaChart("chartDaily", dailyTotals, "#c8102e", 880, 140);
+    drawDonut("donutArtPro", [
+      { value: artViews, color: "#a78bfa" },
+      { value: proViews, color: "#60a5fa" },
+      { value: landingViews, color: "#fbbf24" },
+      { value: aboutViews, color: "#4ade80" },
+    ], 100);
+    drawDonut("donutDevices", [
+      { value: deskViews, color: "#60a5fa" },
+      { value: mobViews, color: "#f472b6" },
+      { value: tabViews, color: "#fbbf24" },
+    ], 100);
+
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
     if (refreshBtn) refreshBtn.onclick = () => { analyticsCache = null; loadAndRenderAnalytics(); };
+  }
+
+  // ========== ASPETTO ==========
+  function renderAspetto() {
+    const container = document.getElementById("aspettoContent");
+    if (!container) return;
+
+    // Defaults
+    if (!state.aspetto) state.aspetto = {};
+    const a = state.aspetto;
+    const defaults = {
+      // Colori
+      colorBgArtwork: "#f8f4ed",
+      colorBgProfessional: "#0a0a0a",
+      colorAccent: "#c8102e",
+      colorTextArtwork: "#0a0a0a",
+      colorTextProfessional: "#f8f4ed",
+      // Tipografia
+      fontFamily: "Inter",
+      fontSizeBase: "16",
+      fontSizeTitolo: "28",
+      fontWeightTitolo: "800",
+      lineHeight: "1.625",
+      // Layout
+      marginLaterale: "8",
+      gapColonne: "4",
+      // Banner
+      bannerHeight: "100",
+      bannerOverlayOpacity: "65",
+      // Galleria
+      galleriaMarginTop: "3",
+      galleriaMarginBottom: "3",
+      galleriaRowHeight: "280",
+      galleriaGap: "6",
+      // About
+      aboutVideoHeight: "100",
+      aboutQuotePadding: "6",
+      aboutPhotoAspect: "3/2",
+      // Header
+      headerPaddingY: "14",
+      headerFontSize: "12",
+      // Footer
+      footerFontSize: "11",
+      // Marquee
+      marqueeFontSize: "7",
+      marqueeSpeed: "normal",
+      // Viewer
+      viewerBgOpacity: "95",
+      viewerImageQuality: "85",
+    };
+    Object.keys(defaults).forEach(k => { if (a[k] === undefined) a[k] = defaults[k]; });
+
+    function colorInput(id, label, key) {
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <input type="color" id="${id}" value="${a[key]}" style="width:36px;height:28px;border:1px solid var(--border);background:var(--panel);border-radius:4px;cursor:pointer;padding:1px;">
+        <input type="text" id="${id}_hex" value="${a[key]}" style="width:80px;font-family:monospace;font-size:12px;padding:6px 8px;">
+        <label style="font-size:12px;color:var(--text2);margin-bottom:0;">${label}</label>
+      </div>`;
+    }
+
+    function rangeInput(id, label, key, min, max, step, unit) {
+      return `<div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:0;">${label}</label>
+          <span id="${id}_val" style="font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
+        </div>
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:4px;cursor:pointer;">
+      </div>`;
+    }
+
+    function selectInput(id, label, key, options) {
+      return `<div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;display:block;margin-bottom:4px;">${label}</label>
+        <select id="${id}" style="padding:8px 12px;font-size:13px;">
+          ${options.map(o => `<option value="${o.value}" ${a[key] === o.value ? "selected" : ""}>${o.label}</option>`).join("")}
+        </select>
+      </div>`;
+    }
+
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;">Aspetto</h2>
+          <p style="font-size:12px;color:var(--text3);">Personalizza colori, margini, altezze e tipografia del sito</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="ghost" id="aspResetDefaults" style="font-size:11px;color:#f87171;">Ripristina predefiniti</button>
+        </div>
+      </div>
+
+      <!-- COLORI -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Colori</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${colorInput("asp_bgArt", "Sfondo Artwork", "colorBgArtwork")}
+            ${colorInput("asp_bgPro", "Sfondo Professional", "colorBgProfessional")}
+            ${colorInput("asp_accent", "Colore accento (rosso)", "colorAccent")}
+            ${colorInput("asp_textArt", "Testo Artwork", "colorTextArtwork")}
+            ${colorInput("asp_textPro", "Testo Professional", "colorTextProfessional")}
+          </div>
+        </div>
+      </div>
+
+      <!-- TIPOGRAFIA -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Tipografia</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          ${selectInput("asp_font", "Font famiglia", "fontFamily", [
+            { value: "Inter", label: "Inter (default)" },
+            { value: "Helvetica Neue", label: "Helvetica Neue" },
+            { value: "Playfair Display", label: "Playfair Display" },
+            { value: "DM Sans", label: "DM Sans" },
+            { value: "Space Grotesk", label: "Space Grotesk" },
+            { value: "system-ui", label: "System UI" },
+          ])}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_fontSize", "Corpo testo", "fontSizeBase", 12, 22, 1, "px")}
+            ${rangeInput("asp_titleSize", "Titolo progetto", "fontSizeTitolo", 18, 48, 1, "px")}
+            ${rangeInput("asp_titleWeight", "Peso titolo", "fontWeightTitolo", 400, 900, 100, "")}
+            ${rangeInput("asp_lineH", "Interlinea", "lineHeight", 1.2, 2.2, 0.05, "")}
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYOUT -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Layout generale</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_margLat", "Margine laterale", "marginLaterale", 2, 16, 1, "%")}
+            ${rangeInput("asp_gapCol", "Gap colonne testo", "gapColonne", 0, 10, 0.5, "%")}
+            ${rangeInput("asp_headerPad", "Padding header (Y)", "headerPaddingY", 6, 28, 1, "px")}
+            ${rangeInput("asp_headerFont", "Font size header", "headerFontSize", 9, 16, 1, "px")}
+          </div>
+        </div>
+      </div>
+
+      <!-- BANNER -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Banner progetto</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_bannerH", "Altezza banner", "bannerHeight", 50, 120, 5, "vh")}
+            ${rangeInput("asp_bannerOverlay", "Opacità overlay scuro", "bannerOverlayOpacity", 0, 100, 5, "%")}
+          </div>
+        </div>
+      </div>
+
+      <!-- GALLERIA -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Galleria foto</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_galMT", "Margine sopra galleria", "galleriaMarginTop", 0, 8, 0.5, "rem")}
+            ${rangeInput("asp_galMB", "Margine sotto galleria", "galleriaMarginBottom", 0, 8, 0.5, "rem")}
+            ${rangeInput("asp_galRowH", "Altezza riga target", "galleriaRowHeight", 150, 500, 10, "px")}
+            ${rangeInput("asp_galGap", "Gap tra foto", "galleriaGap", 0, 20, 1, "px")}
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Pagina About</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_aboutVidH", "Altezza video/banner", "aboutVideoHeight", 50, 120, 5, "vh")}
+            ${rangeInput("asp_aboutQuotePad", "Padding blocco citazione", "aboutQuotePadding", 2, 12, 0.5, "rem")}
+            ${selectInput("asp_aboutPhotoAR", "Aspect ratio foto", "aboutPhotoAspect", [
+              { value: "3/2", label: "3:2 (default)" },
+              { value: "16/9", label: "16:9" },
+              { value: "4/3", label: "4:3" },
+              { value: "1/1", label: "1:1 (quadrato)" },
+              { value: "2.35/1", label: "2.35:1 (cinema)" },
+            ])}
+          </div>
+        </div>
+      </div>
+
+      <!-- MARQUEE -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Marquee (landing)</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_marqueeSize", "Dimensione testo marquee", "marqueeFontSize", 3, 14, 0.5, "rem")}
+            ${selectInput("asp_marqueeSpeed", "Velocità scorrimento", "marqueeSpeed", [
+              { value: "slow", label: "Lento" },
+              { value: "normal", label: "Normale (default)" },
+              { value: "fast", label: "Veloce" },
+            ])}
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEWER -->
+      <div style="margin-bottom:32px;">
+        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Viewer (schermo intero)</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+            ${rangeInput("asp_viewerBg", "Opacità sfondo viewer", "viewerBgOpacity", 70, 100, 1, "%")}
+            ${rangeInput("asp_viewerQuality", "Qualità immagine viewer", "viewerImageQuality", 60, 100, 5, "")}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wire range inputs
+    container.querySelectorAll('input[type="range"]').forEach(range => {
+      const key = Object.keys(a).find(k => {
+        const el = container.querySelector("#" + range.id);
+        return el && el.value === a[k];
+      });
+      // Derive key from id mapping
+      const idToKey = {
+        asp_fontSize: "fontSizeBase", asp_titleSize: "fontSizeTitolo",
+        asp_titleWeight: "fontWeightTitolo", asp_lineH: "lineHeight",
+        asp_margLat: "marginLaterale", asp_gapCol: "gapColonne",
+        asp_headerPad: "headerPaddingY", asp_headerFont: "headerFontSize",
+        asp_bannerH: "bannerHeight", asp_bannerOverlay: "bannerOverlayOpacity",
+        asp_galMT: "galleriaMarginTop", asp_galMB: "galleriaMarginBottom",
+        asp_galRowH: "galleriaRowHeight", asp_galGap: "galleriaGap",
+        asp_aboutVidH: "aboutVideoHeight", asp_aboutQuotePad: "aboutQuotePadding",
+        asp_marqueeSize: "marqueeFontSize",
+        asp_viewerBg: "viewerBgOpacity", asp_viewerQuality: "viewerImageQuality",
+      };
+      const k = idToKey[range.id];
+      if (!k) return;
+      const valSpan = document.getElementById(range.id + "_val");
+      range.addEventListener("input", () => {
+        a[k] = range.value;
+        if (valSpan) {
+          const unit = valSpan.textContent.replace(/[0-9.\-]/g, "");
+          valSpan.textContent = range.value + unit;
+        }
+        markDirty();
+      });
+    });
+
+    // Wire color inputs
+    const colorMap = {
+      asp_bgArt: "colorBgArtwork", asp_bgPro: "colorBgProfessional",
+      asp_accent: "colorAccent", asp_textArt: "colorTextArtwork", asp_textPro: "colorTextProfessional",
+    };
+    Object.entries(colorMap).forEach(([id, k]) => {
+      const picker = document.getElementById(id);
+      const hex = document.getElementById(id + "_hex");
+      if (picker) picker.addEventListener("input", () => { a[k] = picker.value; if (hex) hex.value = picker.value; markDirty(); });
+      if (hex) hex.addEventListener("change", () => { a[k] = hex.value; if (picker) picker.value = hex.value; markDirty(); });
+    });
+
+    // Wire selects
+    const selectMap = {
+      asp_font: "fontFamily", asp_marqueeSpeed: "marqueeSpeed", asp_aboutPhotoAR: "aboutPhotoAspect",
+    };
+    Object.entries(selectMap).forEach(([id, k]) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("change", () => { a[k] = el.value; markDirty(); });
+    });
+
+    // Reset defaults
+    document.getElementById("aspResetDefaults").onclick = () => {
+      if (!confirm("Ripristinare tutti i valori predefiniti?")) return;
+      Object.keys(defaults).forEach(k => { a[k] = defaults[k]; });
+      markDirty();
+      renderAspetto();
+      toast("Valori predefiniti ripristinati.", "ok");
+    };
   }
 
   // ========== IMPOSTAZIONI ==========

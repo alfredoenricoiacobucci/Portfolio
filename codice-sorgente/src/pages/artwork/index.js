@@ -168,6 +168,7 @@ export async function getServerSideProps() {
         return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
       })(),
       strings,
+      aspetto: contenuti.aspetto || {},
     },
   };
 }
@@ -370,7 +371,21 @@ function JustifiedGallery({ images = [], onImageClick }) {
   );
 }
 
-export default function Portfolio({ projects, about = {}, strings = {} }) {
+export default function Portfolio({ projects, about = {}, strings = {}, aspetto: aspettoRaw = {} }) {
+  // Aspetto: valori personalizzabili dal Manager con fallback ai defaults
+  const ASP = {
+    colorBgArtwork: "#f8f4ed", colorBgProfessional: "#0a0a0a",
+    colorAccent: "#c8102e", colorTextArtwork: "#0a0a0a", colorTextProfessional: "#f8f4ed",
+    fontFamily: "Inter", fontSizeBase: "16", fontSizeTitolo: "28", fontWeightTitolo: "800", lineHeight: "1.625",
+    marginLaterale: "8", gapColonne: "4",
+    bannerHeight: "100", bannerOverlayOpacity: "65",
+    galleriaMarginTop: "3", galleriaMarginBottom: "3", galleriaRowHeight: "280", galleriaGap: "6",
+    aboutVideoHeight: "100", aboutQuotePadding: "6", aboutPhotoAspect: "3/2",
+    headerPaddingY: "14", headerFontSize: "12",
+    marqueeFontSize: "7", marqueeSpeed: "normal",
+    viewerBgOpacity: "95", viewerImageQuality: "85",
+    ...aspettoRaw,
+  };
   // Stringhe con fallback
   const S = {
     NOME: strings.NOME || "Alfredo Enrico Iacobucci",
@@ -623,20 +638,20 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
   }, [mode, isHome]);
 
   return (
-    <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? "#0a0a0a" : "#f8f4ed", color: mode === "professional" ? "#f8f4ed" : "#000000" }}>
+    <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork, color: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork }}>
       {/* HEADER */}
-      <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? "#f8f4ed" : "#000000", backgroundColor: mode === "professional" ? "#0a0a0a" : "#f8f4ed" }}>
+      <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork, backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
         {/* SINISTRA: Art / Pro */}
         {(() => {
-          const fg = mode === "professional" ? "#f8f4ed" : "#000000";
+          const fg = mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork;
           let artColor, proColor;
           if (hoverMode === "artwork") {
-            artColor = "#c8102e"; proColor = fg;
+            artColor = ASP.colorAccent; proColor = fg;
           } else if (hoverMode === "professional") {
-            proColor = "#c8102e"; artColor = fg;
+            proColor = ASP.colorAccent; artColor = fg;
           } else {
-            artColor = mode === "artwork" ? "#c8102e" : fg;
-            proColor = mode === "professional" ? "#c8102e" : fg;
+            artColor = mode === "artwork" ? ASP.colorAccent : fg;
+            proColor = mode === "professional" ? ASP.colorAccent : fg;
           }
           return (
             <div className="flex items-center gap-2 text-[20px]">
@@ -768,10 +783,10 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
         <div key={`project-${currentSlug}`} className="w-full">
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData) && (
-            <div style={{ paddingLeft: "8%", paddingRight: "8%" }}>
+            <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
               {/* Contenuto testo — si rivela al click */}
               <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
-                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: "4%" }}>
+                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%" }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
                     <div className="flex-1 min-w-0">
@@ -816,7 +831,7 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
             </div>
           )}
           {/* Gallery — margini simmetrici sopra e sotto */}
-          <div style={{ paddingTop: "3rem", paddingLeft: "8%", paddingRight: "8%" }}>
+          <div style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
             <JustifiedGallery
               images={selectedProject.images || []}
               onImageClick={(i) => {
@@ -828,14 +843,14 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
               }}
             />
           </div>
-          {/* Margine sotto la galleria — uguale al margine sopra (3rem) */}
-          <div style={{ height: "3rem" }} />
+          {/* Margine sotto la galleria — uguale al margine sopra */}
+          <div style={{ height: ASP.galleriaMarginBottom + "rem" }} />
         </div>
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
           {/* VIDEO — letto da content/about/ */}
           <section key="about-video" className="w-full relative about-video-section" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
-            <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-black" : "bg-neutral-100"}`}>
+            <div className="relative w-full h-full overflow-hidden flex items-center justify-center" style={{ background: "#c8c8c8" }}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -847,8 +862,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
                   src={selectedProject.video}
                 />
               ) : (
-                <span className={`relative z-10 text-sm font-medium ${mode === "professional" ? "text-white/30" : "text-black/20"}`}>
-                  {S.LABEL_VIDEO_PLACEHOLDER}
+                <span className="relative z-10 text-xs font-medium tracking-widest uppercase" style={{ color: "#a8a8a8" }}>
+                  video coming soon
                 </span>
               )}
             </div>
@@ -865,8 +880,8 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
-            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: '8%', paddingRight: '8%', paddingTop: '3rem', paddingBottom: '2.5rem' }}>
-              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: '4%' }} lang="it">
+            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem' }}>
+              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
@@ -895,25 +910,25 @@ export default function Portfolio({ projects, about = {}, strings = {} }) {
 
             {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional.
                 Spaziature uguali: sopra la citazione, tra citazione e foto, sotto la foto. */}
-            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`} style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`} style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
-                  <div className="text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: "#c8102e" }}>&ldquo;&rdquo;</div>
-                  <blockquote className="text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: "#c8102e" }}>
+                  <div className="text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: ASP.colorAccent }}>&ldquo;&rdquo;</div>
+                  <blockquote className="text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: ASP.colorAccent }}>
                     {selectedProject.quote}
                   </blockquote>
                 </div>
               )}
 
               {/* FOTO 3:2 — stessi margini laterali del testo (8%) */}
-              <div className="w-full about-photo-wrap" style={{ marginTop: "6rem", paddingLeft: "8%", paddingRight: "8%" }}>
-                <div className={`w-full about-photo overflow-hidden flex items-center justify-center ${mode === "professional" ? "bg-neutral-100" : "bg-neutral-900"}`} style={{ aspectRatio: "3/2" }}>
+              <div className="w-full about-photo-wrap" style={{ marginTop: ASP.aboutQuotePadding + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+                <div className="w-full about-photo overflow-hidden flex items-center justify-center" style={{ aspectRatio: ASP.aboutPhotoAspect, background: "#c8c8c8" }}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className={`text-sm font-medium ${mode === "professional" ? "text-black/20" : "text-white/20"}`}>
-                      {S.LABEL_FOTO_PLACEHOLDER}
+                    <span className="text-xs font-medium tracking-widest uppercase" style={{ color: "#a8a8a8" }}>
+                      foto coming soon
                     </span>
                   )}
                 </div>
