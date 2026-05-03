@@ -572,6 +572,65 @@
     margin: 0 auto;
     padding: 40px 40px 80px;
   }
+  .section-full-inner.wide {
+    max-width: 1200px;
+  }
+
+  /* ---- ASPETTO PREVIEW ---- */
+  .aspetto-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 28px;
+    align-items: start;
+  }
+  .aspetto-controls { min-width: 0; }
+  .aspetto-preview-wrap {
+    position: sticky;
+    top: 80px;
+  }
+  .aspetto-preview {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #888;
+    aspect-ratio: 9/16;
+    max-height: calc(100vh - 120px);
+    position: relative;
+  }
+  .aspetto-preview-inner {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  .asp-mode-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .asp-mode-toggle button {
+    flex: 1;
+    border: none;
+    border-radius: 0;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--panel);
+    color: var(--text3);
+  }
+  .asp-mode-toggle button.active {
+    background: var(--red);
+    color: #fff;
+  }
+
+  @media (max-width: 1100px) {
+    .aspetto-layout { grid-template-columns: 1fr; }
+    .aspetto-preview-wrap { position: relative; top: 0; order: -1; }
+    .aspetto-preview { aspect-ratio: 16/9; max-height: 360px; }
+  }
 
   @media (max-width: 780px) {
     .main { grid-template-columns: 1fr; }
@@ -631,12 +690,12 @@
 
 <!-- SEZIONE ASPETTO (full width) -->
 <div id="sectionAspetto" class="section-full" style="display:none;">
-  <div id="aspettoContent" class="section-full-inner"></div>
+  <div id="aspettoContent" class="section-full-inner wide"></div>
 </div>
 
 <!-- SEZIONE ANALYTICS (full width) -->
 <div id="sectionAnalytics" class="section-full" style="display:none;">
-  <div id="analyticsContent" class="section-full-inner">
+  <div id="analyticsContent" class="section-full-inner wide">
     <p style="color: var(--text3);">Caricamento...</p>
   </div>
 </div>
@@ -1434,6 +1493,22 @@
     }
   }
 
+  // Fetch conteggio foto di TUTTI i progetti (per popolare sidebar all'avvio)
+  async function fetchAllPhotoCounts() {
+    if (!getToken()) return;
+    const promises = state.projects.map(async (p) => {
+      const key = `${p.section}/${p.slug}`;
+      if (photosByProject[key] && photosByProject[key].length > 0) return; // già caricato
+      try {
+        const items = await ghListDir(`codice-sorgente/contenuti/${p.section}/${p.slug}`);
+        const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
+        photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: i.download_url }));
+      } catch { /* cartella vuota o inesistente */ }
+    });
+    await Promise.all(promises);
+    renderSidebar();
+  }
+
   // Set di indici selezionati (selezione multipla foto)
   let selectedPhotos = new Set();
   let lastClickedIdx = null;
@@ -1927,27 +2002,29 @@
       </div>
 
       <!-- KPI CARDS -->
-      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px;">
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
-          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${totalViews}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Visite totali</div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: var(--text);">${totalViews}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Visite totali</div>
           ${trendPct !== 0 ? `<div style="font-size: 10px; margin-top: 6px; color: ${trendUp ? "#4ade80" : "#f87171"};">${trendUp ? "&#9650;" : "&#9660;"} ${Math.abs(trendPct)}% vs sett. prec.</div>` : ""}
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
-          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${uniqueSessions || totalViews}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Sessioni uniche</div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: var(--text);">${uniqueSessions || totalViews}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Sessioni uniche</div>
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
+          <div style="font-size: 32px; font-weight: 700; color: #fbbf24;">${contacts}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Contatti ricevuti</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 28px;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px; text-align: center;">
           <div style="font-size: 26px; font-weight: 700; color: var(--text);">${avgTime > 0 ? avgMin + ":" + String(avgSec).padStart(2, "0") : "—"}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Tempo medio</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Tempo medio sessione</div>
         </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px; text-align: center;">
           <div style="font-size: 26px; font-weight: 700; color: ${bounceRate > 60 ? "#f87171" : "var(--text)"};">${bounceRate > 0 ? bounceRate + "%" : "—"}</div>
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Bounce rate</div>
-        </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px 14px; text-align: center;">
-          <div style="font-size: 26px; font-weight: 700; color: #fbbf24;">${contacts}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Contatti</div>
         </div>
       </div>
 
@@ -1958,7 +2035,7 @@
           Visite — ultimi 30 giorni
         </h3>
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 12px 8px;">
-          <canvas id="chartDaily" width="880" height="140" style="width: 100%; height: 140px;"></canvas>
+          <canvas id="chartDaily" width="1120" height="160" style="width: 100%; height: 160px;"></canvas>
           <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); padding: 4px 2px 0;">
             <span>${days[0] || ""}</span>
             <span>${days[Math.floor(days.length / 2)] || ""}</span>
@@ -1969,7 +2046,7 @@
       ` : ""}
 
       <!-- DONUT + DISPOSITIVI + REFERRER -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px;">
         <!-- Donut Art vs Pro -->
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
           <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Sezioni</h3>
@@ -1997,22 +2074,25 @@
           </div>
         </div>
 
-        <!-- Referrer -->
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Provenienza</h3>
-          ${topReferrers.length > 0 ? topReferrers.map(([src, cnt]) => {
+      </div>
+
+      <!-- Referrer — full width -->
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 28px;">
+        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Provenienza visite</h3>
+        ${topReferrers.length > 0 ? `<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 28px;">` +
+          topReferrers.map(([src, cnt]) => {
             const pct = (cnt / refMax) * 100;
-            return `<div style="margin-bottom: 8px;">
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px;">
-                <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${escapeHtml(src)}</span>
+            return `<div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;">
+                <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">${escapeHtml(src)}</span>
                 <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
               </div>
               <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
                 <div style="height:100%; width:${pct}%; background:var(--red); border-radius:2px;"></div>
               </div>
             </div>`;
-          }).join("") : '<p style="color:var(--text3); font-size:11px;">Nessun dato</p>'}
-        </div>
+          }).join("") + '</div>'
+        : '<p style="color:var(--text3); font-size:11px;">Nessun dato</p>'}
       </div>
 
       <!-- CLASSIFICA PROGETTI + FOTO -->
@@ -2070,7 +2150,7 @@
     `;
 
     // Disegna grafici
-    drawAreaChart("chartDaily", dailyTotals, "#c8102e", 880, 140);
+    drawAreaChart("chartDaily", dailyTotals, "#c8102e", 1120, 160);
     drawDonut("donutArtPro", [
       { value: artViews, color: "#a78bfa" },
       { value: proViews, color: "#60a5fa" },
@@ -2165,7 +2245,7 @@
     }
 
     container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div>
           <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;">Aspetto</h2>
           <p style="font-size:12px;color:var(--text3);">Personalizza colori, margini, altezze e tipografia del sito</p>
@@ -2174,6 +2254,9 @@
           <button class="ghost" id="aspResetDefaults" style="font-size:11px;color:#f87171;">Ripristina predefiniti</button>
         </div>
       </div>
+
+      <div class="aspetto-layout">
+      <div class="aspetto-controls">
 
       <!-- COLORI -->
       <div style="margin-bottom:32px;">
@@ -2290,6 +2373,19 @@
           </div>
         </div>
       </div>
+
+      </div><!-- /aspetto-controls -->
+
+      <!-- ANTEPRIMA LIVE -->
+      <div class="aspetto-preview-wrap">
+        <div class="asp-mode-toggle">
+          <button id="aspPrevArt" class="active">Artwork</button>
+          <button id="aspPrevPro">Professional</button>
+        </div>
+        <div class="aspetto-preview" id="aspPreview"></div>
+      </div>
+
+      </div><!-- /aspetto-layout -->
     `;
 
     // Wire range inputs
@@ -2353,6 +2449,98 @@
       renderAspetto();
       toast("Valori predefiniti ripristinati.", "ok");
     };
+
+    // ---- ANTEPRIMA LIVE ----
+    let previewMode = "artwork";
+    const prevArt = document.getElementById("aspPrevArt");
+    const prevPro = document.getElementById("aspPrevPro");
+    prevArt.onclick = () => { previewMode = "artwork"; prevArt.classList.add("active"); prevPro.classList.remove("active"); updatePreview(); };
+    prevPro.onclick = () => { previewMode = "professional"; prevPro.classList.add("active"); prevArt.classList.remove("active"); updatePreview(); };
+
+    function updatePreview() {
+      const p = document.getElementById("aspPreview");
+      if (!p) return;
+      const isP = previewMode === "professional";
+      const bg = isP ? a.colorBgProfessional : a.colorBgArtwork;
+      const fg = isP ? a.colorTextProfessional : a.colorTextArtwork;
+      const accent = a.colorAccent;
+      const muted = isP ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+      const borderC = isP ? a.colorTextProfessional : a.colorTextArtwork;
+      const ml = a.marginLaterale;
+      const gap = a.gapColonne;
+      const bannerH = Math.round(a.bannerHeight * 0.4);
+      const galH = a.galleriaRowHeight * 0.18;
+      const galGap = Math.max(1, Math.round(a.galleriaGap * 0.5));
+      const galMT = Math.round(parseFloat(a.galleriaMarginTop) * 8);
+      const galMB = Math.round(parseFloat(a.galleriaMarginBottom) * 8);
+      const titleSize = Math.round(a.fontSizeTitolo * 0.45);
+      const bodySize = Math.max(6, Math.round(a.fontSizeBase * 0.45));
+      const headerFont = Math.max(5, Math.round(a.headerFontSize * 0.5));
+      const lh = a.lineHeight;
+      const overlayOp = a.bannerOverlayOpacity / 100;
+
+      p.innerHTML = `
+        <div style="width:100%;height:100%;background:${bg};color:${fg};font-family:'${a.fontFamily}',sans-serif;overflow:hidden;display:flex;flex-direction:column;">
+          <!-- Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:${Math.round(a.headerPaddingY*0.4)}px ${ml*0.5}%;border-bottom:1.5px solid ${borderC};font-size:${headerFont}px;font-weight:700;flex-shrink:0;">
+            <div style="display:flex;gap:3px;"><span style="color:${accent};">Art</span><span>/</span><span>Pro</span></div>
+            <div style="display:flex;gap:4px;">
+              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
+              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
+              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
+            </div>
+          </div>
+          <!-- Banner -->
+          <div style="position:relative;height:${bannerH}px;background:#555;flex-shrink:0;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,${overlayOp*0.6}),rgba(0,0,0,${overlayOp}));"></div>
+            <div style="position:absolute;bottom:6px;left:${ml*0.5}%;z-index:1;">
+              <div style="font-size:${titleSize}px;font-weight:${a.fontWeightTitolo};color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);line-height:1.1;">Titolo Progetto</div>
+              <div style="font-size:${Math.max(5,titleSize*0.45)}px;color:rgba(255,255,255,0.6);margin-top:1px;">Luogo 2025</div>
+            </div>
+          </div>
+          <!-- Testo -->
+          <div style="padding:${galMT}px ${ml*0.5}% 6px;display:flex;gap:${gap*0.5}%;flex-shrink:0;">
+            <div style="flex:1;font-size:${bodySize}px;line-height:${lh};color:${muted};">
+              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.12;border-radius:1px;margin-bottom:2px;width:90%;"></div>
+              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.08;border-radius:1px;margin-bottom:2px;width:75%;"></div>
+              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.10;border-radius:1px;width:82%;"></div>
+            </div>
+            <div style="width:50px;flex-shrink:0;">
+              <div style="height:${bodySize*1}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:2px;width:70%;"></div>
+              <div style="height:${bodySize*1}px;background:${fg};opacity:0.06;border-radius:1px;width:50%;"></div>
+            </div>
+          </div>
+          <!-- Galleria -->
+          <div style="padding:${galMT}px ${ml*0.5}% ${galMB}px;flex:1;overflow:hidden;">
+            <div style="display:flex;gap:${galGap}px;height:${galH}px;">
+              <div style="flex:1.5;background:#777;border-radius:1px;"></div>
+              <div style="flex:1;background:#888;border-radius:1px;"></div>
+              <div style="flex:1.2;background:#666;border-radius:1px;"></div>
+            </div>
+            <div style="display:flex;gap:${galGap}px;height:${galH*0.75}px;margin-top:${galGap}px;">
+              <div style="flex:1;background:#999;border-radius:1px;"></div>
+              <div style="flex:1.8;background:#777;border-radius:1px;"></div>
+            </div>
+            <div style="display:flex;gap:${galGap}px;height:${galH}px;margin-top:${galGap}px;">
+              <div style="flex:1;background:#888;border-radius:1px;"></div>
+              <div style="flex:1;background:#666;border-radius:1px;"></div>
+              <div style="flex:1.4;background:#777;border-radius:1px;"></div>
+            </div>
+          </div>
+          <!-- Footer -->
+          <div style="padding:4px ${ml*0.5}%;font-size:${Math.max(4,headerFont-1)}px;color:${muted};border-top:1px solid ${borderC};flex-shrink:0;display:flex;justify-content:space-between;">
+            <span>Alfredo Enrico Iacobucci</span>
+            <span style="color:${accent};">&#9679;</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Aggiorna preview ad ogni cambio di slider/color/select
+    container.addEventListener("input", updatePreview);
+    container.addEventListener("change", updatePreview);
+    // Prima render
+    updatePreview();
   }
 
   // ========== IMPOSTAZIONI ==========
@@ -2683,10 +2871,13 @@
         else renderProject(currentKey);
       }
       toast("Sincronizzato con GitHub.", "ok");
+      // Fetch conteggio foto di tutti i progetti in background
+      fetchAllPhotoCounts();
     } catch(e) {
       console.warn("Sync da GitHub fallito:", e.message);
       renderSidebar();
       if (dirty) toast("Bozza locale ripristinata (sync GitHub fallito).", "");
+      fetchAllPhotoCounts();
     }
   })();
 })();
