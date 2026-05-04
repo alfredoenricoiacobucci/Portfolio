@@ -582,17 +582,27 @@
     padding: 40px 40px 80px;
   }
   .section-full-inner.wide {
-    max-width: 1200px;
+    max-width: none;
+    padding: 28px 24px 80px;
   }
 
   /* ---- ASPETTO PREVIEW ---- */
   .aspetto-layout {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 28px;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
     align-items: start;
   }
-  .aspetto-controls { min-width: 0; }
+  .aspetto-controls {
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    padding-right: 8px;
+    position: sticky;
+    top: 80px;
+  }
+  .aspetto-controls::-webkit-scrollbar { width: 4px; }
+  .aspetto-controls::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .aspetto-preview-wrap {
     position: sticky;
     top: 80px;
@@ -603,7 +613,7 @@
     overflow: hidden;
     background: #888;
     aspect-ratio: 9/16;
-    max-height: calc(100vh - 120px);
+    max-height: calc(100vh - 140px);
     position: relative;
   }
   .aspetto-preview-inner {
@@ -615,7 +625,7 @@
   .asp-mode-toggle {
     display: flex;
     gap: 0;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border: 1px solid var(--border);
     border-radius: 4px;
     overflow: hidden;
@@ -637,8 +647,9 @@
 
   @media (max-width: 1100px) {
     .aspetto-layout { grid-template-columns: 1fr; }
+    .aspetto-controls { position: relative; top: 0; max-height: none; }
     .aspetto-preview-wrap { position: relative; top: 0; order: -1; }
-    .aspetto-preview { aspect-ratio: 16/9; max-height: 360px; }
+    .aspetto-preview { aspect-ratio: 16/9; max-height: 400px; }
   }
 
   @media (max-width: 780px) {
@@ -1996,6 +2007,123 @@
     }, 0);
   }
 
+  // Helper: Mappa del mondo semplificata (proiezione Mercator su canvas)
+  // countryData = { "IT": 42, "US": 10, ... }
+  function drawWorldMap(canvasId, countryData, w, h) {
+    setTimeout(() => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+
+      // Coordinate centrali dei paesi principali (lon, lat) → proiezione Mercator
+      const CC = {
+        IT:[12.5,42.8],US:[-98,39],GB:[-1.5,53],DE:[10.4,51.2],FR:[2.2,46.6],ES:[-3.7,40.4],
+        PT:[-8.2,39.4],NL:[5.3,52.1],BE:[4.5,50.8],CH:[8.2,46.8],AT:[14.6,47.7],
+        SE:[18.6,60.1],NO:[8.5,60.5],DK:[9.5,56],FI:[25.7,61.9],PL:[19.1,51.9],
+        CZ:[15.5,49.8],RO:[24.9,45.9],GR:[21.8,39.1],TR:[35.2,39],RU:[105,61],
+        UA:[31.2,48.4],BR:[-51.9,-14.2],AR:[-63.6,-38.4],MX:[-102.6,23.6],
+        CA:[-106.3,56.1],JP:[138.3,36.2],CN:[104.2,35.9],KR:[127.8,35.9],
+        IN:[78.9,20.6],AU:[133.8,-25.3],ZA:[22.9,-30.6],EG:[30.8,26.8],
+        MA:[-7.1,31.8],NG:[8.7,9.1],KE:[37.9,-0.02],IL:[35.2,31.8],AE:[54,23.4],
+        SA:[45,23.9],TH:[100.5,15.9],SG:[103.8,1.4],ID:[113.9,-0.8],PH:[121.8,12.9],
+        VN:[108.3,14.1],NZ:[174.9,-40.9],CL:[-71.5,-35.7],CO:[-74.3,4.6],
+        PE:[-75,-9.2],IE:[-8.2,53.4],HR:[15.2,45.1],HU:[19.5,47.2],BG:[25.5,42.7],
+        SK:[19.7,48.7],SI:[14.6,46.2],LT:[23.9,55.2],LV:[24.1,56.9],EE:[25.0,58.6],
+      };
+
+      // Proiezione Mercator semplificata
+      const lonToX = (lon) => ((lon + 180) / 360) * w;
+      const latToY = (lat) => {
+        const latRad = lat * Math.PI / 180;
+        const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+        return h / 2 - (mercN / Math.PI) * (h / 2) * 0.82;
+      };
+
+      // Sfondo continenti (forme semplificate con path)
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(0, 0, w, h);
+
+      // Griglia
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 0.5;
+      for (let lon = -180; lon <= 180; lon += 30) {
+        const x = lonToX(lon);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let lat = -60; lat <= 80; lat += 20) {
+        const y = latToY(lat);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Contorni continenti semplificati (puntini di terra)
+      const landDots = [
+        // Europa
+        [-10,36],[0,43],[3,43],[7,44],[10,46],[13,47],[15,47],[18,45],[20,42],[25,38],[28,41],[30,45],
+        [25,48],[20,50],[15,52],[10,54],[5,52],[0,49],[-5,43],[-9,39],
+        // Nord America
+        [-130,50],[-120,48],[-110,45],[-100,40],[-90,30],[-85,25],[-100,20],[-105,25],[-115,32],
+        [-125,40],[-130,45],[-140,60],[-150,65],[-165,60],[-60,45],[-65,48],[-70,43],[-75,40],[-80,35],
+        // Sud America
+        [-80,10],[-75,5],[-70,0],[-65,-5],[-55,-10],[-45,-15],[-40,-20],[-50,-25],[-55,-30],[-65,-35],[-70,-40],[-75,-45],[-70,-50],
+        // Africa
+        [-15,15],[0,5],[10,5],[20,0],[30,0],[35,5],[40,10],[45,12],[35,20],[30,30],[10,35],[0,30],[-10,25],[-17,15],
+        [25,-5],[30,-15],[35,-20],[30,-30],[25,-33],[28,-34],
+        // Asia
+        [40,40],[50,40],[60,35],[70,30],[75,35],[80,30],[85,28],[90,25],[95,20],[100,15],[105,22],[110,30],
+        [115,35],[120,40],[125,38],[130,35],[140,38],[145,43],[80,40],[70,45],[60,50],[50,55],[70,60],[90,55],[100,50],[110,45],[120,50],[130,50],[140,50],
+        // Australia
+        [115,-25],[120,-18],[130,-15],[140,-18],[145,-20],[150,-25],[150,-30],[145,-35],[140,-38],[135,-35],[130,-30],[120,-30],[115,-28],
+      ];
+      ctx.fillStyle = "#2a2a2a";
+      landDots.forEach(([lon, lat]) => {
+        const x = lonToX(lon);
+        const y = latToY(lat);
+        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // Punti dati
+      const entries = Object.entries(countryData).filter(([k]) => CC[k]);
+      if (entries.length === 0) {
+        ctx.fillStyle = "#333";
+        ctx.font = "12px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Nessun dato geografico disponibile", w / 2, h / 2);
+        return;
+      }
+      const maxVal = Math.max(1, ...entries.map(([, v]) => v));
+
+      entries.forEach(([code, count]) => {
+        const [lon, lat] = CC[code];
+        const x = lonToX(lon);
+        const y = latToY(lat);
+        const ratio = count / maxVal;
+        const r = 4 + ratio * 16;
+
+        // Glow
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, r * 2);
+        grad.addColorStop(0, `rgba(200, 16, 46, ${0.3 + ratio * 0.4})`);
+        grad.addColorStop(1, "rgba(200, 16, 46, 0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(x, y, r * 2, 0, Math.PI * 2); ctx.fill();
+
+        // Cerchio
+        ctx.fillStyle = `rgba(200, 16, 46, ${0.5 + ratio * 0.5})`;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+        // Etichetta per paesi con visite significative
+        if (ratio > 0.15 || entries.length <= 5) {
+          ctx.fillStyle = "rgba(255,255,255,0.7)";
+          ctx.font = "bold 9px Inter, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(code, x, y - r - 3);
+          ctx.font = "9px Inter, sans-serif";
+          ctx.fillText(String(count), x, y - r - 12);
+        }
+      });
+    }, 0);
+  }
+
   async function loadAndRenderAnalytics() {
     const container = document.getElementById("analyticsContent");
     if (!container) return;
@@ -2063,6 +2191,22 @@
     const dailyTotals = days.map(d => daily[d]?.total || 0);
     const dailyArt = days.map(d => daily[d]?.art || 0);
     const dailyPro = days.map(d => daily[d]?.pro || 0);
+
+    // Countries
+    const countries = data.countries || {};
+    const topCountries = Object.entries(countries).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    const countryNames = {
+      IT:"Italia",US:"Stati Uniti",GB:"Regno Unito",DE:"Germania",FR:"Francia",ES:"Spagna",
+      PT:"Portogallo",NL:"Paesi Bassi",BE:"Belgio",CH:"Svizzera",AT:"Austria",SE:"Svezia",
+      NO:"Norvegia",DK:"Danimarca",FI:"Finlandia",PL:"Polonia",CZ:"Rep. Ceca",RO:"Romania",
+      GR:"Grecia",TR:"Turchia",RU:"Russia",UA:"Ucraina",BR:"Brasile",AR:"Argentina",
+      MX:"Messico",CA:"Canada",JP:"Giappone",CN:"Cina",KR:"Corea del Sud",IN:"India",
+      AU:"Australia",ZA:"Sudafrica",EG:"Egitto",MA:"Marocco",NG:"Nigeria",KE:"Kenya",
+      IL:"Israele",AE:"Emirati Arabi",SA:"Arabia Saudita",TH:"Tailandia",SG:"Singapore",
+      ID:"Indonesia",PH:"Filippine",VN:"Vietnam",NZ:"Nuova Zelanda",CL:"Cile",CO:"Colombia",
+      PE:"Perù",IE:"Irlanda",HR:"Croazia",HU:"Ungheria",BG:"Bulgaria",SK:"Slovacchia",
+      SI:"Slovenia",LT:"Lituania",LV:"Lettonia",EE:"Estonia",
+    };
 
     // Trend (confronto ultima settimana vs precedente)
     const last7 = dailyTotals.slice(-7).reduce((s, v) => s + v, 0);
@@ -2154,23 +2298,57 @@
 
       </div>
 
-      <!-- Referrer — full width -->
-      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 28px;">
-        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Provenienza visite</h3>
-        ${topReferrers.length > 0 ? `<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 28px;">` +
-          topReferrers.map(([src, cnt]) => {
-            const pct = (cnt / refMax) * 100;
-            return `<div>
-              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;">
-                <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">${escapeHtml(src)}</span>
-                <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
-              </div>
-              <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
-                <div style="height:100%; width:${pct}%; background:var(--red); border-radius:2px;"></div>
-              </div>
-            </div>`;
-          }).join("") + '</div>'
-        : '<p style="color:var(--text3); font-size:11px;">Nessun dato</p>'}
+      <!-- PROVENIENZA VISITE: MAPPA + REFERRER -->
+      <div style="margin-bottom: 28px;">
+        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
+          Provenienza visite
+        </h3>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 18px;">
+          <!-- Mappa -->
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px; overflow: hidden;">
+            <canvas id="mapWorld" width="800" height="400" style="width: 100%; height: auto; display: block; border-radius: 4px;"></canvas>
+          </div>
+          <!-- Lista paesi + Referrer -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Paesi -->
+            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; flex: 1; overflow-y: auto; max-height: 220px;">
+              <h4 style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">Paesi</h4>
+              ${topCountries.length > 0 ?
+                topCountries.map(([code, cnt], i) => {
+                  const name = countryNames[code] || code;
+                  const pct = topCountries[0][1] > 0 ? (cnt / topCountries[0][1]) * 100 : 0;
+                  return `<div style="margin-bottom:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+                      <span style="color:var(--text2);">${escapeHtml(name)}</span>
+                      <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
+                    </div>
+                    <div style="height:3px; background:var(--border); border-radius:2px; overflow:hidden;">
+                      <div style="height:100%; width:${pct}%; background:var(--red); border-radius:2px;"></div>
+                    </div>
+                  </div>`;
+                }).join("")
+              : '<p style="color:var(--text3); font-size:10px;">I dati geografici appariranno con le prossime visite al sito.</p>'}
+            </div>
+            <!-- Referrer -->
+            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; flex: 1; overflow-y: auto; max-height: 220px;">
+              <h4 style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">Siti di provenienza</h4>
+              ${topReferrers.length > 0 ?
+                topReferrers.map(([src, cnt]) => {
+                  const pct = (cnt / refMax) * 100;
+                  return `<div style="margin-bottom:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+                      <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${escapeHtml(src)}</span>
+                      <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
+                    </div>
+                    <div style="height:3px; background:var(--border); border-radius:2px; overflow:hidden;">
+                      <div style="height:100%; width:${pct}%; background:#60a5fa; border-radius:2px;"></div>
+                    </div>
+                  </div>`;
+                }).join("")
+              : '<p style="color:var(--text3); font-size:10px;">I dati sui referrer appariranno con le prossime visite.</p>'}
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- CLASSIFICA PROGETTI + FOTO -->
@@ -2240,6 +2418,7 @@
       { value: mobViews, color: "#f472b6" },
       { value: tabViews, color: "#fbbf24" },
     ], 100);
+    drawWorldMap("mapWorld", countries, 800, 400);
 
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
     if (refreshBtn) refreshBtn.onclick = () => { analyticsCache = null; loadAndRenderAnalytics(); };
@@ -2296,27 +2475,27 @@
     Object.keys(defaults).forEach(k => { if (a[k] === undefined) a[k] = defaults[k]; });
 
     function colorInput(id, label, key) {
-      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <input type="color" id="${id}" value="${a[key]}" style="width:36px;height:28px;border:1px solid var(--border);background:var(--panel);border-radius:4px;cursor:pointer;padding:1px;">
-        <input type="text" id="${id}_hex" value="${a[key]}" style="width:80px;font-family:monospace;font-size:12px;padding:6px 8px;">
-        <label style="font-size:12px;color:var(--text2);margin-bottom:0;">${label}</label>
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <input type="color" id="${id}" value="${a[key]}" style="width:28px;height:22px;border:1px solid var(--border);background:var(--panel);border-radius:3px;cursor:pointer;padding:0;">
+        <input type="text" id="${id}_hex" value="${a[key]}" style="width:68px;font-family:monospace;font-size:10px;padding:4px 6px;">
+        <label style="font-size:10px;color:var(--text2);margin-bottom:0;">${label}</label>
       </div>`;
     }
 
     function rangeInput(id, label, key, min, max, step, unit) {
-      return `<div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:0;">${label}</label>
-          <span id="${id}_val" style="font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+          <label style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0;">${label}</label>
+          <span id="${id}_val" style="font-size:10px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
         </div>
-        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:4px;cursor:pointer;">
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:3px;cursor:pointer;">
       </div>`;
     }
 
     function selectInput(id, label, key, options) {
-      return `<div style="margin-bottom:14px;">
-        <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;display:block;margin-bottom:4px;">${label}</label>
-        <select id="${id}" style="padding:8px 12px;font-size:13px;">
+      return `<div style="margin-bottom:10px;">
+        <label style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:2px;">${label}</label>
+        <select id="${id}" style="padding:5px 8px;font-size:11px;">
           ${options.map(o => `<option value="${o.value}" ${a[key] === o.value ? "selected" : ""}>${o.label}</option>`).join("")}
         </select>
       </div>`;
@@ -2337,10 +2516,10 @@
       <div class="aspetto-controls">
 
       <!-- COLORI -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Colori</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Colori</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${colorInput("asp_bgArt", "Sfondo Artwork", "colorBgArtwork")}
             ${colorInput("asp_bgPro", "Sfondo Professional", "colorBgProfessional")}
             ${colorInput("asp_accent", "Colore accento (rosso)", "colorAccent")}
@@ -2351,9 +2530,9 @@
       </div>
 
       <!-- TIPOGRAFIA -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Tipografia</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Tipografia</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
           ${selectInput("asp_font", "Font famiglia", "fontFamily", [
             { value: "Inter", label: "Inter (default)" },
             { value: "Helvetica Neue", label: "Helvetica Neue" },
@@ -2362,7 +2541,7 @@
             { value: "Space Grotesk", label: "Space Grotesk" },
             { value: "system-ui", label: "System UI" },
           ])}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_fontSize", "Corpo testo", "fontSizeBase", 12, 22, 1, "px")}
             ${rangeInput("asp_titleSize", "Titolo progetto", "fontSizeTitolo", 18, 48, 1, "px")}
             ${rangeInput("asp_titleWeight", "Peso titolo", "fontWeightTitolo", 400, 900, 100, "")}
@@ -2372,10 +2551,10 @@
       </div>
 
       <!-- LAYOUT -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Layout generale</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Layout generale</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_margLat", "Margine laterale", "marginLaterale", 2, 16, 1, "%")}
             ${rangeInput("asp_gapCol", "Gap colonne testo", "gapColonne", 0, 10, 0.5, "%")}
             ${rangeInput("asp_headerPad", "Padding header (Y)", "headerPaddingY", 6, 28, 1, "px")}
@@ -2385,10 +2564,10 @@
       </div>
 
       <!-- BANNER -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Banner progetto</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Banner progetto</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_bannerH", "Altezza banner", "bannerHeight", 50, 120, 5, "vh")}
             ${rangeInput("asp_bannerOverlay", "Opacità overlay scuro", "bannerOverlayOpacity", 0, 100, 5, "%")}
           </div>
@@ -2396,10 +2575,10 @@
       </div>
 
       <!-- GALLERIA -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Galleria foto</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Galleria foto</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_galMT", "Margine sopra galleria", "galleriaMarginTop", 0, 8, 0.5, "rem")}
             ${rangeInput("asp_galMB", "Margine sotto galleria", "galleriaMarginBottom", 0, 8, 0.5, "rem")}
             ${rangeInput("asp_galRowH", "Altezza riga target", "galleriaRowHeight", 150, 500, 10, "px")}
@@ -2409,10 +2588,10 @@
       </div>
 
       <!-- ABOUT -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Pagina About</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Pagina About</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_aboutVidH", "Altezza video/banner", "aboutVideoHeight", 50, 120, 5, "vh")}
             ${rangeInput("asp_aboutQuotePad", "Padding blocco citazione", "aboutQuotePadding", 2, 12, 0.5, "rem")}
             ${selectInput("asp_aboutPhotoAR", "Aspect ratio foto", "aboutPhotoAspect", [
@@ -2427,10 +2606,10 @@
       </div>
 
       <!-- MARQUEE -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Marquee (landing)</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Marquee (landing)</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_marqueeSize", "Dimensione testo marquee", "marqueeFontSize", 3, 14, 0.5, "rem")}
             ${selectInput("asp_marqueeSpeed", "Velocità scorrimento", "marqueeSpeed", [
               { value: "slow", label: "Lento" },
@@ -2442,10 +2621,10 @@
       </div>
 
       <!-- VIEWER -->
-      <div style="margin-bottom:32px;">
-        <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:14px;">Viewer (schermo intero)</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;">
+      <div style="margin-bottom:18px;">
+        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Viewer (schermo intero)</h3>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+          <div style="display:flex;flex-direction:column;">
             ${rangeInput("asp_viewerBg", "Opacità sfondo viewer", "viewerBgOpacity", 70, 100, 1, "%")}
             ${rangeInput("asp_viewerQuality", "Qualità immagine viewer", "viewerImageQuality", 60, 100, 5, "")}
           </div>
@@ -2543,72 +2722,144 @@
       const fg = isP ? a.colorTextProfessional : a.colorTextArtwork;
       const accent = a.colorAccent;
       const muted = isP ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-      const borderC = isP ? a.colorTextProfessional : a.colorTextArtwork;
-      const ml = a.marginLaterale;
-      const gap = a.gapColonne;
-      const bannerH = Math.round(a.bannerHeight * 0.4);
-      const galH = a.galleriaRowHeight * 0.18;
-      const galGap = Math.max(1, Math.round(a.galleriaGap * 0.5));
-      const galMT = Math.round(parseFloat(a.galleriaMarginTop) * 8);
-      const galMB = Math.round(parseFloat(a.galleriaMarginBottom) * 8);
-      const titleSize = Math.round(a.fontSizeTitolo * 0.45);
-      const bodySize = Math.max(6, Math.round(a.fontSizeBase * 0.45));
-      const headerFont = Math.max(5, Math.round(a.headerFontSize * 0.5));
+      const mutedStrong = isP ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)";
+      const borderC = isP ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)";
+      const ml = parseFloat(a.marginLaterale);
+      const gap = parseFloat(a.gapColonne);
+      const bannerH = Math.round(parseFloat(a.bannerHeight) * 0.55);
+      const galGap = Math.max(1, Math.round(parseFloat(a.galleriaGap) * 0.4));
+      const galMT = Math.round(parseFloat(a.galleriaMarginTop) * 6);
+      const galMB = Math.round(parseFloat(a.galleriaMarginBottom) * 6);
+      const titleSize = Math.max(8, Math.round(parseFloat(a.fontSizeTitolo) * 0.5));
+      const bodySize = Math.max(5, Math.round(parseFloat(a.fontSizeBase) * 0.42));
+      const headerFont = Math.max(5, Math.round(parseFloat(a.headerFontSize) * 0.55));
+      const headerPad = Math.max(3, Math.round(parseFloat(a.headerPaddingY) * 0.4));
       const lh = a.lineHeight;
-      const overlayOp = a.bannerOverlayOpacity / 100;
+      const overlayOp = parseFloat(a.bannerOverlayOpacity) / 100;
+      const footerFont = Math.max(4, Math.round(parseFloat(a.footerFontSize || 11) * 0.45));
+
+      // Prendi il primo progetto della sezione corrente per dati reali
+      const sec = isP ? "pro" : "art";
+      const proj = state.projects.find(x => x.section === sec);
+      const projTitle = proj ? (proj.titolo || proj.slug).split("\\n")[0] : "Titolo Progetto";
+      const projDate = proj && (proj.titolo || "").includes("\\n") ? (proj.titolo || "").split("\\n").pop() : "Luogo 2025";
+      const projDesc = proj ? (proj.descrizione || "").slice(0, 120) : "";
+      const projKey = proj ? `${proj.section}/${proj.slug}` : null;
+
+      // Foto reali dal progetto (se già caricate)
+      const realPhotos = projKey && photosByProject[projKey] ? photosByProject[projKey] : [];
+      const photoUrls = realPhotos.slice(0, 8).map(ph => ph.url || "");
+      const hasPhotos = photoUrls.filter(u => u).length > 0;
+
+      // Dati tecnici
+      const techLines = [];
+      if (proj && proj.camera) techLines.push(["Camera", proj.camera]);
+      if (proj && proj.ottica) techLines.push(["Ottica", proj.ottica]);
+      if (proj && proj.luce) techLines.push(["Luce", proj.luce]);
+
+      // Header items
+      const headerItems = state.projects.filter(x => x.section === sec).slice(0, 5);
+      const marquee = headerItems.map(x => (x.titolo || x.slug).split("\\n")[0]).join(" \\u00B7 ");
 
       p.innerHTML = `
-        <div style="width:100%;height:100%;background:${bg};color:${fg};font-family:'${a.fontFamily}',sans-serif;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="width:100%;height:100%;background:${bg};color:${fg};font-family:'${a.fontFamily}',sans-serif;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;font-size:${bodySize}px;line-height:${lh};">
           <!-- Header -->
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:${Math.round(a.headerPaddingY*0.4)}px ${ml*0.5}%;border-bottom:1.5px solid ${borderC};font-size:${headerFont}px;font-weight:700;flex-shrink:0;">
-            <div style="display:flex;gap:3px;"><span style="color:${accent};">Art</span><span>/</span><span>Pro</span></div>
-            <div style="display:flex;gap:4px;">
-              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
-              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
-              <span style="width:4px;height:4px;border-radius:50%;background:${fg};opacity:0.5;"></span>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:${headerPad}px ${ml * 0.5}%;border-bottom:1px solid ${borderC};font-size:${headerFont}px;font-weight:700;flex-shrink:0;letter-spacing:0.01em;">
+            <div style="display:flex;gap:4px;align-items:baseline;">
+              <span style="color:${isP ? fg : accent};">${isP ? "Professional" : "Artwork"}</span>
+              <span style="opacity:0.3;font-weight:400;">/</span>
+              <span style="opacity:0.35;font-weight:400;">${isP ? "Artwork" : "Professional"}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:${Math.max(4, headerFont - 2)}px;font-weight:400;opacity:0.4;">About</span>
+              <div style="width:${headerFont}px;height:${headerFont}px;border:1px solid ${fg};border-radius:50%;opacity:0.4;"></div>
             </div>
           </div>
+
           <!-- Banner -->
-          <div style="position:relative;height:${bannerH}px;background:#555;flex-shrink:0;overflow:hidden;">
-            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,${overlayOp*0.6}),rgba(0,0,0,${overlayOp}));"></div>
-            <div style="position:absolute;bottom:6px;left:${ml*0.5}%;z-index:1;">
-              <div style="font-size:${titleSize}px;font-weight:${a.fontWeightTitolo};color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);line-height:1.1;">Titolo Progetto</div>
-              <div style="font-size:${Math.max(5,titleSize*0.45)}px;color:rgba(255,255,255,0.6);margin-top:1px;">Luogo 2025</div>
+          <div style="position:relative;height:${bannerH}px;flex-shrink:0;overflow:hidden;${hasPhotos ? "" : "background:#555;"}">
+            ${hasPhotos ? `<img src="${photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">` : ""}
+            <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,${overlayOp}), rgba(0,0,0,${overlayOp * 0.2}));"></div>
+            <div style="position:absolute;bottom:${Math.max(4, bannerH * 0.06)}px;left:${ml * 0.5}%;z-index:1;max-width:${100 - ml}%;">
+              <div style="font-size:${titleSize}px;font-weight:${a.fontWeightTitolo};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8);line-height:1.15;letter-spacing:-0.01em;">${escapeHtml(projTitle)}</div>
+              <div style="font-size:${Math.max(4, titleSize * 0.4)}px;color:rgba(255,255,255,0.55);margin-top:2px;letter-spacing:0.03em;">${escapeHtml(projDate)}</div>
             </div>
           </div>
-          <!-- Testo -->
-          <div style="padding:${galMT}px ${ml*0.5}% 6px;display:flex;gap:${gap*0.5}%;flex-shrink:0;">
-            <div style="flex:1;font-size:${bodySize}px;line-height:${lh};color:${muted};">
-              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.12;border-radius:1px;margin-bottom:2px;width:90%;"></div>
-              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.08;border-radius:1px;margin-bottom:2px;width:75%;"></div>
-              <div style="height:${bodySize*1.2}px;background:${fg};opacity:0.10;border-radius:1px;width:82%;"></div>
+
+          <!-- Testo + Tecnica -->
+          <div style="padding:${galMT}px ${ml * 0.5}% ${Math.max(4, galMT * 0.5)}px;display:flex;gap:${gap * 0.5}%;flex-shrink:0;">
+            <div style="flex:1;min-width:0;">
+              ${projDesc ? `<div style="font-size:${bodySize}px;line-height:${lh};color:${mutedStrong};overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${escapeHtml(projDesc)}</div>`
+              : `<div style="space-y:2px;">
+                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.1;border-radius:1px;margin-bottom:2px;width:92%;"></div>
+                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.07;border-radius:1px;margin-bottom:2px;width:78%;"></div>
+                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.09;border-radius:1px;margin-bottom:2px;width:85%;"></div>
+                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.06;border-radius:1px;width:65%;"></div>
+                </div>`}
             </div>
-            <div style="width:50px;flex-shrink:0;">
-              <div style="height:${bodySize*1}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:2px;width:70%;"></div>
-              <div style="height:${bodySize*1}px;background:${fg};opacity:0.06;border-radius:1px;width:50%;"></div>
+            <div style="width:28%;flex-shrink:0;padding-left:${gap * 0.3}%;">
+              ${techLines.length > 0 ? techLines.map(([lbl, val]) =>
+                `<div style="margin-bottom:3px;">
+                  <div style="font-size:${Math.max(4, bodySize - 1)}px;color:${muted};text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">${escapeHtml(lbl)}</div>
+                  <div style="font-size:${bodySize}px;color:${mutedStrong};">${escapeHtml(val)}</div>
+                </div>`
+              ).join("") : `
+                <div style="height:${bodySize}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:3px;width:60%;"></div>
+                <div style="height:${bodySize}px;background:${fg};opacity:0.04;border-radius:1px;margin-bottom:6px;width:40%;"></div>
+                <div style="height:${bodySize}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:3px;width:55%;"></div>
+                <div style="height:${bodySize}px;background:${fg};opacity:0.04;border-radius:1px;width:35%;"></div>
+              `}
             </div>
           </div>
+
           <!-- Galleria -->
-          <div style="padding:${galMT}px ${ml*0.5}% ${galMB}px;flex:1;overflow:hidden;">
-            <div style="display:flex;gap:${galGap}px;height:${galH}px;">
-              <div style="flex:1.5;background:#777;border-radius:1px;"></div>
-              <div style="flex:1;background:#888;border-radius:1px;"></div>
-              <div style="flex:1.2;background:#666;border-radius:1px;"></div>
-            </div>
-            <div style="display:flex;gap:${galGap}px;height:${galH*0.75}px;margin-top:${galGap}px;">
-              <div style="flex:1;background:#999;border-radius:1px;"></div>
-              <div style="flex:1.8;background:#777;border-radius:1px;"></div>
-            </div>
-            <div style="display:flex;gap:${galGap}px;height:${galH}px;margin-top:${galGap}px;">
-              <div style="flex:1;background:#888;border-radius:1px;"></div>
-              <div style="flex:1;background:#666;border-radius:1px;"></div>
-              <div style="flex:1.4;background:#777;border-radius:1px;"></div>
-            </div>
+          <div style="padding:2px ${ml * 0.5}% ${galMB}px;flex:1;">
+            ${hasPhotos ? `
+              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
+                ${photoUrls.slice(0, 3).map((u, i) => `<div style="flex:${[1.5, 1, 1.2][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;overflow:hidden;border-radius:1px;">
+                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
+                </div>`).join("")}
+              </div>
+              ${photoUrls.length > 3 ? `<div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
+                ${photoUrls.slice(3, 5).map((u, i) => `<div style="flex:${[1, 1.6][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;overflow:hidden;border-radius:1px;">
+                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
+                </div>`).join("")}
+              </div>` : ""}
+              ${photoUrls.length > 5 ? `<div style="display:flex;gap:${galGap}px;">
+                ${photoUrls.slice(5, 8).map((u, i) => `<div style="flex:${[1, 1, 1.3][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;overflow:hidden;border-radius:1px;">
+                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
+                </div>`).join("")}
+              </div>` : ""}
+            ` : `
+              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
+                <div style="flex:1.5;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#777;border-radius:1px;"></div>
+                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#888;border-radius:1px;"></div>
+                <div style="flex:1.2;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#666;border-radius:1px;"></div>
+              </div>
+              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
+                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;background:#999;border-radius:1px;"></div>
+                <div style="flex:1.8;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;background:#777;border-radius:1px;"></div>
+              </div>
+              <div style="display:flex;gap:${galGap}px;">
+                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#888;border-radius:1px;"></div>
+                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#666;border-radius:1px;"></div>
+                <div style="flex:1.4;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#777;border-radius:1px;"></div>
+              </div>
+            `}
           </div>
+
+          <!-- Marquee -->
+          <div style="overflow:hidden;white-space:nowrap;font-size:${Math.max(4, Math.round(parseFloat(a.marqueeFontSize) * 4))}px;font-weight:800;color:${fg};opacity:0.04;letter-spacing:-0.02em;padding:0 ${ml * 0.5}%;flex-shrink:0;">
+            ${escapeHtml(marquee)} \\u00B7 ${escapeHtml(marquee)}
+          </div>
+
           <!-- Footer -->
-          <div style="padding:4px ${ml*0.5}%;font-size:${Math.max(4,headerFont-1)}px;color:${muted};border-top:1px solid ${borderC};flex-shrink:0;display:flex;justify-content:space-between;">
+          <div style="padding:${Math.max(3, headerPad * 0.7)}px ${ml * 0.5}%;font-size:${footerFont}px;color:${muted};border-top:1px solid ${borderC};flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
             <span>Alfredo Enrico Iacobucci</span>
-            <span style="color:${accent};">&#9679;</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:${Math.max(3, footerFont - 1)}px;">2025</span>
+              <span style="color:${accent};font-size:${footerFont + 1}px;">&#9679;</span>
+            </div>
           </div>
         </div>
       `;

@@ -30,14 +30,27 @@ function isAlreadyTracked(key) {
   return !!getTracked()[key];
 }
 
+function detectDevice() {
+  if (typeof navigator === "undefined") return "desktop";
+  const ua = navigator.userAgent || "";
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
+  if (/mobi|android|iphone|ipod|opera mini|iemobile|wpdesktop/i.test(ua)) return "mobile";
+  return "desktop";
+}
+
 function sendTrack(payload) {
   try {
-    // Use fetch with keepalive for reliability
-    // (sendBeacon doesn't allow setting Content-Type to application/json easily)
+    // Arricchisci con referrer e device
+    const enriched = { ...payload };
+    if (typeof document !== "undefined" && document.referrer) {
+      enriched.referrer = document.referrer;
+    }
+    enriched.device = detectDevice();
+
     fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(enriched),
       keepalive: true,
     }).catch(() => {});
   } catch {

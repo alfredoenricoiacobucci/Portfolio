@@ -77,11 +77,14 @@ async function ghPut(content, sha, message) {
 
 function emptyAnalytics() {
   return {
-    views: { total: 0, art: 0, pro: 0, landing: 0 },
+    views: { total: 0, art: 0, pro: 0, landing: 0, about: 0 },
     projects: {},
     photos: {},
     daily: {},
     contacts: 0,
+    countries: {},
+    referrers: {},
+    devices: { desktop: 0, mobile: 0, tablet: 0 },
   };
 }
 
@@ -94,8 +97,11 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (!GITHUB_TOKEN) return res.status(500).json({ error: "GITHUB_TOKEN not configured" });
 
-  const { page, project, photo, type } = req.body || {};
+  const { page, project, photo, type, referrer, device } = req.body || {};
   const isContact = type === "contact";
+
+  // Geo: Vercel inietta automaticamente l'header x-vercel-ip-country (ISO 3166-1 alpha-2)
+  const country = (req.headers["x-vercel-ip-country"] || "").toUpperCase() || null;
 
   try {
     // Ensure data branch exists
@@ -113,11 +119,14 @@ export default async function handler(req, res) {
     }
 
     // Ensure fields
-    if (!analytics.views) analytics.views = { total: 0, art: 0, pro: 0, landing: 0 };
+    if (!analytics.views) analytics.views = { total: 0, art: 0, pro: 0, landing: 0, about: 0 };
     if (!analytics.projects) analytics.projects = {};
     if (!analytics.photos) analytics.photos = {};
     if (!analytics.daily) analytics.daily = {};
     if (typeof analytics.contacts !== "number") analytics.contacts = 0;
+    if (!analytics.countries) analytics.countries = {};
+    if (!analytics.referrers) analytics.referrers = {};
+    if (!analytics.devices) analytics.devices = { desktop: 0, mobile: 0, tablet: 0 };
 
     const today = new Date().toISOString().slice(0, 10);
     if (!analytics.daily[today]) analytics.daily[today] = { total: 0, art: 0, pro: 0 };
@@ -130,8 +139,25 @@ export default async function handler(req, res) {
       if (page === "art" || page === "artwork") { analytics.views.art++; analytics.daily[today].art++; }
       else if (page === "pro" || page === "professional") { analytics.views.pro++; analytics.daily[today].pro++; }
       else if (page === "landing") { analytics.views.landing++; }
+      else if (page === "about") { analytics.views.about = (analytics.views.about || 0) + 1; }
       if (project) analytics.projects[project] = (analytics.projects[project] || 0) + 1;
       if (photo) analytics.photos[photo] = (analytics.photos[photo] || 0) + 1;
+
+      // Geo
+      if (country && country.length === 2) {
+        analytics.countries[country] = (analytics.countries[country] || 0) + 1;
+      }
+      // Referrer
+      if (referrer && typeof referrer === "string" && referrer.length < 200) {
+        const ref = referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
+        if (ref && ref !== "alfredoenricoiacobucci.art") {
+          analytics.referrers[ref] = (analytics.referrers[ref] || 0) + 1;
+        }
+      }
+      // Device
+      if (device === "mobile") analytics.devices.mobile++;
+      else if (device === "tablet") analytics.devices.tablet++;
+      else analytics.devices.desktop++;
     }
 
     // Prune daily > 90 days
