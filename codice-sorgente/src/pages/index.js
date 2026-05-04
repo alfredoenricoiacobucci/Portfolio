@@ -1,27 +1,29 @@
 // pages/index.js
 import { useEffect, useRef, useState } from "react";
-import { BY_MODE } from "@/data/projects";
 import path from "path";
 import fs from "fs";
 import { useRouter } from "next/router";
 
 /**
  * Legge le immagini rappresentative (prima N) per Artwork / Professional.
+ * L'elenco dei progetti viene da contenuti.json (non più hardcoded).
  * Pre-filtra le orizzontali server-side → zero caricamento client per decidere orientamento.
  */
 export async function getServerSideProps() {
   const { readImageDimensions } = require("../lib/imageDimensions");
   const projectsRoot = path.join(process.cwd(), "contenuti");
-  const artworkIds = BY_MODE.artwork || [];
-  const professionalIds = BY_MODE.professional || [];
 
-  // Leggi contenuti.json per ordine custom foto
+  // Leggi contenuti.json — fonte primaria dell'elenco e ordine progetti
   let contenuti = { projects: [] };
   try {
     contenuti = JSON.parse(fs.readFileSync(path.join(process.cwd(), "contenuti", "contenuti.json"), "utf-8"));
   } catch {}
   const projByKey = new Map();
   (contenuti.projects || []).forEach((p) => { projByKey.set(`${p.section}/${p.slug}`, p); });
+
+  // Costruisci lista progetti da contenuti.json
+  const artworkIds = (contenuti.projects || []).filter(p => p.section === "art").map(p => `art/${p.slug}`);
+  const professionalIds = (contenuti.projects || []).filter(p => p.section === "pro").map(p => `pro/${p.slug}`);
 
   const readImages = (id) => {
     try {

@@ -159,6 +159,15 @@
     color: var(--text);
     font-weight: 500;
   }
+  .sidebar .item[draggable="true"] { cursor: grab; }
+  .sidebar .item[draggable="true"]:active { cursor: grabbing; }
+  .sidebar .item.drag-over-above {
+    border-top: 2px solid var(--red) !important;
+  }
+  .sidebar .item.drag-over-below {
+    border-bottom: 2px solid var(--red) !important;
+  }
+  .sidebar .item.dragging-item { opacity: 0.35; }
   .sidebar .item .photo-count {
     margin-left: auto;
     font-size: 10px;
@@ -1190,7 +1199,9 @@
     btn.onclick = () => switchSection(btn.dataset.section);
   });
 
-  // ========== SIDEBAR RENDER ==========
+  // ========== SIDEBAR RENDER (con drag-and-drop per riordinare) ==========
+  let sidebarDragKey = null; // chiave del progetto in trascinamento
+
   function renderSidebar() {
     const listArt = document.getElementById("listArt");
     const listPro = document.getElementById("listPro");
@@ -1199,14 +1210,81 @@
     listPro.innerHTML = "";
     listAbout.innerHTML = "";
 
-    state.projects.forEach(p => {
+    state.projects.forEach((p, idx) => {
+      const key = `${p.section}/${p.slug}`;
       const div = document.createElement("div");
-      div.className = "item" + (currentKey === `${p.section}/${p.slug}` ? " active" : "");
+      div.className = "item" + (currentKey === key ? " active" : "");
+      div.draggable = true;
+      div.dataset.idx = idx;
+      div.dataset.key = key;
+      div.dataset.section = p.section;
       const title = (p.titolo || p.slug).split("\n")[0] || p.slug;
-      const photoCount = (photosByProject[`${p.section}/${p.slug}`] || []).length;
-      div.innerHTML = `<span>${escapeHtml(title)}</span>` +
-        `<span class="photo-count">${photoCount}</span>`;
-      div.onclick = () => selectProject(`${p.section}/${p.slug}`);
+      const photoCount = (photosByProject[key] || []).length;
+      div.innerHTML = `<span style="pointer-events:none;">${escapeHtml(title)}</span>` +
+        `<span class="photo-count" style="pointer-events:none;">${photoCount}</span>`;
+      div.onclick = () => selectProject(key);
+
+      // Drag start
+      div.addEventListener("dragstart", (e) => {
+        sidebarDragKey = key;
+        div.classList.add("dragging-item");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", key);
+      });
+      div.addEventListener("dragend", () => {
+        sidebarDragKey = null;
+        div.classList.remove("dragging-item");
+        // Pulisci classi hover
+        document.querySelectorAll(".sidebar .item").forEach(el => {
+          el.classList.remove("drag-over-above", "drag-over-below");
+        });
+      });
+
+      // Drag over (mostra indicatore sopra/sotto)
+      div.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        if (!sidebarDragKey || sidebarDragKey === key) return;
+        // Solo se stessa sezione
+        const dragSection = sidebarDragKey.split("/")[0];
+        if (dragSection !== p.section) return;
+        const rect = div.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        div.classList.remove("drag-over-above", "drag-over-below");
+        if (e.clientY < mid) div.classList.add("drag-over-above");
+        else div.classList.add("drag-over-below");
+      });
+      div.addEventListener("dragleave", () => {
+        div.classList.remove("drag-over-above", "drag-over-below");
+      });
+
+      // Drop: riordina
+      div.addEventListener("drop", (e) => {
+        e.preventDefault();
+        div.classList.remove("drag-over-above", "drag-over-below");
+        if (!sidebarDragKey || sidebarDragKey === key) return;
+        const dragSection = sidebarDragKey.split("/")[0];
+        if (dragSection !== p.section) return;
+
+        const fromIdx = state.projects.findIndex(x => `${x.section}/${x.slug}` === sidebarDragKey);
+        const toIdx = state.projects.findIndex(x => `${x.section}/${x.slug}` === key);
+        if (fromIdx < 0 || toIdx < 0) return;
+
+        // Calcola posizione: sopra o sotto il target
+        const rect = div.getBoundingClientRect();
+        const insertBefore = e.clientY < rect.top + rect.height / 2;
+
+        // Rimuovi e reinserisci
+        const [moved] = state.projects.splice(fromIdx, 1);
+        let newIdx = state.projects.findIndex(x => `${x.section}/${x.slug}` === key);
+        if (!insertBefore) newIdx++;
+        state.projects.splice(newIdx, 0, moved);
+
+        markDirty();
+        renderSidebar();
+        sidebarDragKey = null;
+      });
+
       if (p.section === "art") listArt.appendChild(div);
       else listPro.appendChild(div);
     });

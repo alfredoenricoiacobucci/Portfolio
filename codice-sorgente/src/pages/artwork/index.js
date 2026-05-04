@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/router";
-import { BY_MODE } from "@/data/projects";
+// BY_MODE non più usato: l'ordine viene da contenuti.json via getServerSideProps
 import dynamic from "next/dynamic";
 import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
@@ -107,12 +107,33 @@ export async function getServerSideProps() {
     return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
   };
 
+  // PROGETTI: usa contenuti.json come fonte primaria dell'elenco e dell'ordine.
+  // Questo garantisce che i progetti creati dall'editor appaiano sul sito
+  // anche se la cartella contiene solo .gitkeep o non ha ancora foto.
+  // Come fallback, aggiungi eventuali cartelle presenti nel filesystem
+  // ma non elencate in contenuti.json.
+  const listedKeys = new Set();
   let projects = [];
+
+  // 1. Progetti da contenuti.json (ordine preservato)
+  (contenuti.projects || []).forEach((p) => {
+    const key = `${p.section}/${p.slug}`;
+    listedKeys.add(key);
+    projects.push(readProject(p.section, p.slug));
+  });
+
+  // 2. Fallback: cartelle nel filesystem non ancora in contenuti.json
   for (const prefix of ["art", "pro"]) {
     const prefixDir = pathMod.join(projectsDir, prefix);
     let folders = [];
     try { folders = fsMod.readdirSync(prefixDir).filter((f) => fsMod.statSync(pathMod.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
-    projects = projects.concat(folders.map((f) => readProject(prefix, f)));
+    folders.forEach((f) => {
+      const key = `${prefix}/${f}`;
+      if (!listedKeys.has(key)) {
+        listedKeys.add(key);
+        projects.push(readProject(prefix, f));
+      }
+    });
   }
 
   // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/ ----
@@ -413,7 +434,10 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   };
   const router = useRouter();
 
-  const mode = router.pathname.startsWith("/professional") ? "professional" : "artwork";
+  // Mode come stato locale — niente round-trip SSR al cambio Art/Pro
+  const [mode, setMode] = useState(
+    () => (typeof window !== "undefined" && window.location.pathname.startsWith("/professional")) || router.pathname.startsWith("/professional") ? "professional" : "artwork"
+  );
   const basePath = `/${mode}`;
 
   const [selectedProject, setSelectedProject] = useState(null);
@@ -452,15 +476,29 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     const isAbout = router.query?.p === "about";
     const target = isAbout ? `/${targetMode}?p=about` : `/${targetMode}`;
 
-    // Fade out il contenuto, poi naviga
+    // Fade out il contenuto
     if (pageRef.current) {
-      pageRef.current.style.transition = "opacity 250ms ease-out";
+      pageRef.current.style.transition = "opacity 200ms ease-out";
       pageRef.current.style.opacity = "0";
     }
     setTimeout(() => {
-      router.push(target);
+      // Cambio mode locale (istantaneo, niente SSR round-trip)
+      setMode(targetMode);
+      if (!isAbout) setSelectedProject(null);
+      setViewerOpen(false);
+      setTextOpen(false);
+      window.scrollTo(0, 0);
+      // Aggiorna URL senza ricaricare (shallow = no getServerSideProps)
+      router.replace(target, undefined, { shallow: true });
+      // Fade in
+      requestAnimationFrame(() => {
+        if (pageRef.current) {
+          pageRef.current.style.transition = "opacity 200ms ease-in";
+          pageRef.current.style.opacity = "1";
+        }
+      });
       navigatingRef.current = false;
-    }, 260);
+    }, 210);
   };
 
   // Hover sui label
@@ -477,17 +515,15 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
 
-  const orderList = BY_MODE[mode] || [];
+  // L'ordine dei progetti viene da contenuti.json (preservato da getServerSideProps).
+  // Filtriamo per sezione (art/ o pro/) in base al modo corrente.
+  const modePrefix = mode === "artwork" ? "art/" : "pro/";
 
   const projectsWithSlug = useMemo(() => {
-    const idx = new Map(orderList.map((id, i) => [id, i]));
-    const filtered = (projects || [])
-      .filter((p) => idx.has(p.id))
+    return (projects || [])
+      .filter((p) => p.id.startsWith(modePrefix))
       .map((p) => ({ ...p, slug: slugify(p.name) }));
-    filtered.sort((a, b) => idx.get(a.id) - idx.get(b.id));
-    return filtered;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projects, mode]);
+  }, [projects, modePrefix]);
 
   const currentSlug = useMemo(
     () => (selectedProject ? slugify(selectedProject.name) : null),
