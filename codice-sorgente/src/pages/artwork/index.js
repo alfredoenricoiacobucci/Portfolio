@@ -7,34 +7,32 @@ import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
+import fs from "fs";
+import path from "path";
+const { readImageDimensions } = require("../../lib/imageDimensions");
 
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
 
-// ISR: la pagina viene rigenerata in background ogni 60 secondi
-// Nessuna cache manuale necessaria — Next.js gestisce tutto al livello CDN
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  // Cache CDN: serve dalla cache per 60s, rigenera in background
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
 
-  const fs = await import("fs");
-  const path = await import("path");
-  const fsMod = await fs;
-  const pathMod = await path;
-  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
   // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
-  const contenutiDir = pathMod.join(root, "contenuti");
-  const publicDir = pathMod.join(root, "public");
+  const contenutiDir = path.join(root, "contenuti");
+  const publicDir = path.join(root, "public");
   const projectsDir = contenutiDir; // i dati sono in contenuti (public/projects \u00e8 solo il link che li serve)
 
   // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
   const readText = (filePath) => {
-    try { return fsMod.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
+    try { return fs.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
   };
   // Helper: leggi JSON, ritorna null se non esiste o è corrotto
   const readJSON = (filePath) => {
-    try { return JSON.parse(fsMod.readFileSync(filePath, "utf-8")); } catch { return null; }
+    try { return JSON.parse(fs.readFileSync(filePath, "utf-8")); } catch { return null; }
   };
 
   const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
@@ -42,10 +40,10 @@ export async function getStaticProps() {
   const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
   // ---- contenuti: leggi da contenuti/contenuti.json ----
-  const contenutiPath = pathMod.join(projectsDir, "contenuti.json");
+  const contenutiPath = path.join(projectsDir, "contenuti.json");
   const contenuti = readJSON(contenutiPath) || { projects: [], about: {} };
   // Debug: log per diagnostica ordine progetti
-  console.log(`[SSR] contenuti.json path: ${contenutiPath}, exists: ${fsMod.existsSync(contenutiPath)}, projects: ${(contenuti.projects || []).length}, art order: ${(contenuti.projects || []).filter(p => p.section === "art").map(p => p.slug).join(", ")}`);
+  console.log(`[SSR] contenuti.json path: ${contenutiPath}, exists: ${fs.existsSync(contenutiPath)}, projects: ${(contenuti.projects || []).length}, art order: ${(contenuti.projects || []).filter(p => p.section === "art").map(p => p.slug).join(", ")}`);
   const projByKey = new Map();
   (contenuti.projects || []).forEach((p) => {
     projByKey.set(`${p.section}/${p.slug}`, p);
@@ -54,7 +52,7 @@ export async function getStaticProps() {
   // ---- PROGETTI: lista cartelle effettive, unisci con dati da contenuti.json ----
   const readProject = (prefix, folder) => {
     const id = `${prefix}/${folder}`;
-    const pDir = pathMod.join(projectsDir, prefix, folder);
+    const pDir = path.join(projectsDir, prefix, folder);
     const data = projByKey.get(id) || {};
 
     const titleRaw = (data.titolo || "").trim();
@@ -78,8 +76,8 @@ export async function getStaticProps() {
 
     let files = [];
     try {
-      files = fsMod.readdirSync(pDir)
-        .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
+      files = fs.readdirSync(pDir)
+        .filter((f) => ALLOWED.has(path.extname(f).toLowerCase()));
     } catch {}
     // Ordine custom da contenuti.json, poi alfabetico per i restanti
     const ordine = data.ordine || [];
@@ -96,7 +94,7 @@ export async function getStaticProps() {
     }
     // Pre-compute image dimensions server-side (reads only file headers, very fast)
     const images = files.map((f) => {
-      const filePath = pathMod.join(pDir, f);
+      const filePath = path.join(pDir, f);
       const dim = readImageDimensions(filePath);
       return {
         src: `/projects/${id}/${f}`,
@@ -131,9 +129,9 @@ export async function getStaticProps() {
 
   // 2. Fallback: cartelle nel filesystem non ancora in contenuti.json
   for (const prefix of ["art", "pro"]) {
-    const prefixDir = pathMod.join(projectsDir, prefix);
+    const prefixDir = path.join(projectsDir, prefix);
     let folders = [];
-    try { folders = fsMod.readdirSync(prefixDir).filter((f) => fsMod.statSync(pathMod.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
+    try { folders = fs.readdirSync(prefixDir).filter((f) => fs.statSync(path.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
     folders.forEach((f) => {
       const key = `${prefix}/${f}`;
       if (!listedKeys.has(key)) {
@@ -152,20 +150,20 @@ export async function getStaticProps() {
   let aboutVideo = "";
   // Cerca media in public/projects/about/
   try {
-    const aboutMediaDir = pathMod.join(projectsDir, "about");
-    const aboutFiles = fsMod.readdirSync(aboutMediaDir);
+    const aboutMediaDir = path.join(projectsDir, "about");
+    const aboutFiles = fs.readdirSync(aboutMediaDir);
     const photoFile = aboutData.photo && aboutFiles.includes(aboutData.photo)
       ? aboutData.photo
-      : aboutFiles.find((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
+      : aboutFiles.find((f) => ALLOWED.has(path.extname(f).toLowerCase()));
     const videoFile = aboutData.video && aboutFiles.includes(aboutData.video)
       ? aboutData.video
-      : aboutFiles.find((f) => VIDEO_EXT.has(pathMod.extname(f).toLowerCase()));
+      : aboutFiles.find((f) => VIDEO_EXT.has(path.extname(f).toLowerCase()));
     if (photoFile) aboutPhoto = `/projects/about/${photoFile}`;
     if (videoFile) aboutVideo = `/projects/about/${videoFile}`;
   } catch {}
 
   // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
-  const stringheRaw = readText(pathMod.join(contenutiDir, "stringhe.txt"));
+  const stringheRaw = readText(path.join(contenutiDir, "stringhe.txt"));
   const strings = {};
   stringheRaw.split("\n").forEach((line) => {
     const trimmed = line.trim();
@@ -197,7 +195,7 @@ export async function getStaticProps() {
       strings,
       aspetto: contenuti.aspetto || {},
     },
-    revalidate: 60, // ISR: rigenera ogni 60 secondi in background
+    
   };
 }
 

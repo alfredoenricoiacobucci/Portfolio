@@ -9,7 +9,8 @@ import { useRouter } from "next/router";
  * L'elenco dei progetti viene da contenuti.json (non più hardcoded).
  * Pre-filtra le orizzontali server-side → zero caricamento client per decidere orientamento.
  */
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
   const { readImageDimensions } = require("../lib/imageDimensions");
   const projectsRoot = path.join(process.cwd(), "contenuti");
 
@@ -81,7 +82,6 @@ export async function getStaticProps() {
 
   return {
     props: { artworkImages, professionalImages, strings },
-    revalidate: 60,
   };
 }
 
