@@ -44,9 +44,9 @@
   }
   .topbar h1 {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.02em;
-    color: var(--text);
+    color: var(--red);
   }
   .topbar .sep { flex: 1; }
   .status-badge {
@@ -579,77 +579,162 @@
   .section-full-inner {
     max-width: 960px;
     margin: 0 auto;
-    padding: 40px 40px 80px;
+    padding: 32px 32px 80px;
   }
   .section-full-inner.wide {
     max-width: none;
-    padding: 28px 24px 80px;
+    padding: 28px 32px 80px;
   }
 
   /* ---- ASPETTO PREVIEW ---- */
   .aspetto-layout {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 24px;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
     align-items: start;
   }
   .aspetto-controls {
     min-width: 0;
     max-height: calc(100vh - 160px);
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 4px;
     position: sticky;
     top: 80px;
   }
-  .aspetto-controls::-webkit-scrollbar { width: 4px; }
+  .aspetto-controls::-webkit-scrollbar { width: 3px; }
   .aspetto-controls::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .aspetto-preview-wrap {
     position: sticky;
     top: 80px;
+    height: calc(100vh - 130px);
+    display: flex;
+    flex-direction: column;
   }
   .aspetto-preview {
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    background: #888;
-    aspect-ratio: 9/16;
-    max-height: calc(100vh - 140px);
+    background: var(--panel);
+    flex: 1;
     position: relative;
+    min-height: 500px;
   }
-  .aspetto-preview-inner {
+  .aspetto-preview iframe {
+    width: 1440px;
+    height: 900px;
+    border: none;
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  /* Grid overlay */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: none;
+  }
+  .grid-overlay.active { display: block; }
+  .grid-overlay .guide {
+    position: absolute;
+    pointer-events: auto;
+  }
+  .grid-overlay .guide-v {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+    cursor: ew-resize;
+  }
+  .grid-overlay .guide-v::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    width: 9px;
+  }
+  .grid-overlay .guide-h {
+    height: 1px;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    border-top: 1px dashed rgba(200,16,46,0.35);
+  }
+  .grid-overlay .guide-h-label {
+    position: absolute;
+    right: 8px;
+    background: rgba(200,16,46,0.85);
+    color: #fff;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+  .grid-overlay .guide-center {
+    border-left: 1px dashed rgba(200,16,46,0.35);
+    left: 50%;
+    cursor: default;
+    pointer-events: none;
+  }
+  .grid-overlay .guide-margin {
+    border-left: 1px solid rgba(200,16,46,0.7);
+  }
+  .grid-overlay .guide-margin.snap {
+    border-left: 2px solid rgba(200,16,46,1);
+  }
+  .grid-overlay .guide-label {
+    position: absolute;
+    top: 8px;
+    background: rgba(200,16,46,0.85);
+    color: #fff;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+  /* Fullscreen preview */
+  .aspetto-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .aspetto-fullscreen iframe {
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    position: relative;
-  }
-  .asp-mode-toggle {
-    display: flex;
-    gap: 0;
-    margin-bottom: 10px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .asp-mode-toggle button {
-    flex: 1;
     border: none;
-    border-radius: 0;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    background: var(--panel);
-    color: var(--text3);
+    transform: none !important;
   }
-  .asp-mode-toggle button.active {
-    background: var(--red);
+  .aspetto-fullscreen .fs-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10000;
+    background: rgba(0,0,0,0.6);
     color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
   }
-
+  .aspetto-fullscreen .fs-close:hover {
+    background: rgba(255,255,255,0.15);
+  }
   @media (max-width: 1100px) {
     .aspetto-layout { grid-template-columns: 1fr; }
     .aspetto-controls { position: relative; top: 0; max-height: none; }
-    .aspetto-preview-wrap { position: relative; top: 0; order: -1; }
-    .aspetto-preview { aspect-ratio: 16/9; max-height: 400px; }
+    .aspetto-preview-wrap { position: relative; top: 0; order: -1; height: 500px; }
   }
 
   @media (max-width: 780px) {
@@ -688,6 +773,21 @@
   </div>
 </div>
 
+<!-- LOADING OVERLAY -->
+<div id="initOverlay" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 0.4s;">
+  <div style="text-align:center;max-width:340px;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:24px;">Editor Portfolio</div>
+    <div style="width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 20px;"></div>
+    <div id="initSteps" style="text-align:left;font-size:11px;color:var(--text3);line-height:2;">
+      <div id="initStep1" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text3);">●</span> Verifica token GitHub...</div>
+      <div id="initStep2" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text3);">●</span> Connessione al repository...</div>
+      <div id="initStep3" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text3);">●</span> Sincronizzazione contenuti...</div>
+      <div id="initStep4" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text3);">●</span> Caricamento progetti...</div>
+    </div>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <!-- SEZIONE CONTENUTI (sidebar + content) -->
 <div id="sectionContenuti" class="main">
   <aside class="sidebar">
@@ -723,17 +823,6 @@
 <!-- SEZIONE IMPOSTAZIONI (full width) -->
 <div id="sectionImpostazioni" class="section-full" style="display:none;">
   <div id="impostazioniContent" class="section-full-inner"></div>
-</div>
-
-<!-- GitHub Settings Modal (legacy, kept for compatibility) -->
-<div id="tokenModal" class="modal-backdrop">
-  <div class="modal">
-    <h2>Impostazioni GitHub</h2>
-    <p>Usa la sezione <strong>Impostazioni</strong> nella barra in alto per configurare il token.</p>
-    <div class="actions">
-      <button id="btnSaveToken" class="ghost" onclick="document.getElementById('tokenModal').classList.remove('show');">Chiudi</button>
-    </div>
-  </div>
 </div>
 
 <!-- New Project Modal -->
@@ -1024,6 +1113,13 @@
     return Array.isArray(data) ? data : [];
   }
 
+  // Costruisci URL immagine raw con token per repo pubblici e privati
+  function photoRawUrl(folderPath, fileName) {
+    const repo = getRepo();
+    const branch = getBranch();
+    return `https://raw.githubusercontent.com/${repo}/${branch}/${folderPath}/${encodeURIComponent(fileName)}`;
+  }
+
   function str2b64(str) {
     return btoa(unescape(encodeURIComponent(str)));
   }
@@ -1075,7 +1171,11 @@
             if (vercelStatus.state === "success") {
               fill.style.width = "100%";
               fill.className = "deploy-bar-fill success";
-              label.textContent = "Deploy completato!";
+              label.textContent = "Deploy completato! Aggiornamento pagine…";
+              // Forza revalidazione ISR — aggiorna subito le pagine cached
+              fetch("https://alfredoenricoiacobucci.art/api/revalidate").then(r => {
+                if (r.ok) label.textContent = "Deploy completato e sito aggiornato!";
+              }).catch(() => {});
               setTimeout(() => { bar.style.display = "none"; }, 5000);
               return;
             }
@@ -1107,7 +1207,10 @@
             if (vercelCheck.conclusion === "success") {
               fill.style.width = "100%";
               fill.className = "deploy-bar-fill success";
-              label.textContent = "Deploy completato!";
+              label.textContent = "Deploy completato! Aggiornamento pagine…";
+              fetch("https://alfredoenricoiacobucci.art/api/revalidate").then(r => {
+                if (r.ok) label.textContent = "Deploy completato e sito aggiornato!";
+              }).catch(() => {});
               setTimeout(() => { bar.style.display = "none"; }, 5000);
               return;
             }
@@ -1221,8 +1324,12 @@
     listPro.innerHTML = "";
     listAbout.innerHTML = "";
 
+    // Contatori per sezione per mostrare la posizione relativa
+    const sectionCounters = { art: 0, pro: 0 };
     state.projects.forEach((p, idx) => {
       const key = `${p.section}/${p.slug}`;
+      sectionCounters[p.section] = (sectionCounters[p.section] || 0) + 1;
+      const posNum = sectionCounters[p.section];
       const div = document.createElement("div");
       div.className = "item" + (currentKey === key ? " active" : "");
       div.draggable = true;
@@ -1231,7 +1338,7 @@
       div.dataset.section = p.section;
       const title = (p.titolo || p.slug).split("\n")[0] || p.slug;
       const photoCount = (photosByProject[key] || []).length;
-      div.innerHTML = `<span style="pointer-events:none;">${escapeHtml(title)}</span>` +
+      div.innerHTML = `<span style="pointer-events:none;display:flex;align-items:center;gap:6px;"><span style="color:var(--text3);font-size:9px;min-width:14px;font-variant-numeric:tabular-nums;">${posNum}</span>${escapeHtml(title)}</span>` +
         `<span class="photo-count" style="pointer-events:none;">${photoCount}</span>`;
       div.onclick = () => selectProject(key);
 
@@ -1293,6 +1400,7 @@
 
         markDirty();
         renderSidebar();
+        toast("Ordine aggiornato — salva per applicare al sito.", "");
         sidebarDragKey = null;
       });
 
@@ -1382,42 +1490,33 @@
         <textarea id="f_titolo" rows="3" class="site-preview-title">${escapeHtml(p.titolo || "")}</textarea>
       </div>
 
-      <div class="site-layout-project">
-        <div class="site-col-text">
-          <div class="field">
-            <label>Descrizione</label>
+      <div class="field">
+        <label>Descrizione</label>
+        <div class="site-layout-project">
+          <div class="site-col-text">
             <textarea id="f_descrizione" class="large site-preview" lang="it">${escapeHtml(p.descrizione || "")}</textarea>
-          </div>
-        </div>
-        <div class="site-col-tech">
-          <div class="field">
-            <label>Camera</label>
-            <textarea id="f_camera">${escapeHtml(p.camera || "")}</textarea>
-          </div>
-          <div class="field">
-            <label>Ottica</label>
-            <textarea id="f_ottica">${escapeHtml(p.ottica || "")}</textarea>
-          </div>
-          <div class="field">
-            <label>Luce</label>
-            <textarea id="f_luce">${escapeHtml(p.luce || "")}</textarea>
           </div>
         </div>
       </div>
 
-      <div class="field">
-        <label>Banner (nome file foto di copertina)</label>
-        <input type="text" id="f_banner" value="${escapeHtml(p.banner || "")}">
-        <div class="hint">Clicca su una foto qui sotto per impostarla come banner.</div>
+      <div class="three-col" style="margin-top:4px;">
+        <div class="field">
+          <label>Camera</label>
+          <input type="text" id="f_camera" value="${escapeHtml(p.camera || "")}">
+        </div>
+        <div class="field">
+          <label>Ottica</label>
+          <input type="text" id="f_ottica" value="${escapeHtml(p.ottica || "")}">
+        </div>
+        <div class="field">
+          <label>Luce</label>
+          <input type="text" id="f_luce" value="${escapeHtml(p.luce || "")}">
+        </div>
       </div>
 
       <div class="photos-section">
         <div class="photos-header">
           <h3>Foto del progetto</h3>
-        </div>
-        <div class="upload-area" id="uploadArea">
-          Trascina qui le foto (o clicca per scegliere)
-          <div class="hint2">Si caricheranno su GitHub in contenuti/${section}/${slug}/</div>
         </div>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         <div class="photos-grid" id="photosGrid">
@@ -1427,7 +1526,7 @@
     `;
 
     // Wire fields
-    ["titolo","descrizione","camera","ottica","luce","banner"].forEach(field => {
+    ["titolo","descrizione","camera","ottica","luce"].forEach(field => {
       const el = document.getElementById(`f_${field}`);
       el.addEventListener("input", () => {
         p[field] = el.value;
@@ -1446,19 +1545,6 @@
       document.getElementById("content").className = "content empty-state";
       document.getElementById("content").innerHTML = "Seleziona un progetto dalla lista a sinistra.";
       toast("Progetto rimosso. Salva per rendere effettivo.", "ok");
-    };
-
-    // Upload area
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("fileInput");
-    uploadArea.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleUpload(e.target.files, key);
-    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add("drag"); };
-    uploadArea.ondragleave = () => uploadArea.classList.remove("drag");
-    uploadArea.ondrop = (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove("drag");
-      handleUpload(e.dataTransfer.files, key);
     };
   }
 
@@ -1554,7 +1640,7 @@
       photosByProject[key] = imgs.map(i => ({
         name: i.name,
         sha: i.sha,
-        url: i.download_url
+        url: photoRawUrl(path, i.name)
       }));
       if (currentKey === key) renderPhotosGrid(key);
       renderSidebar();
@@ -1573,7 +1659,7 @@
     try {
       const items = await ghListDir("codice-sorgente/contenuti/about");
       aboutMedia = items.filter(i => i.type === "file").map(i => ({
-        name: i.name, sha: i.sha, url: i.download_url
+        name: i.name, sha: i.sha, url: photoRawUrl("codice-sorgente/contenuti/about", i.name)
       }));
       if (currentKey === "about") renderAboutMediaGrid();
     } catch(e) {
@@ -1583,19 +1669,27 @@
   }
 
   // Fetch conteggio foto di TUTTI i progetti (per popolare sidebar all'avvio)
+  // Usa batch da 4 per evitare rate-limiting GitHub e aggiorna la sidebar progressivamente.
   async function fetchAllPhotoCounts() {
     if (!getToken()) return;
-    const promises = state.projects.map(async (p) => {
+    const toFetch = state.projects.filter(p => {
       const key = `${p.section}/${p.slug}`;
-      if (photosByProject[key] && photosByProject[key].length > 0) return; // già caricato
-      try {
-        const items = await ghListDir(`codice-sorgente/contenuti/${p.section}/${p.slug}`);
-        const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
-        photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: i.download_url }));
-      } catch { /* cartella vuota o inesistente */ }
+      return !photosByProject[key] || photosByProject[key].length === 0;
     });
-    await Promise.all(promises);
-    renderSidebar();
+    const batchSize = 4;
+    for (let i = 0; i < toFetch.length; i += batchSize) {
+      const batch = toFetch.slice(i, i + batchSize);
+      await Promise.all(batch.map(async (p) => {
+        const key = `${p.section}/${p.slug}`;
+        try {
+          const items = await ghListDir(`codice-sorgente/contenuti/${p.section}/${p.slug}`);
+          const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
+          const basePath = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
+          photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: photoRawUrl(basePath, i.name) }));
+        } catch { /* cartella vuota o inesistente */ }
+      }));
+      renderSidebar(); // aggiorna sidebar dopo ogni batch
+    }
   }
 
   // Set di indici selezionati (selezione multipla foto)
@@ -2267,31 +2361,43 @@
       </div>
       ` : ""}
 
-      <!-- DONUT + DISPOSITIVI + REFERRER -->
+      <!-- DONUT + DISPOSITIVI -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px;">
         <!-- Donut Art vs Pro -->
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Sezioni</h3>
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <canvas id="donutArtPro" width="100" height="100" style="width:100px;height:100px;flex-shrink:0;"></canvas>
-            <div style="font-size: 12px; line-height: 2;">
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#a78bfa;margin-right:6px;"></span>Artwork <strong>${artViews}</strong> <span style="color:var(--text3);">(${artPct}%)</span></div>
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:6px;"></span>Professional <strong>${proViews}</strong> <span style="color:var(--text3);">(${proPct}%)</span></div>
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fbbf24;margin-right:6px;"></span>Landing <strong>${landingViews}</strong></div>
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#4ade80;margin-right:6px;"></span>About <strong>${aboutViews}</strong></div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 16px;">Sezioni</h3>
+          <div style="display: flex; align-items: center; gap: 24px;">
+            <div style="position:relative;flex-shrink:0;">
+              <canvas id="donutArtPro" width="180" height="180" style="width:180px;height:180px;"></canvas>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                <div style="font-size:22px;font-weight:700;color:var(--text);">${totalViews}</div>
+                <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">totali</div>
+              </div>
+            </div>
+            <div style="font-size: 13px; line-height: 2.2; flex:1;">
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#a78bfa;margin-right:8px;vertical-align:middle;"></span>Artwork <strong>${artViews}</strong> <span style="color:var(--text3);">(${Math.round(artViews / (totalViews || 1) * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#60a5fa;margin-right:8px;vertical-align:middle;"></span>Professional <strong>${proViews}</strong> <span style="color:var(--text3);">(${Math.round(proViews / (totalViews || 1) * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fbbf24;margin-right:8px;vertical-align:middle;"></span>Landing <strong>${landingViews}</strong> <span style="color:var(--text3);">(${Math.round(landingViews / (totalViews || 1) * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#4ade80;margin-right:8px;vertical-align:middle;"></span>About <strong>${aboutViews}</strong> <span style="color:var(--text3);">(${Math.round(aboutViews / (totalViews || 1) * 100)}%)</span></div>
             </div>
           </div>
         </div>
 
         <!-- Donut Dispositivi -->
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Dispositivi</h3>
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <canvas id="donutDevices" width="100" height="100" style="width:100px;height:100px;flex-shrink:0;"></canvas>
-            <div style="font-size: 12px; line-height: 2;">
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:6px;"></span>Desktop <strong>${deskViews}</strong> <span style="color:var(--text3);">(${Math.round(deskViews / devTotal * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f472b6;margin-right:6px;"></span>Mobile <strong>${mobViews}</strong> <span style="color:var(--text3);">(${Math.round(mobViews / devTotal * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fbbf24;margin-right:6px;"></span>Tablet <strong>${tabViews}</strong> <span style="color:var(--text3);">(${Math.round(tabViews / devTotal * 100)}%)</span></div>
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px;">
+          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 16px;">Dispositivi</h3>
+          <div style="display: flex; align-items: center; gap: 24px;">
+            <div style="position:relative;flex-shrink:0;">
+              <canvas id="donutDevices" width="180" height="180" style="width:180px;height:180px;"></canvas>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                <div style="font-size:22px;font-weight:700;color:var(--text);">${devTotal}</div>
+                <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">totali</div>
+              </div>
+            </div>
+            <div style="font-size: 13px; line-height: 2.2; flex:1;">
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#60a5fa;margin-right:8px;vertical-align:middle;"></span>Desktop <strong>${deskViews}</strong> <span style="color:var(--text3);">(${Math.round(deskViews / devTotal * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f472b6;margin-right:8px;vertical-align:middle;"></span>Mobile <strong>${mobViews}</strong> <span style="color:var(--text3);">(${Math.round(mobViews / devTotal * 100)}%)</span></div>
+              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fbbf24;margin-right:8px;vertical-align:middle;"></span>Tablet <strong>${tabViews}</strong> <span style="color:var(--text3);">(${Math.round(tabViews / devTotal * 100)}%)</span></div>
             </div>
           </div>
         </div>
@@ -2412,12 +2518,12 @@
       { value: proViews, color: "#60a5fa" },
       { value: landingViews, color: "#fbbf24" },
       { value: aboutViews, color: "#4ade80" },
-    ], 100);
+    ], 180);
     drawDonut("donutDevices", [
       { value: deskViews, color: "#60a5fa" },
       { value: mobViews, color: "#f472b6" },
       { value: tabViews, color: "#fbbf24" },
-    ], 100);
+    ], 180);
     drawWorldMap("mapWorld", countries, 800, 400);
 
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
@@ -2433,254 +2539,201 @@
     if (!state.aspetto) state.aspetto = {};
     const a = state.aspetto;
     const defaults = {
-      // Colori
-      colorBgArtwork: "#f8f4ed",
-      colorBgProfessional: "#0a0a0a",
-      colorAccent: "#c8102e",
-      colorTextArtwork: "#0a0a0a",
-      colorTextProfessional: "#f8f4ed",
-      // Tipografia
-      fontFamily: "Inter",
-      fontSizeBase: "16",
-      fontSizeTitolo: "28",
-      fontWeightTitolo: "800",
-      lineHeight: "1.625",
-      // Layout
-      marginLaterale: "8",
-      gapColonne: "4",
-      // Banner
-      bannerHeight: "100",
-      bannerOverlayOpacity: "65",
-      // Galleria
-      galleriaMarginTop: "3",
-      galleriaMarginBottom: "3",
-      galleriaRowHeight: "280",
-      galleriaGap: "6",
-      // About
-      aboutVideoHeight: "100",
-      aboutQuotePadding: "6",
-      aboutPhotoAspect: "3/2",
-      // Header
-      headerPaddingY: "14",
-      headerFontSize: "12",
-      // Footer
-      footerFontSize: "11",
-      // Marquee
-      marqueeFontSize: "7",
-      marqueeSpeed: "normal",
-      // Viewer
-      viewerBgOpacity: "95",
-      viewerImageQuality: "85",
+      colorBgArtwork: "#f8f4ed", colorBgProfessional: "#0a0a0a",
+      colorAccent: "#c8102e", colorTextArtwork: "#0a0a0a", colorTextProfessional: "#f8f4ed",
+      fontFamily: "Inter", fontSizeBase: "16", fontSizeTitolo: "28",
+      fontWeightTitolo: "800", lineHeight: "1.625",
+      marginLaterale: "8", gapColonne: "4",
+      bannerHeight: "100", bannerOverlayOpacity: "65",
+      galleriaMarginTop: "3", galleriaMarginBottom: "3",
+      galleriaRowHeight: "280", galleriaGap: "6",
+      aboutVideoHeight: "100", aboutQuotePadding: "6", aboutPhotoAspect: "3/2",
+      headerPaddingY: "14", headerFontSize: "12",
+      footerFontSize: "11", footerPaddingY: "12",
+      marqueeFontSize: "7", marqueeSpeed: "normal", marqueeOpacity: "6",
+      viewerBgOpacity: "95", viewerImageQuality: "85",
+      borderOpacity: "15", headerLetterSpacing: "0",
+      bannerTitleShadow: "4", galleriaRowSpacing: "6",
+      textMaxWidth: "100", techColWidth: "180",
     };
     Object.keys(defaults).forEach(k => { if (a[k] === undefined) a[k] = defaults[k]; });
 
-    function colorInput(id, label, key) {
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <input type="color" id="${id}" value="${a[key]}" style="width:28px;height:22px;border:1px solid var(--border);background:var(--panel);border-radius:3px;cursor:pointer;padding:0;">
-        <input type="text" id="${id}_hex" value="${a[key]}" style="width:68px;font-family:monospace;font-size:10px;padding:4px 6px;">
-        <label style="font-size:10px;color:var(--text2);margin-bottom:0;">${label}</label>
+    // Compact helpers
+    function colorIn(id, label, key) {
+      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <input type="color" id="${id}" value="${a[key]}" style="width:22px;height:18px;border:1px solid var(--border);background:var(--panel);border-radius:2px;cursor:pointer;padding:0;">
+        <input type="text" id="${id}_hex" value="${a[key]}" style="width:58px;font-family:monospace;font-size:9px;padding:2px 4px;">
+        <label style="font-size:9px;color:var(--text2);margin:0;">${label}</label>
       </div>`;
     }
-
-    function rangeInput(id, label, key, min, max, step, unit) {
-      return `<div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-          <label style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0;">${label}</label>
-          <span id="${id}_val" style="font-size:10px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
+    function rangeIn(id, label, key, min, max, step, unit) {
+      return `<div style="margin-bottom:7px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin:0;">${label}</label>
+          <span id="${id}_val" style="font-size:9px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
         </div>
-        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:3px;cursor:pointer;">
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:2px;cursor:pointer;margin-top:1px;">
       </div>`;
     }
-
-    function selectInput(id, label, key, options) {
-      return `<div style="margin-bottom:10px;">
-        <label style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:2px;">${label}</label>
-        <select id="${id}" style="padding:5px 8px;font-size:11px;">
+    function selectIn(id, label, key, options) {
+      return `<div style="margin-bottom:7px;">
+        <label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;display:block;margin-bottom:1px;">${label}</label>
+        <select id="${id}" style="padding:3px 6px;font-size:10px;width:100%;">
           ${options.map(o => `<option value="${o.value}" ${a[key] === o.value ? "selected" : ""}>${o.label}</option>`).join("")}
         </select>
       </div>`;
     }
+    function secHead(label) {
+      return `<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:700;margin:12px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--border);">${label}</div>`;
+    }
+
+    const siteUrl = "https://alfredoenricoiacobucci.art";
 
     container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div>
-          <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;">Aspetto</h2>
-          <p style="font-size:12px;color:var(--text3);">Personalizza colori, margini, altezze e tipografia del sito</p>
+          <h2 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;">Aspetto</h2>
+          <p style="font-size:10px;color:var(--text3);">Modifica i parametri a sinistra — l'anteprima del sito è navigabile</p>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="ghost" id="aspResetDefaults" style="font-size:11px;color:#f87171;">Ripristina predefiniti</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text2);user-select:none;">
+            <input type="checkbox" id="aspGridToggle" style="accent-color:var(--red);">
+            Griglia
+          </label>
+          <button class="ghost" id="aspFullscreen" style="font-size:10px;padding:4px 10px;">Schermo intero</button>
+          <button class="ghost" id="aspResetDefaults" style="font-size:10px;color:#f87171;padding:4px 10px;">Reset</button>
         </div>
       </div>
 
       <div class="aspetto-layout">
       <div class="aspetto-controls">
+        ${secHead("Colori")}
+        ${colorIn("asp_bgArt", "Sfondo Artwork", "colorBgArtwork")}
+        ${colorIn("asp_bgPro", "Sfondo Professional", "colorBgProfessional")}
+        ${colorIn("asp_accent", "Accento", "colorAccent")}
+        ${colorIn("asp_textArt", "Testo Artwork", "colorTextArtwork")}
+        ${colorIn("asp_textPro", "Testo Professional", "colorTextProfessional")}
 
-      <!-- COLORI -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Colori</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${colorInput("asp_bgArt", "Sfondo Artwork", "colorBgArtwork")}
-            ${colorInput("asp_bgPro", "Sfondo Professional", "colorBgProfessional")}
-            ${colorInput("asp_accent", "Colore accento (rosso)", "colorAccent")}
-            ${colorInput("asp_textArt", "Testo Artwork", "colorTextArtwork")}
-            ${colorInput("asp_textPro", "Testo Professional", "colorTextProfessional")}
-          </div>
-        </div>
-      </div>
+        ${secHead("Tipografia")}
+        ${selectIn("asp_font", "Font", "fontFamily", [
+          {value:"Inter",label:"Inter"},{value:"Helvetica Neue",label:"Helvetica Neue"},
+          {value:"Playfair Display",label:"Playfair Display"},{value:"DM Sans",label:"DM Sans"},
+          {value:"Space Grotesk",label:"Space Grotesk"},{value:"system-ui",label:"System UI"},
+        ])}
+        ${rangeIn("asp_fontSize", "Corpo testo", "fontSizeBase", 12, 22, 1, "px")}
+        ${rangeIn("asp_titleSize", "Titolo", "fontSizeTitolo", 18, 48, 1, "px")}
+        ${rangeIn("asp_titleWeight", "Peso titolo", "fontWeightTitolo", 400, 900, 100, "")}
+        ${rangeIn("asp_lineH", "Interlinea", "lineHeight", 1.2, 2.2, 0.05, "")}
+        ${rangeIn("asp_headerLS", "Spaziatura header", "headerLetterSpacing", -1, 3, 0.1, "px")}
 
-      <!-- TIPOGRAFIA -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Tipografia</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          ${selectInput("asp_font", "Font famiglia", "fontFamily", [
-            { value: "Inter", label: "Inter (default)" },
-            { value: "Helvetica Neue", label: "Helvetica Neue" },
-            { value: "Playfair Display", label: "Playfair Display" },
-            { value: "DM Sans", label: "DM Sans" },
-            { value: "Space Grotesk", label: "Space Grotesk" },
-            { value: "system-ui", label: "System UI" },
-          ])}
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_fontSize", "Corpo testo", "fontSizeBase", 12, 22, 1, "px")}
-            ${rangeInput("asp_titleSize", "Titolo progetto", "fontSizeTitolo", 18, 48, 1, "px")}
-            ${rangeInput("asp_titleWeight", "Peso titolo", "fontWeightTitolo", 400, 900, 100, "")}
-            ${rangeInput("asp_lineH", "Interlinea", "lineHeight", 1.2, 2.2, 0.05, "")}
-          </div>
-        </div>
-      </div>
+        ${secHead("Layout")}
+        ${rangeIn("asp_margLat", "Margine laterale", "marginLaterale", 2, 16, 1, "%")}
+        ${rangeIn("asp_gapCol", "Gap colonne", "gapColonne", 0, 10, 0.5, "%")}
+        ${rangeIn("asp_textMax", "Max larghezza testo", "textMaxWidth", 60, 100, 5, "%")}
+        ${rangeIn("asp_techCol", "Largh. colonna tecnica", "techColWidth", 120, 280, 10, "px")}
+        ${rangeIn("asp_borderOp", "Opacità bordi", "borderOpacity", 0, 40, 1, "%")}
 
-      <!-- LAYOUT -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Layout generale</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_margLat", "Margine laterale", "marginLaterale", 2, 16, 1, "%")}
-            ${rangeInput("asp_gapCol", "Gap colonne testo", "gapColonne", 0, 10, 0.5, "%")}
-            ${rangeInput("asp_headerPad", "Padding header (Y)", "headerPaddingY", 6, 28, 1, "px")}
-            ${rangeInput("asp_headerFont", "Font size header", "headerFontSize", 9, 16, 1, "px")}
-          </div>
-        </div>
-      </div>
+        ${secHead("Header & Footer")}
+        ${rangeIn("asp_headerPad", "Padding header", "headerPaddingY", 6, 28, 1, "px")}
+        ${rangeIn("asp_headerFont", "Font header", "headerFontSize", 9, 16, 1, "px")}
+        ${rangeIn("asp_footerSize", "Font footer", "footerFontSize", 8, 16, 1, "px")}
+        ${rangeIn("asp_footerPad", "Padding footer", "footerPaddingY", 4, 24, 1, "px")}
 
-      <!-- BANNER -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Banner progetto</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_bannerH", "Altezza banner", "bannerHeight", 50, 120, 5, "vh")}
-            ${rangeInput("asp_bannerOverlay", "Opacità overlay scuro", "bannerOverlayOpacity", 0, 100, 5, "%")}
-          </div>
-        </div>
-      </div>
+        ${secHead("Banner")}
+        ${rangeIn("asp_bannerH", "Altezza", "bannerHeight", 50, 120, 5, "vh")}
+        ${rangeIn("asp_bannerOverlay", "Overlay scuro", "bannerOverlayOpacity", 0, 100, 5, "%")}
+        ${rangeIn("asp_bannerShadow", "Ombra titolo", "bannerTitleShadow", 0, 12, 1, "px")}
 
-      <!-- GALLERIA -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Galleria foto</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_galMT", "Margine sopra galleria", "galleriaMarginTop", 0, 8, 0.5, "rem")}
-            ${rangeInput("asp_galMB", "Margine sotto galleria", "galleriaMarginBottom", 0, 8, 0.5, "rem")}
-            ${rangeInput("asp_galRowH", "Altezza riga target", "galleriaRowHeight", 150, 500, 10, "px")}
-            ${rangeInput("asp_galGap", "Gap tra foto", "galleriaGap", 0, 20, 1, "px")}
-          </div>
-        </div>
-      </div>
+        ${secHead("Galleria")}
+        ${rangeIn("asp_galMT", "Margine sopra", "galleriaMarginTop", 0, 8, 0.5, "rem")}
+        ${rangeIn("asp_galMB", "Margine sotto", "galleriaMarginBottom", 0, 8, 0.5, "rem")}
+        ${rangeIn("asp_galRowH", "Altezza riga", "galleriaRowHeight", 150, 500, 10, "px")}
+        ${rangeIn("asp_galGap", "Gap foto", "galleriaGap", 0, 20, 1, "px")}
+        ${rangeIn("asp_galRowSp", "Spazio tra righe", "galleriaRowSpacing", 0, 20, 1, "px")}
 
-      <!-- ABOUT -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Pagina About</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_aboutVidH", "Altezza video/banner", "aboutVideoHeight", 50, 120, 5, "vh")}
-            ${rangeInput("asp_aboutQuotePad", "Padding blocco citazione", "aboutQuotePadding", 2, 12, 0.5, "rem")}
-            ${selectInput("asp_aboutPhotoAR", "Aspect ratio foto", "aboutPhotoAspect", [
-              { value: "3/2", label: "3:2 (default)" },
-              { value: "16/9", label: "16:9" },
-              { value: "4/3", label: "4:3" },
-              { value: "1/1", label: "1:1 (quadrato)" },
-              { value: "2.35/1", label: "2.35:1 (cinema)" },
-            ])}
-          </div>
-        </div>
-      </div>
+        ${secHead("About")}
+        ${rangeIn("asp_aboutVidH", "Altezza video", "aboutVideoHeight", 50, 120, 5, "vh")}
+        ${rangeIn("asp_aboutQuotePad", "Padding citazione", "aboutQuotePadding", 2, 12, 0.5, "rem")}
+        ${selectIn("asp_aboutPhotoAR", "Aspect ratio foto", "aboutPhotoAspect", [
+          {value:"3/2",label:"3:2"},{value:"16/9",label:"16:9"},{value:"4/3",label:"4:3"},
+          {value:"1/1",label:"1:1"},{value:"2.35/1",label:"2.35:1 cinema"},
+        ])}
 
-      <!-- MARQUEE -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Marquee (landing)</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_marqueeSize", "Dimensione testo marquee", "marqueeFontSize", 3, 14, 0.5, "rem")}
-            ${selectInput("asp_marqueeSpeed", "Velocità scorrimento", "marqueeSpeed", [
-              { value: "slow", label: "Lento" },
-              { value: "normal", label: "Normale (default)" },
-              { value: "fast", label: "Veloce" },
-            ])}
-          </div>
-        </div>
-      </div>
+        ${secHead("Marquee")}
+        ${rangeIn("asp_marqueeSize", "Dimensione", "marqueeFontSize", 3, 14, 0.5, "rem")}
+        ${rangeIn("asp_marqueeOp", "Opacità", "marqueeOpacity", 1, 15, 1, "%")}
+        ${selectIn("asp_marqueeSpeed", "Velocità", "marqueeSpeed", [
+          {value:"slow",label:"Lento"},{value:"normal",label:"Normale"},{value:"fast",label:"Veloce"},
+        ])}
 
-      <!-- VIEWER -->
-      <div style="margin-bottom:18px;">
-        <h3 style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);font-weight:600;margin-bottom:8px;">Viewer (schermo intero)</h3>
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
-          <div style="display:flex;flex-direction:column;">
-            ${rangeInput("asp_viewerBg", "Opacità sfondo viewer", "viewerBgOpacity", 70, 100, 1, "%")}
-            ${rangeInput("asp_viewerQuality", "Qualità immagine viewer", "viewerImageQuality", 60, 100, 5, "")}
-          </div>
-        </div>
-      </div>
-
+        ${secHead("Viewer")}
+        ${rangeIn("asp_viewerBg", "Opacità sfondo", "viewerBgOpacity", 70, 100, 1, "%")}
+        ${rangeIn("asp_viewerQuality", "Qualità immagine", "viewerImageQuality", 60, 100, 5, "")}
       </div><!-- /aspetto-controls -->
 
-      <!-- ANTEPRIMA LIVE -->
+      <!-- ANTEPRIMA LIVE: iframe del sito reale -->
       <div class="aspetto-preview-wrap">
-        <div class="asp-mode-toggle">
-          <button id="aspPrevArt" class="active">Artwork</button>
-          <button id="aspPrevPro">Professional</button>
+        <div class="aspetto-preview" id="aspPreview">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;" id="aspPreviewLoading">
+            <div style="text-align:center;">
+              <div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px;"></div>
+              Caricamento anteprima...
+            </div>
+          </div>
+          <div class="grid-overlay" id="aspGridOverlay">
+            <!-- Verticali -->
+            <div class="guide guide-v guide-center"></div>
+            <div class="guide guide-v guide-margin" id="guideLeft" style="left:8%;">
+              <div class="guide-label" style="left:0;">8%</div>
+            </div>
+            <div class="guide guide-v guide-margin" id="guideRight" style="right:8%;left:auto;">
+              <div class="guide-label" style="left:0;">8%</div>
+            </div>
+            <!-- Orizzontali -->
+            <div class="guide guide-h" id="guideHeader" style="top:5%;">
+              <div class="guide-h-label" style="top:0;">Header</div>
+            </div>
+            <div class="guide guide-h" style="top:50%;border-top:1px dashed rgba(200,16,46,0.2);">
+              <div class="guide-h-label" style="top:0;">50%</div>
+            </div>
+            <div class="guide guide-h" id="guideGalleryTop" style="top:12%;">
+              <div class="guide-h-label" style="top:0;">Contenuto</div>
+            </div>
+          </div>
         </div>
-        <div class="aspetto-preview" id="aspPreview"></div>
       </div>
 
       </div><!-- /aspetto-layout -->
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
     `;
 
-    // Wire range inputs
+    // Wire all range/color/select inputs
+    const allIdToKey = {
+      asp_fontSize:"fontSizeBase",asp_titleSize:"fontSizeTitolo",asp_titleWeight:"fontWeightTitolo",
+      asp_lineH:"lineHeight",asp_margLat:"marginLaterale",asp_gapCol:"gapColonne",
+      asp_headerPad:"headerPaddingY",asp_headerFont:"headerFontSize",asp_headerLS:"headerLetterSpacing",
+      asp_bannerH:"bannerHeight",asp_bannerOverlay:"bannerOverlayOpacity",asp_bannerShadow:"bannerTitleShadow",
+      asp_galMT:"galleriaMarginTop",asp_galMB:"galleriaMarginBottom",
+      asp_galRowH:"galleriaRowHeight",asp_galGap:"galleriaGap",asp_galRowSp:"galleriaRowSpacing",
+      asp_aboutVidH:"aboutVideoHeight",asp_aboutQuotePad:"aboutQuotePadding",
+      asp_marqueeSize:"marqueeFontSize",asp_marqueeOp:"marqueeOpacity",
+      asp_viewerBg:"viewerBgOpacity",asp_viewerQuality:"viewerImageQuality",
+      asp_footerSize:"footerFontSize",asp_footerPad:"footerPaddingY",
+      asp_borderOp:"borderOpacity",asp_textMax:"textMaxWidth",asp_techCol:"techColWidth",
+    };
     container.querySelectorAll('input[type="range"]').forEach(range => {
-      const key = Object.keys(a).find(k => {
-        const el = container.querySelector("#" + range.id);
-        return el && el.value === a[k];
-      });
-      // Derive key from id mapping
-      const idToKey = {
-        asp_fontSize: "fontSizeBase", asp_titleSize: "fontSizeTitolo",
-        asp_titleWeight: "fontWeightTitolo", asp_lineH: "lineHeight",
-        asp_margLat: "marginLaterale", asp_gapCol: "gapColonne",
-        asp_headerPad: "headerPaddingY", asp_headerFont: "headerFontSize",
-        asp_bannerH: "bannerHeight", asp_bannerOverlay: "bannerOverlayOpacity",
-        asp_galMT: "galleriaMarginTop", asp_galMB: "galleriaMarginBottom",
-        asp_galRowH: "galleriaRowHeight", asp_galGap: "galleriaGap",
-        asp_aboutVidH: "aboutVideoHeight", asp_aboutQuotePad: "aboutQuotePadding",
-        asp_marqueeSize: "marqueeFontSize",
-        asp_viewerBg: "viewerBgOpacity", asp_viewerQuality: "viewerImageQuality",
-      };
-      const k = idToKey[range.id];
+      const k = allIdToKey[range.id];
       if (!k) return;
       const valSpan = document.getElementById(range.id + "_val");
       range.addEventListener("input", () => {
         a[k] = range.value;
-        if (valSpan) {
-          const unit = valSpan.textContent.replace(/[0-9.\-]/g, "");
-          valSpan.textContent = range.value + unit;
-        }
+        if (valSpan) { const u = valSpan.textContent.replace(/[0-9.\-]/g, ""); valSpan.textContent = range.value + u; }
         markDirty();
       });
     });
-
-    // Wire color inputs
     const colorMap = {
-      asp_bgArt: "colorBgArtwork", asp_bgPro: "colorBgProfessional",
-      asp_accent: "colorAccent", asp_textArt: "colorTextArtwork", asp_textPro: "colorTextProfessional",
+      asp_bgArt:"colorBgArtwork",asp_bgPro:"colorBgProfessional",
+      asp_accent:"colorAccent",asp_textArt:"colorTextArtwork",asp_textPro:"colorTextProfessional",
     };
     Object.entries(colorMap).forEach(([id, k]) => {
       const picker = document.getElementById(id);
@@ -2688,188 +2741,209 @@
       if (picker) picker.addEventListener("input", () => { a[k] = picker.value; if (hex) hex.value = picker.value; markDirty(); });
       if (hex) hex.addEventListener("change", () => { a[k] = hex.value; if (picker) picker.value = hex.value; markDirty(); });
     });
-
-    // Wire selects
-    const selectMap = {
-      asp_font: "fontFamily", asp_marqueeSpeed: "marqueeSpeed", asp_aboutPhotoAR: "aboutPhotoAspect",
-    };
+    const selectMap = { asp_font:"fontFamily",asp_marqueeSpeed:"marqueeSpeed",asp_aboutPhotoAR:"aboutPhotoAspect" };
     Object.entries(selectMap).forEach(([id, k]) => {
       const el = document.getElementById(id);
       if (el) el.addEventListener("change", () => { a[k] = el.value; markDirty(); });
     });
 
-    // Reset defaults
+    // Reset
     document.getElementById("aspResetDefaults").onclick = () => {
       if (!confirm("Ripristinare tutti i valori predefiniti?")) return;
       Object.keys(defaults).forEach(k => { a[k] = defaults[k]; });
-      markDirty();
-      renderAspetto();
+      markDirty(); renderAspetto();
       toast("Valori predefiniti ripristinati.", "ok");
     };
 
-    // ---- ANTEPRIMA LIVE ----
-    let previewMode = "artwork";
-    const prevArt = document.getElementById("aspPrevArt");
-    const prevPro = document.getElementById("aspPrevPro");
-    prevArt.onclick = () => { previewMode = "artwork"; prevArt.classList.add("active"); prevPro.classList.remove("active"); updatePreview(); };
-    prevPro.onclick = () => { previewMode = "professional"; prevPro.classList.add("active"); prevArt.classList.remove("active"); updatePreview(); };
-
-    function updatePreview() {
+    // ---- ANTEPRIMA LIVE: iframe del sito reale ----
+    function loadPreview() {
       const p = document.getElementById("aspPreview");
       if (!p) return;
-      const isP = previewMode === "professional";
-      const bg = isP ? a.colorBgProfessional : a.colorBgArtwork;
-      const fg = isP ? a.colorTextProfessional : a.colorTextArtwork;
-      const accent = a.colorAccent;
-      const muted = isP ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-      const mutedStrong = isP ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)";
-      const borderC = isP ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)";
-      const ml = parseFloat(a.marginLaterale);
-      const gap = parseFloat(a.gapColonne);
-      const bannerH = Math.round(parseFloat(a.bannerHeight) * 0.55);
-      const galGap = Math.max(1, Math.round(parseFloat(a.galleriaGap) * 0.4));
-      const galMT = Math.round(parseFloat(a.galleriaMarginTop) * 6);
-      const galMB = Math.round(parseFloat(a.galleriaMarginBottom) * 6);
-      const titleSize = Math.max(8, Math.round(parseFloat(a.fontSizeTitolo) * 0.5));
-      const bodySize = Math.max(5, Math.round(parseFloat(a.fontSizeBase) * 0.42));
-      const headerFont = Math.max(5, Math.round(parseFloat(a.headerFontSize) * 0.55));
-      const headerPad = Math.max(3, Math.round(parseFloat(a.headerPaddingY) * 0.4));
-      const lh = a.lineHeight;
-      const overlayOp = parseFloat(a.bannerOverlayOpacity) / 100;
-      const footerFont = Math.max(4, Math.round(parseFloat(a.footerFontSize || 11) * 0.45));
+      const loading = document.getElementById("aspPreviewLoading");
+      const url = siteUrl;
 
-      // Prendi il primo progetto della sezione corrente per dati reali
-      const sec = isP ? "pro" : "art";
-      const proj = state.projects.find(x => x.section === sec);
-      const projTitle = proj ? (proj.titolo || proj.slug).split("\\n")[0] : "Titolo Progetto";
-      const projDate = proj && (proj.titolo || "").includes("\\n") ? (proj.titolo || "").split("\\n").pop() : "Luogo 2025";
-      const projDesc = proj ? (proj.descrizione || "").slice(0, 120) : "";
-      const projKey = proj ? `${proj.section}/${proj.slug}` : null;
+      // Scala iframe per riempire il container
+      const wrap = p;
+      const iframeW = 1440;
+      const iframeH = 900;
 
-      // Foto reali dal progetto (se già caricate)
-      const realPhotos = projKey && photosByProject[projKey] ? photosByProject[projKey] : [];
-      const photoUrls = realPhotos.slice(0, 8).map(ph => ph.url || "");
-      const hasPhotos = photoUrls.filter(u => u).length > 0;
+      // Rimuovi vecchio iframe se esiste
+      const old = wrap.querySelector("iframe");
+      if (old) old.remove();
 
-      // Dati tecnici
-      const techLines = [];
-      if (proj && proj.camera) techLines.push(["Camera", proj.camera]);
-      if (proj && proj.ottica) techLines.push(["Ottica", proj.ottica]);
-      if (proj && proj.luce) techLines.push(["Luce", proj.luce]);
+      if (loading) loading.style.display = "flex";
 
-      // Header items
-      const headerItems = state.projects.filter(x => x.section === sec).slice(0, 5);
-      const marquee = headerItems.map(x => (x.titolo || x.slug).split("\\n")[0]).join(" \\u00B7 ");
+      const iframe = document.createElement("iframe");
+      iframe.src = url;
+      iframe.style.width = iframeW + "px";
+      iframe.style.height = iframeH + "px";
+      iframe.style.border = "none";
+      iframe.style.transformOrigin = "top left";
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
 
-      p.innerHTML = `
-        <div style="width:100%;height:100%;background:${bg};color:${fg};font-family:'${a.fontFamily}',sans-serif;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;font-size:${bodySize}px;line-height:${lh};">
-          <!-- Header -->
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:${headerPad}px ${ml * 0.5}%;border-bottom:1px solid ${borderC};font-size:${headerFont}px;font-weight:700;flex-shrink:0;letter-spacing:0.01em;">
-            <div style="display:flex;gap:4px;align-items:baseline;">
-              <span style="color:${isP ? fg : accent};">${isP ? "Professional" : "Artwork"}</span>
-              <span style="opacity:0.3;font-weight:400;">/</span>
-              <span style="opacity:0.35;font-weight:400;">${isP ? "Artwork" : "Professional"}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:${Math.max(4, headerFont - 2)}px;font-weight:400;opacity:0.4;">About</span>
-              <div style="width:${headerFont}px;height:${headerFont}px;border:1px solid ${fg};border-radius:50%;opacity:0.4;"></div>
-            </div>
-          </div>
+      // Scala in base alla larghezza del container — riempie tutta la larghezza
+      function scaleIframe() {
+        const wrapW = wrap.clientWidth;
+        const wrapH = wrap.clientHeight;
+        const scale = wrapW / iframeW;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.width = iframeW + "px";
+        iframe.style.height = Math.ceil(wrapH / scale) + "px";
+      }
 
-          <!-- Banner -->
-          <div style="position:relative;height:${bannerH}px;flex-shrink:0;overflow:hidden;${hasPhotos ? "" : "background:#555;"}">
-            ${hasPhotos ? `<img src="${photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">` : ""}
-            <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,${overlayOp}), rgba(0,0,0,${overlayOp * 0.2}));"></div>
-            <div style="position:absolute;bottom:${Math.max(4, bannerH * 0.06)}px;left:${ml * 0.5}%;z-index:1;max-width:${100 - ml}%;">
-              <div style="font-size:${titleSize}px;font-weight:${a.fontWeightTitolo};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8);line-height:1.15;letter-spacing:-0.01em;">${escapeHtml(projTitle)}</div>
-              <div style="font-size:${Math.max(4, titleSize * 0.4)}px;color:rgba(255,255,255,0.55);margin-top:2px;letter-spacing:0.03em;">${escapeHtml(projDate)}</div>
-            </div>
-          </div>
+      iframe.onload = () => {
+        if (loading) loading.style.display = "none";
+        scaleIframe();
+      };
 
-          <!-- Testo + Tecnica -->
-          <div style="padding:${galMT}px ${ml * 0.5}% ${Math.max(4, galMT * 0.5)}px;display:flex;gap:${gap * 0.5}%;flex-shrink:0;">
-            <div style="flex:1;min-width:0;">
-              ${projDesc ? `<div style="font-size:${bodySize}px;line-height:${lh};color:${mutedStrong};overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${escapeHtml(projDesc)}</div>`
-              : `<div style="space-y:2px;">
-                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.1;border-radius:1px;margin-bottom:2px;width:92%;"></div>
-                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.07;border-radius:1px;margin-bottom:2px;width:78%;"></div>
-                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.09;border-radius:1px;margin-bottom:2px;width:85%;"></div>
-                  <div style="height:${bodySize * 1.3}px;background:${fg};opacity:0.06;border-radius:1px;width:65%;"></div>
-                </div>`}
-            </div>
-            <div style="width:28%;flex-shrink:0;padding-left:${gap * 0.3}%;">
-              ${techLines.length > 0 ? techLines.map(([lbl, val]) =>
-                `<div style="margin-bottom:3px;">
-                  <div style="font-size:${Math.max(4, bodySize - 1)}px;color:${muted};text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">${escapeHtml(lbl)}</div>
-                  <div style="font-size:${bodySize}px;color:${mutedStrong};">${escapeHtml(val)}</div>
-                </div>`
-              ).join("") : `
-                <div style="height:${bodySize}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:3px;width:60%;"></div>
-                <div style="height:${bodySize}px;background:${fg};opacity:0.04;border-radius:1px;margin-bottom:6px;width:40%;"></div>
-                <div style="height:${bodySize}px;background:${fg};opacity:0.06;border-radius:1px;margin-bottom:3px;width:55%;"></div>
-                <div style="height:${bodySize}px;background:${fg};opacity:0.04;border-radius:1px;width:35%;"></div>
-              `}
-            </div>
-          </div>
-
-          <!-- Galleria -->
-          <div style="padding:2px ${ml * 0.5}% ${galMB}px;flex:1;">
-            ${hasPhotos ? `
-              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
-                ${photoUrls.slice(0, 3).map((u, i) => `<div style="flex:${[1.5, 1, 1.2][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;overflow:hidden;border-radius:1px;">
-                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
-                </div>`).join("")}
-              </div>
-              ${photoUrls.length > 3 ? `<div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
-                ${photoUrls.slice(3, 5).map((u, i) => `<div style="flex:${[1, 1.6][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;overflow:hidden;border-radius:1px;">
-                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
-                </div>`).join("")}
-              </div>` : ""}
-              ${photoUrls.length > 5 ? `<div style="display:flex;gap:${galGap}px;">
-                ${photoUrls.slice(5, 8).map((u, i) => `<div style="flex:${[1, 1, 1.3][i] || 1};height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;overflow:hidden;border-radius:1px;">
-                  <img src="${u}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous">
-                </div>`).join("")}
-              </div>` : ""}
-            ` : `
-              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
-                <div style="flex:1.5;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#777;border-radius:1px;"></div>
-                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#888;border-radius:1px;"></div>
-                <div style="flex:1.2;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.2)}px;background:#666;border-radius:1px;"></div>
-              </div>
-              <div style="display:flex;gap:${galGap}px;margin-bottom:${galGap}px;">
-                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;background:#999;border-radius:1px;"></div>
-                <div style="flex:1.8;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.16)}px;background:#777;border-radius:1px;"></div>
-              </div>
-              <div style="display:flex;gap:${galGap}px;">
-                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#888;border-radius:1px;"></div>
-                <div style="flex:1;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#666;border-radius:1px;"></div>
-                <div style="flex:1.4;height:${Math.round(parseFloat(a.galleriaRowHeight) * 0.18)}px;background:#777;border-radius:1px;"></div>
-              </div>
-            `}
-          </div>
-
-          <!-- Marquee -->
-          <div style="overflow:hidden;white-space:nowrap;font-size:${Math.max(4, Math.round(parseFloat(a.marqueeFontSize) * 4))}px;font-weight:800;color:${fg};opacity:0.04;letter-spacing:-0.02em;padding:0 ${ml * 0.5}%;flex-shrink:0;">
-            ${escapeHtml(marquee)} \\u00B7 ${escapeHtml(marquee)}
-          </div>
-
-          <!-- Footer -->
-          <div style="padding:${Math.max(3, headerPad * 0.7)}px ${ml * 0.5}%;font-size:${footerFont}px;color:${muted};border-top:1px solid ${borderC};flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
-            <span>Alfredo Enrico Iacobucci</span>
-            <div style="display:flex;align-items:center;gap:4px;">
-              <span style="font-size:${Math.max(3, footerFont - 1)}px;">2025</span>
-              <span style="color:${accent};font-size:${footerFont + 1}px;">&#9679;</span>
-            </div>
-          </div>
-        </div>
-      `;
+      wrap.appendChild(iframe);
+      // Scala iniziale
+      requestAnimationFrame(scaleIframe);
+      // Riscala al resize
+      window.addEventListener("resize", scaleIframe);
     }
 
-    // Aggiorna preview ad ogni cambio di slider/color/select
-    container.addEventListener("input", updatePreview);
-    container.addEventListener("change", updatePreview);
     // Prima render
-    updatePreview();
+    loadPreview();
+
+    // ---- GRID OVERLAY con guide draggabili e snap magnetico ----
+    const gridToggle = document.getElementById("aspGridToggle");
+    const gridOverlay = document.getElementById("aspGridOverlay");
+    const guideLeft = document.getElementById("guideLeft");
+    const guideRight = document.getElementById("guideRight");
+
+    function updateGuides() {
+      const m = parseFloat(a.marginLaterale) || 8;
+      if (guideLeft) { guideLeft.style.left = m + "%"; guideLeft.querySelector(".guide-label").textContent = m + "%"; }
+      if (guideRight) { guideRight.style.right = m + "%"; guideRight.querySelector(".guide-label").textContent = m + "%"; }
+    }
+    updateGuides();
+
+    if (gridToggle) gridToggle.onchange = () => {
+      gridOverlay.classList.toggle("active", gridToggle.checked);
+    };
+
+    // Drag delle guide per modificare il margine
+    function setupGuideDrag(guideEl, side) {
+      if (!guideEl) return;
+      let dragging = false;
+
+      guideEl.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        dragging = true;
+        document.body.style.cursor = "ew-resize";
+        // Disabilita pointer events sull'iframe durante il drag
+        const iframe = document.querySelector("#aspPreview iframe");
+        if (iframe) iframe.style.pointerEvents = "none";
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const preview = document.getElementById("aspPreview");
+        const rect = preview.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pctFromLeft = (x / rect.width) * 100;
+        let margin;
+        if (side === "left") {
+          margin = Math.max(2, Math.min(16, pctFromLeft));
+        } else {
+          margin = Math.max(2, Math.min(16, 100 - pctFromLeft));
+        }
+
+        // Snap magnetico: centro (50%), bordi (0%), e valori rotondi (5%, 10%, 15%)
+        const snapPoints = [2, 4, 5, 6, 8, 10, 12, 14, 15, 16];
+        const snapThreshold = 0.7;
+        for (const sp of snapPoints) {
+          if (Math.abs(margin - sp) < snapThreshold) {
+            margin = sp;
+            guideEl.classList.add("snap");
+            setTimeout(() => guideEl.classList.remove("snap"), 150);
+            break;
+          }
+        }
+
+        margin = Math.round(margin * 2) / 2; // arrotonda a 0.5
+        a.marginLaterale = String(margin);
+        updateGuides();
+        // Aggiorna lo slider corrispondente
+        const slider = document.getElementById("asp_margLat");
+        const valSpan = document.getElementById("asp_margLat_val");
+        if (slider) slider.value = margin;
+        if (valSpan) valSpan.textContent = margin + "%";
+        markDirty();
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.style.cursor = "";
+        const iframe = document.querySelector("#aspPreview iframe");
+        if (iframe) iframe.style.pointerEvents = "";
+      });
+    }
+    setupGuideDrag(guideLeft, "left");
+    setupGuideDrag(guideRight, "right");
+
+    // Aggiorna guide quando lo slider cambia
+    const margSlider = document.getElementById("asp_margLat");
+    if (margSlider) {
+      margSlider.addEventListener("input", () => updateGuides());
+    }
+
+    // ---- FULLSCREEN PREVIEW ----
+    document.getElementById("aspFullscreen").onclick = () => {
+      const overlay = document.createElement("div");
+      overlay.className = "aspetto-fullscreen";
+      const iframe = document.createElement("iframe");
+      iframe.src = siteUrl;
+      // Toolbar
+      const toolbar = document.createElement("div");
+      toolbar.style.cssText = "position:absolute;top:16px;right:16px;z-index:10000;display:flex;gap:8px;";
+      // Grid toggle per fullscreen
+      const gridBtn = document.createElement("button");
+      gridBtn.className = "fs-close";
+      gridBtn.textContent = "Griglia";
+      gridBtn.style.opacity = "0.7";
+      // Grid overlay per fullscreen
+      const fsGrid = document.createElement("div");
+      fsGrid.className = "grid-overlay";
+      fsGrid.style.cssText = "position:absolute;inset:0;z-index:9998;";
+      const m = parseFloat(a.marginLaterale) || 8;
+      fsGrid.innerHTML = `
+        <div class="guide guide-v guide-center"></div>
+        <div class="guide guide-v guide-margin" style="left:${m}%;"><div class="guide-label" style="left:0;">${m}%</div></div>
+        <div class="guide guide-v guide-margin" style="right:${m}%;left:auto;"><div class="guide-label" style="left:0;">${m}%</div></div>
+        <div class="guide guide-h" style="top:5%;"><div class="guide-h-label" style="top:0;">Header</div></div>
+        <div class="guide guide-h" style="top:50%;border-top:1px dashed rgba(200,16,46,0.2);"><div class="guide-h-label" style="top:0;">50%</div></div>
+        <div class="guide guide-h" style="top:12%;"><div class="guide-h-label" style="top:0;">Contenuto</div></div>
+      `;
+      gridBtn.onclick = () => {
+        fsGrid.classList.toggle("active");
+        gridBtn.style.opacity = fsGrid.classList.contains("active") ? "1" : "0.7";
+      };
+      // Close button
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "fs-close";
+      closeBtn.textContent = "Chiudi (Esc)";
+      closeBtn.onclick = () => overlay.remove();
+      toolbar.appendChild(gridBtn);
+      toolbar.appendChild(closeBtn);
+      overlay.appendChild(iframe);
+      overlay.appendChild(fsGrid);
+      overlay.appendChild(toolbar);
+      document.body.appendChild(overlay);
+      // Se la griglia era attiva nel pannello, attivala anche qui
+      if (gridToggle && gridToggle.checked) {
+        fsGrid.classList.add("active");
+        gridBtn.style.opacity = "1";
+      }
+      const onKey = (e) => {
+        if (e.key === "Escape") { overlay.remove(); document.removeEventListener("keydown", onKey); }
+      };
+      document.addEventListener("keydown", onKey);
+    };
   }
 
   // ========== IMPOSTAZIONI ==========
@@ -2881,84 +2955,115 @@
     const branch = getBranch();
 
     container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
-        <div>
-          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Impostazioni</h2>
-          <p style="font-size: 12px; color: var(--text3);">Configurazione GitHub, cache e diagnostica</p>
+      <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 28px;">Impostazioni</h2>
+
+      <!-- 1. CONNESSIONE GITHUB -->
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px;">Connessione GitHub</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="field"><label>Repository</label><input type="text" id="imp_repo" value="${escapeHtml(repo)}"></div>
+          <div class="field"><label>Branch</label><input type="text" id="imp_branch" value="${escapeHtml(branch)}"></div>
+        </div>
+        <div class="field" style="margin-bottom: 14px;">
+          <label>Personal Access Token</label>
+          <input type="password" id="imp_token" value="${token ? token : ""}" placeholder="ghp_xxxxxxxxxxxx" style="font-family: monospace;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${token ? "#4ade80" : "#f87171"};display:inline-block;"></span>
+          <span style="font-size: 12px; color: var(--text2);">${token ? "Connesso" : "Non connesso"}</span>
+          ${token ? `<button class="ghost" id="imp_test" style="font-size:11px;padding:3px 10px;margin-left:auto;">Testa</button>` : ""}
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="primary" id="imp_save_token">Salva</button>
+          ${token ? `<button class="ghost" id="imp_clear_token" style="color:#f87171;font-size:11px;">Disconnetti</button>` : ""}
+          <a href="https://github.com/settings/tokens/new?scopes=repo&description=Portfolio%20AEI%20Editor" target="_blank" style="font-size:11px;color:var(--red);margin-left:auto;">Crea token</a>
+        </div>
+        ${token ? `
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.7;">
+          <span id="imp_gh_info" style="color:var(--text3);"></span>
+        </div>` : ""}
+      </div>
+
+      <!-- 2. LINK RAPIDI -->
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Link rapidi</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <a href="https://alfredoenricoiacobucci.art" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
+            <span style="font-size:20px;">&#127760;</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text);">Sito live</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;">alfredoenricoiacobucci.art</div>
+            </div>
+          </a>
+          <a href="https://github.com/${escapeHtml(repo)}" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
+            <span style="font-size:20px;">&#128025;</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text);">GitHub</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;">Repository codice sorgente</div>
+            </div>
+          </a>
+          <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/deployments" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
+            <span style="font-size:20px;">&#9650;</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text);">Vercel Deploys</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;">Stato e cronologia deploy</div>
+            </div>
+          </a>
+          <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/logs" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
+            <span style="font-size:20px;">&#128220;</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text);">Vercel Logs</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;">Log runtime e build</div>
+            </div>
+          </a>
         </div>
       </div>
 
-      <!-- GITHUB -->
-      <div style="margin-bottom: 32px;">
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">GitHub & Token</h3>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-            <div class="field"><label>Repository</label><input type="text" id="imp_repo" value="${escapeHtml(repo)}"></div>
-            <div class="field"><label>Branch</label><input type="text" id="imp_branch" value="${escapeHtml(branch)}"></div>
-          </div>
-          <div class="field" style="margin-bottom: 16px;">
-            <label>Personal Access Token</label>
-            <input type="password" id="imp_token" value="${token ? token : ""}" placeholder="ghp_xxxxxxxxxxxx" style="font-family: monospace;">
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-            <span style="font-size: 12px; color: var(--text3);">Stato:</span>
-            <span style="font-size: 12px; color: ${token ? "#4ade80" : "#f87171"}; font-weight: 600;">${token ? "Connesso" : "Non connesso"}</span>
-            ${token ? `<button class="ghost" id="imp_test" style="font-size: 11px; padding: 4px 10px;">Testa connessione</button>` : ""}
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="primary" id="imp_save_token">Salva impostazioni</button>
-            ${token ? `<button class="ghost" id="imp_clear_token" style="color: #f87171;">Disconnetti</button>` : ""}
-          </div>
-          <p style="font-size: 11px; color: var(--text3); margin-top: 12px;">
-            Il token viene salvato solo nel tuo browser (localStorage).
-            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Portfolio%20AEI%20Editor" target="_blank" style="color: var(--red);">Crea un nuovo token</a>
-          </p>
+      <!-- 3. DIAGNOSTICA -->
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px;">Diagnostica</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="ghost" id="imp_force_sync" style="text-align:left;padding:10px 12px;">
+            <div style="font-size:12px;font-weight:500;color:var(--text2);">Forza sincronizzazione</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">Riscarica contenuti.json da GitHub</div>
+          </button>
+          <button class="ghost" id="imp_fix_photos" style="text-align:left;padding:10px 12px;">
+            <div style="font-size:12px;font-weight:500;color:var(--text2);">Ricarica foto</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">Foto grigie o mancanti</div>
+          </button>
+          <button class="ghost" id="imp_check_order" style="text-align:left;padding:10px 12px;">
+            <div style="font-size:12px;font-weight:500;color:var(--text2);">Verifica ordine sito</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">Confronta editor vs sito online</div>
+          </button>
         </div>
       </div>
 
-      <!-- CACHE & SINCRONIZZAZIONE -->
-      <div style="margin-bottom: 32px;">
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Cache & Sincronizzazione</h3>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <p style="font-size: 12px; color: var(--text2); margin-bottom: 16px;">
-            Se il sito non si aggiorna o il Manager mostra dati vecchi, usa questi strumenti per risincronizzare.
-          </p>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="ghost" id="imp_force_sync">Forza sincronizzazione da GitHub</button>
-            <button class="ghost" id="imp_clear_draft">Cancella bozza locale</button>
-            <button class="ghost" id="imp_clear_all" style="color: #f87171;">Reset completo (cancella tutto)</button>
-          </div>
+      <!-- 4. ESPORTA / IMPORTA -->
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px;">Backup</h3>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="ghost" id="imp_export">Esporta JSON</button>
+          <label class="ghost" style="cursor:pointer;display:inline-flex;align-items:center;padding:6px 14px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--panel);color:var(--text2);">
+            Importa JSON
+            <input type="file" accept=".json" id="imp_import" style="display:none;">
+          </label>
         </div>
       </div>
 
-      <!-- VERCEL -->
-      <div style="margin-bottom: 32px;">
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Vercel & Deploy</h3>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
-          <p style="font-size: 12px; color: var(--text2); margin-bottom: 12px;">
-            Ogni volta che salvi e pubblichi, viene creato un commit su GitHub che attiva automaticamente un deploy su Vercel.
-          </p>
-          <div style="display: flex; gap: 8px;">
-            <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/deployments" target="_blank" class="ghost" style="text-decoration: none; padding: 6px 14px; font-size: 12px; display: inline-block;">Apri dashboard Vercel</a>
+      <!-- 5. ZONA PERICOLOSA -->
+      <div style="background: var(--panel); border: 1px solid rgba(248,113,113,0.3); border-radius: 6px; padding: 16px 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--text2);">Reset completo</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">Cancella token, bozza e tutte le impostazioni locali</div>
           </div>
-          <div id="imp_deploy_status" style="margin-top: 12px;"></div>
-        </div>
-      </div>
-
-      <!-- INFO -->
-      <div>
-        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 14px;">Info</h3>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; font-size: 12px; color: var(--text3); line-height: 1.8;">
-          <div><strong style="color:var(--text2);">Sito:</strong> alfredoenricoiacobucci.art</div>
-          <div><strong style="color:var(--text2);">Repository:</strong> ${escapeHtml(repo)}</div>
-          <div><strong style="color:var(--text2);">Branch:</strong> ${escapeHtml(branch)}</div>
-          <div><strong style="color:var(--text2);">Progetti:</strong> ${state.projects.length}</div>
-          <div><strong style="color:var(--text2);">Versione Manager:</strong> 2.0</div>
+          <button class="ghost" id="imp_clear_all" style="color:#f87171;font-size:11px;">Reset</button>
         </div>
       </div>
     `;
 
-    // Event handlers
+    // === Event handlers ===
+
     document.getElementById("imp_save_token").onclick = () => {
       const t = document.getElementById("imp_token").value.trim();
       const r = document.getElementById("imp_repo").value.trim();
@@ -2981,20 +3086,16 @@
 
     const testBtn = document.getElementById("imp_test");
     if (testBtn) testBtn.onclick = async () => {
-      testBtn.textContent = "Testando...";
+      testBtn.textContent = "…";
       try {
         const res = await fetch(`https://api.github.com/repos/${getRepo()}`, {
           headers: { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" }
         });
-        if (res.ok) {
-          toast("Connessione a GitHub riuscita!", "ok");
-        } else {
-          toast("Connessione fallita: " + res.status, "err");
-        }
+        toast(res.ok ? "Connessione OK!" : "Errore: " + res.status, res.ok ? "ok" : "err");
       } catch (e) {
         toast("Errore: " + e.message, "err");
       }
-      testBtn.textContent = "Testa connessione";
+      testBtn.textContent = "Testa";
     };
 
     document.getElementById("imp_force_sync").onclick = async () => {
@@ -3016,22 +3117,112 @@
       } catch (e) { toast("Errore: " + e.message, "err"); }
     };
 
-    document.getElementById("imp_clear_draft").onclick = () => {
-      localStorage.removeItem("editor-draft-contenuti");
-      clearDirty();
-      toast("Bozza locale cancellata. Ricarica la pagina.", "ok");
+    document.getElementById("imp_check_order").onclick = async () => {
+      const btn = document.getElementById("imp_check_order");
+      btn.querySelector("div:first-child").textContent = "Verificando…";
+      try {
+        const res = await fetch("https://alfredoenricoiacobucci.art/api/debug-order");
+        if (!res.ok) throw new Error("API non raggiungibile (" + res.status + "). Deploy prima le modifiche.");
+        const data = await res.json();
+        // Confronta con l'ordine locale
+        const localArt = state.projects.filter(p => p.section === "art").map(p => p.slug);
+        const siteArt = data.artOrder.map(p => p.slug);
+        const localPro = state.projects.filter(p => p.section === "pro").map(p => p.slug);
+        const sitePro = data.proOrder.map(p => p.slug);
+        const artMatch = JSON.stringify(localArt) === JSON.stringify(siteArt);
+        const proMatch = JSON.stringify(localPro) === JSON.stringify(sitePro);
+        let msg = "";
+        if (artMatch && proMatch) {
+          msg = "Ordine corretto! Editor e sito coincidono.";
+          toast(msg, "ok");
+        } else {
+          msg = "ORDINE DIVERSO!\n\n";
+          if (!artMatch) {
+            msg += "ART — Editor:\n" + localArt.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
+            msg += "\n\nART — Sito:\n" + siteArt.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
+          }
+          if (!proMatch) {
+            msg += "\n\nPRO — Editor:\n" + localPro.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
+            msg += "\n\nPRO — Sito:\n" + sitePro.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
+          }
+          msg += "\n\nSalva e pubblica per aggiornare il sito.";
+          if (!data.fileExists) msg += "\n\n⚠ Il file contenuti.json NON esiste sul server!";
+          if (data.parseError) msg += "\n\n⚠ Errore parsing: " + data.parseError;
+          toast("Ordine diverso — controlla il dettaglio.", "err");
+          alert(msg);
+        }
+      } catch (e) {
+        toast("Errore: " + e.message, "err");
+      }
+      btn.querySelector("div:first-child").textContent = "Verifica ordine sito";
+    };
+
+    document.getElementById("imp_fix_photos").onclick = async () => {
+      toast("Ricaricamento foto…", "");
+      await fetchAllPhotoCounts();
+      if (currentKey && currentKey !== "about") await fetchPhotos(currentKey);
+      toast("Foto ricaricate.", "ok");
     };
 
     document.getElementById("imp_clear_all").onclick = () => {
-      if (!confirm("Sei sicuro? Questo cancellerà token, bozza e tutte le impostazioni locali.")) return;
+      if (!confirm("Cancellare token, bozza e tutte le impostazioni?")) return;
       localStorage.removeItem("editor-draft-contenuti");
       localStorage.removeItem("editor-token-github");
       localStorage.removeItem("editor-repo-github");
       localStorage.removeItem("editor-branch-github");
       clearDirty();
-      toast("Tutto cancellato. Ricarica la pagina.", "ok");
-      setTimeout(() => location.reload(), 1500);
+      toast("Reset completato.", "ok");
+      setTimeout(() => location.reload(), 1000);
     };
+
+    document.getElementById("imp_export").onclick = () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "portfolio-contenuti-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click(); URL.revokeObjectURL(url);
+      toast("Esportato.", "ok");
+    };
+
+    document.getElementById("imp_import").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          if (!imported.projects || !Array.isArray(imported.projects)) {
+            toast("File non valido.", "err"); return;
+          }
+          if (!confirm(`Importare ${imported.projects.length} progetti?`)) return;
+          state.projects = imported.projects;
+          if (imported.about) state.about = imported.about;
+          if (imported.aspetto) state.aspetto = imported.aspetto;
+          markDirty();
+          renderSidebar();
+          toast("Importato. Salva per pubblicare.", "ok");
+        } catch (err) {
+          toast("JSON non valido: " + err.message, "err");
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    // Load last commit info
+    if (token) {
+      const infoEl = document.getElementById("imp_gh_info");
+      if (infoEl) {
+        fetch(`https://api.github.com/repos/${getRepo()}/commits/${getBranch()}`, {
+          headers: { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" }
+        }).then(r => r.ok ? r.json() : null).then(data => {
+          if (data) {
+            const ago = Math.round((Date.now() - new Date(data.commit.committer.date)) / 60000);
+            const agoText = ago < 60 ? `${ago} min fa` : `${Math.round(ago / 60)}h fa`;
+            infoEl.textContent = `Ultimo commit: ${agoText} — ${data.commit.message.split("\n")[0]}`;
+          }
+        }).catch(() => {});
+      }
+    }
   }
 
   async function handleUpload(files, key) {
@@ -3118,8 +3309,6 @@
     toast("Progetto creato. Ricorda di salvare.", "ok");
   };
 
-  // ========== TOKEN (legacy modal — now in Impostazioni) ==========
-
   // ========== SAVE ==========
   document.getElementById("btnSave").onclick = async () => {
     if (!getToken()) {
@@ -3164,49 +3353,85 @@
     }
   });
 
+  function initStepOk(n) {
+    const el = document.getElementById("initStep" + n);
+    if (el) { const dot = el.querySelector("span"); if (dot) { dot.style.color = "#4ade80"; dot.textContent = "✓"; } }
+  }
+  function initStepFail(n, msg) {
+    const el = document.getElementById("initStep" + n);
+    if (el) { const dot = el.querySelector("span"); if (dot) { dot.style.color = "#f87171"; dot.textContent = "✗"; } if (msg) el.innerHTML += ` <span style="color:#f87171;">${msg}</span>`; }
+  }
+  function hideOverlay() {
+    const ov = document.getElementById("initOverlay");
+    if (ov) { ov.style.opacity = "0"; setTimeout(() => ov.remove(), 400); }
+  }
+
   updateTokenStatus();
 
   // Sync: se c'è token, scarica SEMPRE contenuti.json da GitHub (la verità è online).
-  // La bozza locale viene scartata: contenuti.json su GitHub è l'unica fonte affidabile.
   (async function syncFromGitHub() {
-    if (!getToken()) {
+    const token = getToken();
+    // Step 1: token
+    if (!token) {
+      initStepFail(1, "(non configurato)");
+      initStepFail(2, ""); initStepFail(3, ""); initStepFail(4, "");
       renderSidebar();
       if (dirty) toast("Bozza locale ripristinata (nessun token GitHub).", "");
+      setTimeout(hideOverlay, 800);
       return;
     }
+    initStepOk(1);
+
     try {
+      // Step 2: test connection
+      const testRes = await fetch(`https://api.github.com/repos/${getRepo()}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" }
+      });
+      if (!testRes.ok) { initStepFail(2, `(${testRes.status})`); throw new Error("Connessione fallita"); }
+      initStepOk(2);
+
+      // Step 3: fetch contenuti
       const remote = await ghGet("codice-sorgente/contenuti/contenuti.json");
       if (!remote || !remote.content) {
+        initStepFail(3, "(file non trovato)");
         renderSidebar();
+        initStepOk(4);
+        setTimeout(hideOverlay, 600);
         return;
       }
+      initStepOk(3);
+
       const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
       const remoteState = JSON.parse(decoded);
       if (!remoteState.projects) {
         renderSidebar();
+        initStepOk(4);
+        setTimeout(hideOverlay, 600);
         return;
       }
       // Sovrascrivi completamente lo state con i dati freschi da GitHub
       state.projects = remoteState.projects;
       state.about = remoteState.about || state.about;
       state.version = remoteState.version || state.version;
-      // Scarta la bozza vecchia: ora lo state è sincronizzato con GitHub
       clearDirty();
-      // Update embedded for next offline load
       embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+
+      // Step 4: render
       renderSidebar();
       if (currentKey) {
         if (currentKey === "about") renderAbout();
         else renderProject(currentKey);
       }
+      initStepOk(4);
       toast("Sincronizzato con GitHub.", "ok");
-      // Fetch conteggio foto di tutti i progetti in background
       fetchAllPhotoCounts();
+      setTimeout(hideOverlay, 500);
     } catch(e) {
       console.warn("Sync da GitHub fallito:", e.message);
       renderSidebar();
       if (dirty) toast("Bozza locale ripristinata (sync GitHub fallito).", "");
       fetchAllPhotoCounts();
+      setTimeout(hideOverlay, 800);
     }
   })();
 })();

@@ -1,5 +1,6 @@
 // pages/_app.js
 import "@/styles/globals.css";
+import Head from "next/head";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { useTrackPageView } from "@/lib/useAnalytics";
@@ -262,6 +263,16 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <title>Alfredo Enrico Iacobucci — Photography Portfolio</title>
+        <meta name="description" content="Portfolio fotografico di Alfredo Enrico Iacobucci. Artwork e Professional photography." />
+        <meta property="og:title" content="Alfredo Enrico Iacobucci — Photography" />
+        <meta property="og:description" content="Portfolio fotografico di Alfredo Enrico Iacobucci" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://alfredoenricoiacobucci.art" />
+        <meta name="theme-color" content="#f8f4ed" />
+      </Head>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
       <div ref={wrapRef} style={{ opacity: 1 }}>

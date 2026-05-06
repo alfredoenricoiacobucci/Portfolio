@@ -11,7 +11,11 @@ const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: f
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
 
-export async function getServerSideProps() {
+// ISR: la pagina viene rigenerata in background ogni 60 secondi
+// Nessuna cache manuale necessaria — Next.js gestisce tutto al livello CDN
+
+export async function getStaticProps() {
+
   const fs = await import("fs");
   const path = await import("path");
   const fsMod = await fs;
@@ -37,8 +41,11 @@ export async function getServerSideProps() {
   const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
   const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
-  // ---- contenuti: leggi da public/projects/contenuti.json ----
-  const contenuti = readJSON(pathMod.join(projectsDir, "contenuti.json")) || { projects: [], about: {} };
+  // ---- contenuti: leggi da contenuti/contenuti.json ----
+  const contenutiPath = pathMod.join(projectsDir, "contenuti.json");
+  const contenuti = readJSON(contenutiPath) || { projects: [], about: {} };
+  // Debug: log per diagnostica ordine progetti
+  console.log(`[SSR] contenuti.json path: ${contenutiPath}, exists: ${fsMod.existsSync(contenutiPath)}, projects: ${(contenuti.projects || []).length}, art order: ${(contenuti.projects || []).filter(p => p.section === "art").map(p => p.slug).join(", ")}`);
   const projByKey = new Map();
   (contenuti.projects || []).forEach((p) => {
     projByKey.set(`${p.section}/${p.slug}`, p);
@@ -180,7 +187,6 @@ export async function getServerSideProps() {
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
         } else {
-          // Dividi a metà per paragrafi
           const paragraphs = aboutText.split("\n").filter(Boolean);
           const mid = Math.ceil(paragraphs.length / 2);
           col1 = paragraphs.slice(0, mid).join("\n");
@@ -191,6 +197,7 @@ export async function getServerSideProps() {
       strings,
       aspetto: contenuti.aspetto || {},
     },
+    revalidate: 60, // ISR: rigenera ogni 60 secondi in background
   };
 }
 
@@ -456,11 +463,16 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // ===== HEADER HEIGHT per banner calc =====
   const headerRef = useRef(null);
   useEffect(() => {
-    if (headerRef.current) {
-      const h = headerRef.current.offsetHeight;
-      document.documentElement.style.setProperty('--header-h', `${h}px`);
-    }
-  });
+    if (!headerRef.current) return;
+    const h = headerRef.current.offsetHeight;
+    document.documentElement.style.setProperty('--header-h', `${h}px`);
+    // Aggiorna anche al resize
+    const ro = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty('--header-h', `${entry.contentRect.height}px`);
+    });
+    ro.observe(headerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   // ===== HEADER AUTO-HIDE su progetto e about =====
   const [headerHidden, setHeaderHidden] = useState(false);
@@ -985,14 +997,14 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                     className="marquee-seq"
                     onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
                   >
-                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
+                    {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
                   </span>
                   <span
                     className="marquee-seq"
                     aria-hidden="true"
                     onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
                   >
-                    {Array(20).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
+                    {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
                   </span>
                 </div>
               </div>
@@ -1078,7 +1090,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 fill
                 sizes="95vw"
                 quality={85}
-                priority
+                loading="eager"
                 className="object-contain shadow-2xl select-none"
               />
             </div>
@@ -1105,28 +1117,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
         </div>
       </footer>
 
-      <style jsx global>{`
-        @keyframes marqueeX {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-
-        .marquee-track {
-          display: flex;
-          white-space: nowrap;
-          width: max-content;
-          will-change: transform;
-          animation: marqueeX var(--marquee-duration, 80s) linear infinite;
-        }
-
-        .marquee-track.reverse {
-          animation-direction: reverse;
-        }
-
-        .marquee-seq {
-          padding: 0 1rem;
-        }
-      `}</style>
+      {/* Marquee styles spostati in globals.css per evitare runtime injection */}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    formats: ["image/webp"],
+    formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 828, 1200, 1920, 2560],
     imageSizes: [256, 384, 640, 1024],
     minimumCacheTTL: 31536000,
