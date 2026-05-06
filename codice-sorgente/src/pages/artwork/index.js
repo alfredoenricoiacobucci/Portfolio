@@ -7,9 +7,6 @@ import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
-import fs from "fs";
-import path from "path";
-const { readImageDimensions } = require("../../lib/imageDimensions");
 
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
@@ -19,6 +16,9 @@ export async function getServerSideProps({ res }) {
   // Cache CDN: serve dalla cache per 60s, rigenera in background
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
 
+  const fs = require("fs");
+  const path = require("path");
+  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
   // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
