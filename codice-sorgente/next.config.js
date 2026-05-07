@@ -14,13 +14,6 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/api/projects/[...path]": ["./contenuti/**/*"],
   },
-  // Escludi foto/video dalle page functions — servite via /api/projects, non SSR
-  // Le dimensioni immagini vengono lette solo se i file sono disponibili (fallback 3:2)
-  outputFileTracingExcludes: {
-    "/artwork": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/professional": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-  },
   // Serve immagini da contenuti/ via API route con cache CDN
   async rewrites() {
     return [

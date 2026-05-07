@@ -11,7 +11,6 @@ import { useRouter } from "next/router";
  */
 export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
-  const { readImageDimensions } = require("../lib/imageDimensions");
   const projectsRoot = path.join(process.cwd(), "contenuti");
 
   // Leggi contenuti.json — fonte primaria dell'elenco e ordine progetti
@@ -46,17 +45,7 @@ export async function getServerSideProps({ res }) {
       } else {
         files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       }
-      // Pre-filter: solo orizzontali (w >= h) usando dimensioni lette dai file header
-      const results = [];
-      for (const f of files) {
-        const filePath = path.join(pDir, f);
-        const dim = readImageDimensions(filePath);
-        if (dim && dim.width >= dim.height) {
-          results.push(`/projects/${id}/${f}`);
-        }
-      }
-      // Fallback: se nessuna orizzontale, usa tutte
-      return results.length > 0 ? results : files.map((f) => `/projects/${id}/${f}`);
+      return files.map((f) => `/projects/${id}/${f}`);
     } catch {
       return [];
     }

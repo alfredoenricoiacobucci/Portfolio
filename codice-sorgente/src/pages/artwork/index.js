@@ -18,7 +18,6 @@ export async function getServerSideProps({ res }) {
 
   const fs = require("fs");
   const path = require("path");
-  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
   // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
@@ -92,16 +91,8 @@ export async function getServerSideProps({ res }) {
     } else {
       files.sort(natural.compare);
     }
-    // Pre-compute image dimensions server-side (reads only file headers, very fast)
-    const images = files.map((f) => {
-      const filePath = path.join(pDir, f);
-      const dim = readImageDimensions(filePath);
-      return {
-        src: `/projects/${id}/${f}`,
-        w: dim ? dim.width : 1000,
-        h: dim ? dim.height : 667,
-      };
-    });
+    // Percorsi immagini — le dimensioni vengono calcolate client-side dalla gallery
+    const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
