@@ -9,20 +9,7 @@ const nextConfig = {
   },
   // Compressione gzip automatica
   compress: true,
-  // Bundle contenuti/ into the serverless function so files are available
-  // at runtime on Vercel without a separate copy step in public/
-  outputFileTracingIncludes: {
-    "/api/projects/[...path]": ["./contenuti/**/*"],
-  },
-  // Serve immagini da contenuti/ via API route con cache CDN
-  async rewrites() {
-    return [
-      {
-        source: "/projects/:path*",
-        destination: "/api/projects/:path*",
-      },
-    ];
-  },
+  // Le immagini sono servite come file statici da public/projects (symlink → contenuti/)
 };
 
 module.exports = nextConfig;
