@@ -20,78 +20,50 @@ export async function getServerSideProps({ res }) {
   const path = require("path");
 
   const root = process.cwd();
-  // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
   const contenutiDir = path.join(root, "contenuti");
-  const publicDir = path.join(root, "public");
-  const projectsDir = contenutiDir; // i dati sono in contenuti (public/projects \u00e8 solo il link che li serve)
 
-  // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
-  const readText = (filePath) => {
-    try { return fs.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
-  };
-  // Helper: leggi JSON, ritorna null se non esiste o è corrotto
-  const readJSON = (filePath) => {
-    try { return JSON.parse(fs.readFileSync(filePath, "utf-8")); } catch { return null; }
-  };
+  // Leggi contenuti.json — UNICA fonte dati (zero readdirSync su cartelle immagini)
+  let contenuti = { projects: [], about: {} };
+  try {
+    contenuti = JSON.parse(fs.readFileSync(path.join(contenutiDir, "contenuti.json"), "utf-8"));
+  } catch {}
 
-  const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
-  const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
-  const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
-
-  // ---- contenuti: leggi da contenuti/contenuti.json ----
-  const contenutiPath = path.join(projectsDir, "contenuti.json");
-  const contenuti = readJSON(contenutiPath) || { projects: [], about: {} };
-  // Debug: log per diagnostica ordine progetti
-  console.log(`[SSR] contenuti.json path: ${contenutiPath}, exists: ${fs.existsSync(contenutiPath)}, projects: ${(contenuti.projects || []).length}, art order: ${(contenuti.projects || []).filter(p => p.section === "art").map(p => p.slug).join(", ")}`);
-  const projByKey = new Map();
-  (contenuti.projects || []).forEach((p) => {
-    projByKey.set(`${p.section}/${p.slug}`, p);
+  // Leggi stringhe da contenuti/stringhe.txt
+  let stringheRaw = "";
+  try { stringheRaw = fs.readFileSync(path.join(contenutiDir, "stringhe.txt"), "utf-8").trim(); } catch {}
+  const strings = {};
+  stringheRaw.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx < 0) return;
+    strings[trimmed.slice(0, eqIdx).trim()] = trimmed.slice(eqIdx + 1).trim();
   });
 
-  // ---- PROGETTI: lista cartelle effettive, unisci con dati da contenuti.json ----
-  const readProject = (prefix, folder) => {
-    const id = `${prefix}/${folder}`;
-    const pDir = path.join(projectsDir, prefix, folder);
-    const data = projByKey.get(id) || {};
-
-    const titleRaw = (data.titolo || "").trim();
+  // ---- PROGETTI: tutto da contenuti.json, zero filesystem ----
+  const projects = (contenuti.projects || []).map((p) => {
+    const id = `${p.section}/${p.slug}`;
+    const titleRaw = (p.titolo || "").trim();
     const titleLines = titleRaw.split("\n").map((l) => l.trim()).filter(Boolean);
     const titleParts = titleLines.length > 1 ? titleLines.slice(0, -1) : titleLines;
     const title = titleParts[0] || "";
     const titleExtra = titleParts.slice(1);
     const datePlace = titleLines.length > 1 ? titleLines[titleLines.length - 1] : "";
-    const description = (data.descrizione || "").trim();
-    const banner = (data.banner || "").trim();
+    const description = (p.descrizione || "").trim();
+    const banner = (p.banner || "").trim();
 
-    // Dati tecnici da JSON
+    // Dati tecnici
     let techData = null;
-    if (data.camera || data.ottica || data.luce) {
+    if (p.camera || p.ottica || p.luce) {
       techData = {};
-      if (data.camera) techData.camera = String(data.camera).trim();
-      if (data.ottica) techData.ottica = String(data.ottica).trim();
-      if (data.luce) techData.luce = String(data.luce).trim();
+      if (p.camera) techData.camera = String(p.camera).trim();
+      if (p.ottica) techData.ottica = String(p.ottica).trim();
+      if (p.luce) techData.luce = String(p.luce).trim();
       if (Object.keys(techData).length === 0) techData = null;
     }
 
-    let files = [];
-    try {
-      files = fs.readdirSync(pDir)
-        .filter((f) => ALLOWED.has(path.extname(f).toLowerCase()));
-    } catch {}
-    // Ordine custom da contenuti.json, poi alfabetico per i restanti
-    const ordine = data.ordine || [];
-    if (ordine.length > 0) {
-      const orderMap = new Map(ordine.map((n, i) => [n, i]));
-      files.sort((a, b) => {
-        const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
-        const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
-        if (ia !== ib) return ia - ib;
-        return natural.compare(a, b);
-      });
-    } else {
-      files.sort(natural.compare);
-    }
-    // Percorsi immagini — le dimensioni vengono calcolate client-side dalla gallery
+    // Lista file da ordine in contenuti.json (popolato dal Manager)
+    const files = (p.ordine || []).filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f));
     const images = files.map((f) => `/projects/${id}/${f}`);
 
     let bannerStartIndex = 0;
@@ -101,70 +73,14 @@ export async function getServerSideProps({ res }) {
     }
 
     return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
-  };
-
-  // PROGETTI: usa contenuti.json come fonte primaria dell'elenco e dell'ordine.
-  // Questo garantisce che i progetti creati dall'editor appaiano sul sito
-  // anche se la cartella contiene solo .gitkeep o non ha ancora foto.
-  // Come fallback, aggiungi eventuali cartelle presenti nel filesystem
-  // ma non elencate in contenuti.json.
-  const listedKeys = new Set();
-  let projects = [];
-
-  // 1. Progetti da contenuti.json (ordine preservato)
-  (contenuti.projects || []).forEach((p) => {
-    const key = `${p.section}/${p.slug}`;
-    listedKeys.add(key);
-    projects.push(readProject(p.section, p.slug));
   });
 
-  // 2. Fallback: cartelle nel filesystem non ancora in contenuti.json
-  for (const prefix of ["art", "pro"]) {
-    const prefixDir = path.join(projectsDir, prefix);
-    let folders = [];
-    try { folders = fs.readdirSync(prefixDir).filter((f) => fs.statSync(path.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
-    folders.forEach((f) => {
-      const key = `${prefix}/${f}`;
-      if (!listedKeys.has(key)) {
-        listedKeys.add(key);
-        projects.push(readProject(prefix, f));
-      }
-    });
-  }
-
-  // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/ ----
+  // ---- ABOUT: da contenuti.json (photo/video come path noti) ----
   const aboutData = contenuti.about || {};
   const aboutText = (aboutData.text || "").trim();
   const aboutQuote = (aboutData.quote || "").trim();
-
-  let aboutPhoto = "";
-  let aboutVideo = "";
-  // Cerca media in public/projects/about/
-  try {
-    const aboutMediaDir = path.join(projectsDir, "about");
-    const aboutFiles = fs.readdirSync(aboutMediaDir);
-    const photoFile = aboutData.photo && aboutFiles.includes(aboutData.photo)
-      ? aboutData.photo
-      : aboutFiles.find((f) => ALLOWED.has(path.extname(f).toLowerCase()));
-    const videoFile = aboutData.video && aboutFiles.includes(aboutData.video)
-      ? aboutData.video
-      : aboutFiles.find((f) => VIDEO_EXT.has(path.extname(f).toLowerCase()));
-    if (photoFile) aboutPhoto = `/projects/about/${photoFile}`;
-    if (videoFile) aboutVideo = `/projects/about/${videoFile}`;
-  } catch {}
-
-  // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
-  const stringheRaw = readText(path.join(contenutiDir, "stringhe.txt"));
-  const strings = {};
-  stringheRaw.split("\n").forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) return;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) return;
-    const key = trimmed.slice(0, eqIdx).trim();
-    const val = trimmed.slice(eqIdx + 1).trim();
-    if (key) strings[key] = val;
-  });
+  const aboutPhoto = aboutData.photo ? `/projects/about/${aboutData.photo}` : "";
+  const aboutVideo = aboutData.video ? `/projects/about/${aboutData.video}` : "";
 
   return {
     props: {
@@ -186,7 +102,6 @@ export async function getServerSideProps({ res }) {
       strings,
       aspetto: contenuti.aspetto || {},
     },
-    
   };
 }
 
