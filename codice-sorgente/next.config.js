@@ -7,15 +7,16 @@ const nextConfig = {
     imageSizes: [256, 384, 640, 1024],
     minimumCacheTTL: 31536000,
   },
-  // Compressione gzip automatica
   compress: true,
-  // Le immagini sono in public/projects/ (copiate dal build command in vercel.json),
-  // servite direttamente dalla CDN senza funzioni serverless.
-  // Le pagine SSR leggono solo contenuti.json e stringhe.txt (~130KB totali).
-  outputFileTracingIncludes: {
-    "/artwork": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
-    "/professional": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
-    "/": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
+  // Escludi esplicitamente tutte le immagini da ogni funzione serverless.
+  // Le immagini vengono copiate in public/projects/ durante il build (vedi vercel.json)
+  // e servite direttamente dalla CDN come file statici.
+  outputFileTracingExcludes: {
+    "*": [
+      "./contenuti/art/**",
+      "./contenuti/pro/**",
+      "./contenuti/about/**",
+    ],
   },
 };
 
