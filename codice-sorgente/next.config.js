@@ -9,22 +9,13 @@ const nextConfig = {
   },
   // Compressione gzip automatica
   compress: true,
-  // Le pagine SSR leggono SOLO contenuti.json e stringhe.txt (piccoli).
-  // Le immagini vengono servite dalla API route che ha il bundle completo.
+  // Le immagini sono in public/projects/ (copiate dal build command in vercel.json),
+  // servite direttamente dalla CDN senza funzioni serverless.
+  // Le pagine SSR leggono solo contenuti.json e stringhe.txt (~130KB totali).
   outputFileTracingIncludes: {
-    "/api/projects/[...path]": ["./contenuti/**/*"],
-    "/": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
     "/artwork": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
     "/professional": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
-  },
-  // Serve immagini da contenuti/ via API route con cache CDN
-  async rewrites() {
-    return [
-      {
-        source: "/projects/:path*",
-        destination: "/api/projects/:path*",
-      },
-    ];
+    "/": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
   },
 };
 

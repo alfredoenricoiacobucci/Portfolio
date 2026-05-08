@@ -1,11 +1,11 @@
 {
   "framework": "nextjs",
   "installCommand": "npm install && cd codice-sorgente && npm install",
-  "buildCommand": "cd codice-sorgente && npm run build",
+  "buildCommand": "cd codice-sorgente && mkdir -p public/projects && cp -r contenuti/art contenuti/pro contenuti/about public/projects/ && cp contenuti/contenuti.json contenuti/stringhe.txt public/projects/ && npm run build",
   "outputDirectory": "codice-sorgente/.next",
   "headers": [
     {
-      "source": "/api/projects/(.*)",
+      "source": "/projects/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
