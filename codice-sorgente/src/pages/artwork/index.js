@@ -15,17 +15,17 @@ export async function getServerSideProps({ res }) {
   // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
 
+  // IMPORTANTE: leggiamo SOLO contenuti.json e stringhe.txt (file piccoli).
+  // NON usiamo readdirSync né readImageDimensions sulle cartelle immagini,
+  // altrimenti il file tracer di Vercel include tutte le foto (~440MB)
+  // nella funzione serverless, superando il limite di 300MB.
   const fs = await import("fs");
   const path = await import("path");
   const fsMod = await fs;
   const pathMod = await path;
-  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
-  // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
   const contenutiDir = pathMod.join(root, "contenuti");
-  const publicDir = pathMod.join(root, "public");
-  const projectsDir = contenutiDir; // i dati sono in contenuti (public/projects \u00e8 solo il link che li serve)
 
   // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
   const readText = (filePath) => {
@@ -36,22 +36,12 @@ export async function getServerSideProps({ res }) {
     try { return JSON.parse(fsMod.readFileSync(filePath, "utf-8")); } catch { return null; }
   };
 
-  const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
-  const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
-  const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+  // ---- contenuti.json è l'UNICA fonte dati ----
+  const contenuti = readJSON(pathMod.join(contenutiDir, "contenuti.json")) || { projects: [], about: {} };
 
-  // ---- contenuti: leggi da public/projects/contenuti.json ----
-  const contenuti = readJSON(pathMod.join(projectsDir, "contenuti.json")) || { projects: [], about: {} };
-  const projByKey = new Map();
-  (contenuti.projects || []).forEach((p) => {
-    projByKey.set(`${p.section}/${p.slug}`, p);
-  });
-
-  // ---- PROGETTI: lista cartelle effettive, unisci con dati da contenuti.json ----
-  const readProject = (prefix, folder) => {
-    const id = `${prefix}/${folder}`;
-    const pDir = pathMod.join(projectsDir, prefix, folder);
-    const data = projByKey.get(id) || {};
+  // ---- PROGETTI: tutto da contenuti.json, zero accesso al filesystem immagini ----
+  const projects = (contenuti.projects || []).map((data) => {
+    const id = `${data.section}/${data.slug}`;
 
     const titleRaw = (data.titolo || "").trim();
     const titleLines = titleRaw.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -72,34 +62,15 @@ export async function getServerSideProps({ res }) {
       if (Object.keys(techData).length === 0) techData = null;
     }
 
-    let files = [];
-    try {
-      files = fsMod.readdirSync(pDir)
-        .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
-    } catch {}
-    // Ordine custom da contenuti.json, poi alfabetico per i restanti
-    const ordine = data.ordine || [];
-    if (ordine.length > 0) {
-      const orderMap = new Map(ordine.map((n, i) => [n, i]));
-      files.sort((a, b) => {
-        const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
-        const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
-        if (ia !== ib) return ia - ib;
-        return natural.compare(a, b);
-      });
-    } else {
-      files.sort(natural.compare);
-    }
-    // Pre-compute image dimensions server-side (reads only file headers, very fast)
-    const images = files.map((f) => {
-      const filePath = pathMod.join(pDir, f);
-      const dim = readImageDimensions(filePath);
-      return {
-        src: `/projects/${id}/${f}`,
-        w: dim ? dim.width : 1000,
-        h: dim ? dim.height : 667,
-      };
-    });
+    // Lista file dall'array ordine in contenuti.json (già ordinata)
+    const files = (data.ordine || []);
+    // Dimensioni pre-calcolate da contenuti.json
+    const dims = data.dimensioni || {};
+    const images = files.map((f) => ({
+      src: `/projects/${id}/${f}`,
+      w: dims[f] ? dims[f].w : 1000,
+      h: dims[f] ? dims[f].h : 667,
+    }));
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
@@ -108,57 +79,14 @@ export async function getServerSideProps({ res }) {
     }
 
     return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
-  };
-
-  // PROGETTI: usa contenuti.json come fonte primaria dell'elenco e dell'ordine.
-  // Questo garantisce che i progetti creati dall'editor appaiano sul sito
-  // anche se la cartella contiene solo .gitkeep o non ha ancora foto.
-  // Come fallback, aggiungi eventuali cartelle presenti nel filesystem
-  // ma non elencate in contenuti.json.
-  const listedKeys = new Set();
-  let projects = [];
-
-  // 1. Progetti da contenuti.json (ordine preservato)
-  (contenuti.projects || []).forEach((p) => {
-    const key = `${p.section}/${p.slug}`;
-    listedKeys.add(key);
-    projects.push(readProject(p.section, p.slug));
   });
 
-  // 2. Fallback: cartelle nel filesystem non ancora in contenuti.json
-  for (const prefix of ["art", "pro"]) {
-    const prefixDir = pathMod.join(projectsDir, prefix);
-    let folders = [];
-    try { folders = fsMod.readdirSync(prefixDir).filter((f) => fsMod.statSync(pathMod.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
-    folders.forEach((f) => {
-      const key = `${prefix}/${f}`;
-      if (!listedKeys.has(key)) {
-        listedKeys.add(key);
-        projects.push(readProject(prefix, f));
-      }
-    });
-  }
-
-  // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/ ----
+  // ---- ABOUT: tutto da contenuti.json ----
   const aboutData = contenuti.about || {};
   const aboutText = (aboutData.text || "").trim();
   const aboutQuote = (aboutData.quote || "").trim();
-
-  let aboutPhoto = "";
-  let aboutVideo = "";
-  // Cerca media in public/projects/about/
-  try {
-    const aboutMediaDir = pathMod.join(projectsDir, "about");
-    const aboutFiles = fsMod.readdirSync(aboutMediaDir);
-    const photoFile = aboutData.photo && aboutFiles.includes(aboutData.photo)
-      ? aboutData.photo
-      : aboutFiles.find((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
-    const videoFile = aboutData.video && aboutFiles.includes(aboutData.video)
-      ? aboutData.video
-      : aboutFiles.find((f) => VIDEO_EXT.has(pathMod.extname(f).toLowerCase()));
-    if (photoFile) aboutPhoto = `/projects/about/${photoFile}`;
-    if (videoFile) aboutVideo = `/projects/about/${videoFile}`;
-  } catch {}
+  const aboutPhoto = aboutData.photo ? `/projects/about/${aboutData.photo}` : "";
+  const aboutVideo = aboutData.video ? `/projects/about/${aboutData.video}` : "";
 
   // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
   const stringheRaw = readText(pathMod.join(contenutiDir, "stringhe.txt"));
@@ -183,7 +111,6 @@ export async function getServerSideProps({ res }) {
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
         } else {
-          // Dividi a metà per paragrafi
           const paragraphs = aboutText.split("\n").filter(Boolean);
           const mid = Math.ceil(paragraphs.length / 2);
           col1 = paragraphs.slice(0, mid).join("\n");

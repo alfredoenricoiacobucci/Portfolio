@@ -1,76 +1,61 @@
 // pages/index.js
 import { useEffect, useRef, useState } from "react";
-import path from "path";
-import fs from "fs";
 import { useRouter } from "next/router";
 
 /**
  * Legge le immagini rappresentative (prima N) per Artwork / Professional.
- * L'elenco dei progetti viene da contenuti.json (non più hardcoded).
- * Pre-filtra le orizzontali server-side → zero caricamento client per decidere orientamento.
+ * Tutto da contenuti.json — zero accesso al filesystem immagini.
  */
 export async function getServerSideProps({ res }) {
   // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
 
-  const { readImageDimensions } = require("../lib/imageDimensions");
-  const projectsRoot = path.join(process.cwd(), "contenuti");
+  // IMPORTANTE: leggiamo SOLO contenuti.json e stringhe.txt.
+  // NON importiamo fs/path con import statico né usiamo readImageDimensions,
+  // altrimenti il file tracer di Vercel include tutte le foto (~440MB).
+  const fs = await import("fs");
+  const path = await import("path");
+  const fsMod = await fs;
+  const pathMod = await path;
 
-  // Leggi contenuti.json — fonte primaria dell'elenco e ordine progetti
+  const contenutiDir = pathMod.join(process.cwd(), "contenuti");
+
+  // Leggi contenuti.json — UNICA fonte dati
   let contenuti = { projects: [] };
   try {
-    contenuti = JSON.parse(fs.readFileSync(path.join(process.cwd(), "contenuti", "contenuti.json"), "utf-8"));
+    contenuti = JSON.parse(fsMod.readFileSync(pathMod.join(contenutiDir, "contenuti.json"), "utf-8"));
   } catch {}
-  const projByKey = new Map();
-  (contenuti.projects || []).forEach((p) => { projByKey.set(`${p.section}/${p.slug}`, p); });
 
-  // Costruisci lista progetti da contenuti.json
-  const artworkIds = (contenuti.projects || []).filter(p => p.section === "art").map(p => `art/${p.slug}`);
-  const professionalIds = (contenuti.projects || []).filter(p => p.section === "pro").map(p => `pro/${p.slug}`);
-
-  const readImages = (id) => {
-    try {
-      const pDir = path.join(projectsRoot, id);
-      if (!fs.existsSync(pDir)) return [];
-      let files = fs
-        .readdirSync(pDir)
-        .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f));
-      const data = projByKey.get(id);
-      const ordine = data && data.ordine ? data.ordine : [];
-      if (ordine.length > 0) {
-        const orderMap = new Map(ordine.map((n, i) => [n, i]));
-        files.sort((a, b) => {
-          const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
-          const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
-          if (ia !== ib) return ia - ib;
-          return a.localeCompare(b, undefined, { numeric: true });
-        });
-      } else {
-        files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-      }
-      // Pre-filter: solo orizzontali (w >= h) usando dimensioni lette dai file header
-      const results = [];
+  // Costruisci lista immagini orizzontali da contenuti.json (usando dimensioni pre-calcolate)
+  const readImages = (section) => {
+    const results = [];
+    (contenuti.projects || []).filter(p => p.section === section).forEach(p => {
+      const id = `${p.section}/${p.slug}`;
+      const files = p.ordine || [];
+      const dims = p.dimensioni || {};
+      const horizontal = [];
       for (const f of files) {
-        const filePath = path.join(pDir, f);
-        const dim = readImageDimensions(filePath);
-        if (dim && dim.width >= dim.height) {
-          results.push(`/projects/${id}/${f}`);
+        const d = dims[f];
+        if (d && d.w >= d.h) {
+          horizontal.push(`/projects/${id}/${f}`);
         }
       }
       // Fallback: se nessuna orizzontale, usa tutte
-      return results.length > 0 ? results : files.map((f) => `/projects/${id}/${f}`);
-    } catch {
-      return [];
-    }
+      if (horizontal.length > 0) {
+        results.push(...horizontal);
+      } else {
+        results.push(...files.map(f => `/projects/${id}/${f}`));
+      }
+    });
+    return results;
   };
 
-  const artworkImages = artworkIds.flatMap((id) => readImages(id)).slice(0, 24);
-  const professionalImages = professionalIds.flatMap((id) => readImages(id)).slice(0, 24);
+  const artworkImages = readImages("art").slice(0, 24);
+  const professionalImages = readImages("pro").slice(0, 24);
 
   // Leggi stringhe da contenuti/stringhe.txt
-  const contenutiDir = path.join(process.cwd(), "contenuti");
   let stringheRaw = "";
-  try { stringheRaw = fs.readFileSync(path.join(contenutiDir, "stringhe.txt"), "utf-8").trim(); } catch {}
+  try { stringheRaw = fsMod.readFileSync(pathMod.join(contenutiDir, "stringhe.txt"), "utf-8").trim(); } catch {}
   const strings = {};
   stringheRaw.split("\n").forEach((line) => {
     const trimmed = line.trim();
@@ -86,6 +71,7 @@ export async function getServerSideProps({ res }) {
     props: { artworkImages, professionalImages, strings },
   };
 }
+
 
 export default function Landing({ artworkImages = [], professionalImages = [], strings = {} }) {
   const landingName = strings.NOME || "Alfredo Enrico Iacobucci";
