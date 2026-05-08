@@ -9,6 +9,12 @@ const nextConfig = {
   },
   // Compressione gzip automatica
   compress: true,
+  // Includi solo metadati nelle page functions (pochi KB, non le immagini da 440MB)
+  outputFileTracingIncludes: {
+    "/artwork": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
+    "/professional": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
+    "/": ["./contenuti/contenuti.json", "./contenuti/stringhe.txt"],
+  },
   // Le immagini sono servite come file statici da public/projects (symlink → contenuti/)
 };
 
