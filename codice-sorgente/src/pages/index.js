@@ -10,31 +10,65 @@ import { useRouter } from "next/router";
  * Pre-filtra le orizzontali server-side → zero caricamento client per decidere orientamento.
  */
 export async function getServerSideProps({ res }) {
+  // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
-  const contenutiDir = path.join(process.cwd(), "contenuti");
 
-  // Leggi contenuti.json — UNICA fonte dati (zero readdirSync)
+  const { readImageDimensions } = require("../lib/imageDimensions");
+  const projectsRoot = path.join(process.cwd(), "contenuti");
+
+  // Leggi contenuti.json — fonte primaria dell'elenco e ordine progetti
   let contenuti = { projects: [] };
   try {
-    contenuti = JSON.parse(fs.readFileSync(path.join(contenutiDir, "contenuti.json"), "utf-8"));
+    contenuti = JSON.parse(fs.readFileSync(path.join(process.cwd(), "contenuti", "contenuti.json"), "utf-8"));
   } catch {}
+  const projByKey = new Map();
+  (contenuti.projects || []).forEach((p) => { projByKey.set(`${p.section}/${p.slug}`, p); });
 
-  // Immagini dalla lista ordine in contenuti.json
-  const getImages = (section, slug) => {
-    const p = (contenuti.projects || []).find(x => x.section === section && x.slug === slug);
-    if (!p || !p.ordine) return [];
-    return p.ordine
-      .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f))
-      .map((f) => `/projects/${section}/${slug}/${f}`);
+  // Costruisci lista progetti da contenuti.json
+  const artworkIds = (contenuti.projects || []).filter(p => p.section === "art").map(p => `art/${p.slug}`);
+  const professionalIds = (contenuti.projects || []).filter(p => p.section === "pro").map(p => `pro/${p.slug}`);
+
+  const readImages = (id) => {
+    try {
+      const pDir = path.join(projectsRoot, id);
+      if (!fs.existsSync(pDir)) return [];
+      let files = fs
+        .readdirSync(pDir)
+        .filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f));
+      const data = projByKey.get(id);
+      const ordine = data && data.ordine ? data.ordine : [];
+      if (ordine.length > 0) {
+        const orderMap = new Map(ordine.map((n, i) => [n, i]));
+        files.sort((a, b) => {
+          const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
+          const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
+          if (ia !== ib) return ia - ib;
+          return a.localeCompare(b, undefined, { numeric: true });
+        });
+      } else {
+        files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      }
+      // Pre-filter: solo orizzontali (w >= h) usando dimensioni lette dai file header
+      const results = [];
+      for (const f of files) {
+        const filePath = path.join(pDir, f);
+        const dim = readImageDimensions(filePath);
+        if (dim && dim.width >= dim.height) {
+          results.push(`/projects/${id}/${f}`);
+        }
+      }
+      // Fallback: se nessuna orizzontale, usa tutte
+      return results.length > 0 ? results : files.map((f) => `/projects/${id}/${f}`);
+    } catch {
+      return [];
+    }
   };
 
-  const artworkIds = (contenuti.projects || []).filter(p => p.section === "art");
-  const professionalIds = (contenuti.projects || []).filter(p => p.section === "pro");
-
-  const artworkImages = artworkIds.flatMap((p) => getImages("art", p.slug)).slice(0, 24);
-  const professionalImages = professionalIds.flatMap((p) => getImages("pro", p.slug)).slice(0, 24);
+  const artworkImages = artworkIds.flatMap((id) => readImages(id)).slice(0, 24);
+  const professionalImages = professionalIds.flatMap((id) => readImages(id)).slice(0, 24);
 
   // Leggi stringhe da contenuti/stringhe.txt
+  const contenutiDir = path.join(process.cwd(), "contenuti");
   let stringheRaw = "";
   try { stringheRaw = fs.readFileSync(path.join(contenutiDir, "stringhe.txt"), "utf-8").trim(); } catch {}
   const strings = {};

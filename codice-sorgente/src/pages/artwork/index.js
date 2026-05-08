@@ -11,60 +11,95 @@ const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: f
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
 
-
 export async function getServerSideProps({ res }) {
-  // Cache CDN: serve dalla cache per 60s, rigenera in background
+  // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
   res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
 
-  const fs = require("fs");
-  const path = require("path");
+  const fs = await import("fs");
+  const path = await import("path");
+  const fsMod = await fs;
+  const pathMod = await path;
+  const { readImageDimensions } = require("../../lib/imageDimensions");
 
   const root = process.cwd();
-  const contenutiDir = path.join(root, "contenuti");
+  // contenuti sta al root del progetto. public/projects \u00e8 un symlink verso contenuti.
+  const contenutiDir = pathMod.join(root, "contenuti");
+  const publicDir = pathMod.join(root, "public");
+  const projectsDir = contenutiDir; // i dati sono in contenuti (public/projects \u00e8 solo il link che li serve)
 
-  // Leggi contenuti.json — UNICA fonte dati (zero readdirSync su cartelle immagini)
-  let contenuti = { projects: [], about: {} };
-  try {
-    contenuti = JSON.parse(fs.readFileSync(path.join(contenutiDir, "contenuti.json"), "utf-8"));
-  } catch {}
+  // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
+  const readText = (filePath) => {
+    try { return fsMod.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
+  };
+  // Helper: leggi JSON, ritorna null se non esiste o è corrotto
+  const readJSON = (filePath) => {
+    try { return JSON.parse(fsMod.readFileSync(filePath, "utf-8")); } catch { return null; }
+  };
 
-  // Leggi stringhe da contenuti/stringhe.txt
-  let stringheRaw = "";
-  try { stringheRaw = fs.readFileSync(path.join(contenutiDir, "stringhe.txt"), "utf-8").trim(); } catch {}
-  const strings = {};
-  stringheRaw.split("\n").forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) return;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) return;
-    strings[trimmed.slice(0, eqIdx).trim()] = trimmed.slice(eqIdx + 1).trim();
+  const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+  const VIDEO_EXT = new Set([".mp4", ".webm", ".mov"]);
+  const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+  // ---- contenuti: leggi da public/projects/contenuti.json ----
+  const contenuti = readJSON(pathMod.join(projectsDir, "contenuti.json")) || { projects: [], about: {} };
+  const projByKey = new Map();
+  (contenuti.projects || []).forEach((p) => {
+    projByKey.set(`${p.section}/${p.slug}`, p);
   });
 
-  // ---- PROGETTI: tutto da contenuti.json, zero filesystem ----
-  const projects = (contenuti.projects || []).map((p) => {
-    const id = `${p.section}/${p.slug}`;
-    const titleRaw = (p.titolo || "").trim();
+  // ---- PROGETTI: lista cartelle effettive, unisci con dati da contenuti.json ----
+  const readProject = (prefix, folder) => {
+    const id = `${prefix}/${folder}`;
+    const pDir = pathMod.join(projectsDir, prefix, folder);
+    const data = projByKey.get(id) || {};
+
+    const titleRaw = (data.titolo || "").trim();
     const titleLines = titleRaw.split("\n").map((l) => l.trim()).filter(Boolean);
     const titleParts = titleLines.length > 1 ? titleLines.slice(0, -1) : titleLines;
     const title = titleParts[0] || "";
     const titleExtra = titleParts.slice(1);
     const datePlace = titleLines.length > 1 ? titleLines[titleLines.length - 1] : "";
-    const description = (p.descrizione || "").trim();
-    const banner = (p.banner || "").trim();
+    const description = (data.descrizione || "").trim();
+    const banner = (data.banner || "").trim();
 
-    // Dati tecnici
+    // Dati tecnici da JSON
     let techData = null;
-    if (p.camera || p.ottica || p.luce) {
+    if (data.camera || data.ottica || data.luce) {
       techData = {};
-      if (p.camera) techData.camera = String(p.camera).trim();
-      if (p.ottica) techData.ottica = String(p.ottica).trim();
-      if (p.luce) techData.luce = String(p.luce).trim();
+      if (data.camera) techData.camera = String(data.camera).trim();
+      if (data.ottica) techData.ottica = String(data.ottica).trim();
+      if (data.luce) techData.luce = String(data.luce).trim();
       if (Object.keys(techData).length === 0) techData = null;
     }
 
-    // Lista file da ordine in contenuti.json (popolato dal Manager)
-    const files = (p.ordine || []).filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f));
-    const images = files.map((f) => `/projects/${id}/${f}`);
+    let files = [];
+    try {
+      files = fsMod.readdirSync(pDir)
+        .filter((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
+    } catch {}
+    // Ordine custom da contenuti.json, poi alfabetico per i restanti
+    const ordine = data.ordine || [];
+    if (ordine.length > 0) {
+      const orderMap = new Map(ordine.map((n, i) => [n, i]));
+      files.sort((a, b) => {
+        const ia = orderMap.has(a) ? orderMap.get(a) : Infinity;
+        const ib = orderMap.has(b) ? orderMap.get(b) : Infinity;
+        if (ia !== ib) return ia - ib;
+        return natural.compare(a, b);
+      });
+    } else {
+      files.sort(natural.compare);
+    }
+    // Pre-compute image dimensions server-side (reads only file headers, very fast)
+    const images = files.map((f) => {
+      const filePath = pathMod.join(pDir, f);
+      const dim = readImageDimensions(filePath);
+      return {
+        src: `/projects/${id}/${f}`,
+        w: dim ? dim.width : 1000,
+        h: dim ? dim.height : 667,
+      };
+    });
 
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
@@ -73,14 +108,70 @@ export async function getServerSideProps({ res }) {
     }
 
     return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
+  };
+
+  // PROGETTI: usa contenuti.json come fonte primaria dell'elenco e dell'ordine.
+  // Questo garantisce che i progetti creati dall'editor appaiano sul sito
+  // anche se la cartella contiene solo .gitkeep o non ha ancora foto.
+  // Come fallback, aggiungi eventuali cartelle presenti nel filesystem
+  // ma non elencate in contenuti.json.
+  const listedKeys = new Set();
+  let projects = [];
+
+  // 1. Progetti da contenuti.json (ordine preservato)
+  (contenuti.projects || []).forEach((p) => {
+    const key = `${p.section}/${p.slug}`;
+    listedKeys.add(key);
+    projects.push(readProject(p.section, p.slug));
   });
 
-  // ---- ABOUT: da contenuti.json (photo/video come path noti) ----
+  // 2. Fallback: cartelle nel filesystem non ancora in contenuti.json
+  for (const prefix of ["art", "pro"]) {
+    const prefixDir = pathMod.join(projectsDir, prefix);
+    let folders = [];
+    try { folders = fsMod.readdirSync(prefixDir).filter((f) => fsMod.statSync(pathMod.join(prefixDir, f)).isDirectory()).sort(natural.compare); } catch {}
+    folders.forEach((f) => {
+      const key = `${prefix}/${f}`;
+      if (!listedKeys.has(key)) {
+        listedKeys.add(key);
+        projects.push(readProject(prefix, f));
+      }
+    });
+  }
+
+  // ---- ABOUT: leggi da contenuti.json + media da public/projects/about/ ----
   const aboutData = contenuti.about || {};
   const aboutText = (aboutData.text || "").trim();
   const aboutQuote = (aboutData.quote || "").trim();
-  const aboutPhoto = aboutData.photo ? `/projects/about/${aboutData.photo}` : "";
-  const aboutVideo = aboutData.video ? `/projects/about/${aboutData.video}` : "";
+
+  let aboutPhoto = "";
+  let aboutVideo = "";
+  // Cerca media in public/projects/about/
+  try {
+    const aboutMediaDir = pathMod.join(projectsDir, "about");
+    const aboutFiles = fsMod.readdirSync(aboutMediaDir);
+    const photoFile = aboutData.photo && aboutFiles.includes(aboutData.photo)
+      ? aboutData.photo
+      : aboutFiles.find((f) => ALLOWED.has(pathMod.extname(f).toLowerCase()));
+    const videoFile = aboutData.video && aboutFiles.includes(aboutData.video)
+      ? aboutData.video
+      : aboutFiles.find((f) => VIDEO_EXT.has(pathMod.extname(f).toLowerCase()));
+    if (photoFile) aboutPhoto = `/projects/about/${photoFile}`;
+    if (videoFile) aboutVideo = `/projects/about/${videoFile}`;
+  } catch {}
+
+  // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
+  const stringheRaw = readText(pathMod.join(contenutiDir, "stringhe.txt"));
+  const strings = {};
+  stringheRaw.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx < 0) return;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    if (key) strings[key] = val;
+  });
 
   return {
     props: {
@@ -92,6 +183,7 @@ export async function getServerSideProps({ res }) {
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
         } else {
+          // Dividi a metà per paragrafi
           const paragraphs = aboutText.split("\n").filter(Boolean);
           const mid = Math.ceil(paragraphs.length / 2);
           col1 = paragraphs.slice(0, mid).join("\n");
@@ -367,16 +459,11 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // ===== HEADER HEIGHT per banner calc =====
   const headerRef = useRef(null);
   useEffect(() => {
-    if (!headerRef.current) return;
-    const h = headerRef.current.offsetHeight;
-    document.documentElement.style.setProperty('--header-h', `${h}px`);
-    // Aggiorna anche al resize
-    const ro = new ResizeObserver(([entry]) => {
-      document.documentElement.style.setProperty('--header-h', `${entry.contentRect.height}px`);
-    });
-    ro.observe(headerRef.current);
-    return () => ro.disconnect();
-  }, []);
+    if (headerRef.current) {
+      const h = headerRef.current.offsetHeight;
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    }
+  });
 
   // ===== HEADER AUTO-HIDE su progetto e about =====
   const [headerHidden, setHeaderHidden] = useState(false);
@@ -994,7 +1081,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 fill
                 sizes="95vw"
                 quality={85}
-                loading="eager"
+                priority
                 className="object-contain shadow-2xl select-none"
               />
             </div>
@@ -1021,7 +1108,28 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
         </div>
       </footer>
 
-      {/* Marquee styles spostati in globals.css per evitare runtime injection */}
+      <style jsx global>{`
+        @keyframes marqueeX {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+
+        .marquee-track {
+          display: flex;
+          white-space: nowrap;
+          width: max-content;
+          will-change: transform;
+          animation: marqueeX var(--marquee-duration, 80s) linear infinite;
+        }
+
+        .marquee-track.reverse {
+          animation-direction: reverse;
+        }
+
+        .marquee-seq {
+          padding: 0 1rem;
+        }
+      `}</style>
     </div>
   );
 }
