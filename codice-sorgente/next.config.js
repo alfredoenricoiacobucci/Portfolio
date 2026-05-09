@@ -8,15 +8,17 @@ const nextConfig = {
     minimumCacheTTL: 31536000,
   },
   compress: true,
-  // Escludi esplicitamente tutte le immagini da ogni funzione serverless.
   // Le immagini vengono copiate in public/projects/ durante il build (vedi vercel.json)
   // e servite direttamente dalla CDN come file statici.
+  // Qui escludiamo esplicitamente le cartelle immagini da OGNI funzione serverless
+  // per evitare che il file tracer le includa (causando funzioni da 440MB+).
   outputFileTracingExcludes: {
-    "*": [
-      "./contenuti/art/**",
-      "./contenuti/pro/**",
-      "./contenuti/about/**",
-    ],
+    "/": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/artwork": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/professional": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/api/analytics": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/api/contact": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/api/track": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
   },
 };
 
