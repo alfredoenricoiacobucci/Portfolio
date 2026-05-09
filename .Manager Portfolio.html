@@ -3225,6 +3225,17 @@
     }
   }
 
+  // Helper: leggi dimensioni immagine da un File object
+  function getImageDimensions(file) {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith("image/")) { resolve(null); return; }
+      const img = new window.Image();
+      img.onload = () => { resolve({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(img.src); };
+      img.onerror = () => { resolve(null); URL.revokeObjectURL(img.src); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   async function handleUpload(files, key) {
     if (!getToken()) {
       toast("Imposta prima il token GitHub.", "err");
@@ -3239,12 +3250,33 @@
       basePath = `codice-sorgente/contenuti/${section}/${slug}`;
     }
     toast(`Caricamento di ${fileList.length} file…`, "");
+    const uploadedNames = [];
+    const uploadedDims = {};
     for (const file of fileList) {
       try {
         const b64 = await file2b64(file);
         await ghPut(`${basePath}/${file.name}`, b64, `editor: upload ${file.name}`);
+        uploadedNames.push(file.name);
+        // Calcola dimensioni per il layout della galleria
+        const dim = await getImageDimensions(file);
+        if (dim) uploadedDims[file.name] = dim;
       } catch(e) {
         toast(`Errore su ${file.name}: ${e.message}`, "err");
+      }
+    }
+    // Aggiorna ordine e dimensioni in contenuti.json per i progetti (non about)
+    if (key !== "about" && uploadedNames.length > 0) {
+      const [section, slug] = key.split("/");
+      const p = state.projects.find(x => x.section === section && x.slug === slug);
+      if (p) {
+        if (!p.ordine) p.ordine = [];
+        if (!p.dimensioni) p.dimensioni = {};
+        // Aggiungi i nuovi file in coda all'ordine (se non già presenti)
+        for (const name of uploadedNames) {
+          if (!p.ordine.includes(name)) p.ordine.push(name);
+          if (uploadedDims[name]) p.dimensioni[name] = uploadedDims[name];
+        }
+        markDirty();
       }
     }
     toast("Caricamento completato.", "ok");
