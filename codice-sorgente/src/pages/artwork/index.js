@@ -11,14 +11,11 @@ const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: f
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
 
-export async function getServerSideProps({ res }) {
-  // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
-  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+export async function getStaticProps() {
+  // ISR: pagina pre-generata, servita dalla CDN, rigenerata ogni 60s in background.
+  // Molto più veloce di getServerSideProps (zero attesa server ad ogni navigazione).
 
-  // IMPORTANTE: leggiamo SOLO contenuti.json e stringhe.txt (file piccoli).
-  // NON usiamo readdirSync né readImageDimensions sulle cartelle immagini,
-  // altrimenti il file tracer di Vercel include tutte le foto (~440MB)
-  // nella funzione serverless, superando il limite di 300MB.
+  // Leggiamo SOLO contenuti.json e stringhe.txt (file piccoli).
   const fs = await import("fs");
   const path = await import("path");
   const fsMod = await fs;
@@ -121,6 +118,7 @@ export async function getServerSideProps({ res }) {
       strings,
       aspetto: contenuti.aspetto || {},
     },
+    revalidate: 60, // ISR: rigenera ogni 60 secondi
   };
 }
 

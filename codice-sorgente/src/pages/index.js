@@ -1,18 +1,16 @@
 // pages/index.js
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 
 /**
  * Legge le immagini rappresentative (prima N) per Artwork / Professional.
  * Tutto da contenuti.json — zero accesso al filesystem immagini.
  */
-export async function getServerSideProps({ res }) {
-  // CDN cache: serve cached SSR for 60s, stale-while-revalidate for 5min
-  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+export async function getStaticProps() {
+  // ISR: pagina pre-generata, servita dalla CDN, rigenerata ogni 60s in background.
 
-  // IMPORTANTE: leggiamo SOLO contenuti.json e stringhe.txt.
-  // NON importiamo fs/path con import statico né usiamo readImageDimensions,
-  // altrimenti il file tracer di Vercel include tutte le foto (~440MB).
+  // Leggiamo SOLO contenuti.json e stringhe.txt.
   const fs = await import("fs");
   const path = await import("path");
   const fsMod = await fs;
@@ -69,6 +67,7 @@ export async function getServerSideProps({ res }) {
 
   return {
     props: { artworkImages, professionalImages, strings },
+    revalidate: 60,
   };
 }
 
@@ -221,13 +220,13 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       <div aria-hidden className="absolute inset-0 pointer-events-none">
         {/* artwork (white overlay stronger) */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
-          {artSrc && <img key={artSrc} src={artSrc} alt="" className="landing-bg__img show" />}
+          {artSrc && <Image key={artSrc} src={artSrc} alt="" fill sizes="100vw" quality={60} priority className="landing-bg__img show" style={{objectFit:"cover"}} />}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
         {/* professional (black overlay stronger) */}
         <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
-          {profSrc && <img key={profSrc} src={profSrc} alt="" className="landing-bg__img show" />}
+          {profSrc && <Image key={profSrc} src={profSrc} alt="" fill sizes="100vw" quality={60} className="landing-bg__img show" style={{objectFit:"cover"}} />}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
       </div>
