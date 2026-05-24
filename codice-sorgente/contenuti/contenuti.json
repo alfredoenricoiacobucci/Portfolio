@@ -894,7 +894,6 @@
         "Shot by AE x Gioia Morisco (Q-50-100)-74.jpg",
         "Shot by AE x Gioia Morisco (Q-50-100)-75.jpg",
         "Shot by AE x Gioia Morisco (Q-50-100)-76.jpg",
-        "Shot by AE x Gioia Morisco (Q-50-100)-77.jpg",
         "Shot by AE x Gioia Morisco (Q-50-100)-78.jpg",
         "Shot by AE x Gioia Morisco (Q-50-100)-79.jpg",
         "Shot by AE x Gioia Morisco (Q-50-100)-80.jpg",
@@ -2824,5 +2823,9 @@
     "quote": "Quando, meglio di adesso.",
     "photo": "",
     "video": ""
+  },
+  "landing": {
+    "artworkImages": [],
+    "professionalImages": []
   }
 }
