@@ -19,6 +19,7 @@ const nextConfig = {
     "/api/analytics": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
     "/api/contact": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
     "/api/track": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "/api/revalidate": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
   },
 };
 
