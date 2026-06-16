@@ -52,17 +52,60 @@
     },
     {
       "section": "art",
+      "slug": "gemelli-cosmici",
+      "titolo": "Gemelli Cosmici\nRimini (RM) 2025",
+      "descrizione": "Osservando questo volto che emerge dalla sabbia mi affascina il suo essere così reale e così effimero, almeno quanto me stesso. Alla base degli elementi che compongono la materia vi sono le particelle elementari, cariche elettriche in equilibrio all'interno \ndi legami, il numero e la disposizione di queste cariche determinano l'elemento specifico. Dunque la materia non è altro che energia potenziale, ergo l'intero universo è un'unica unità di energia. In quest'ottica, i confini che abbiamo messo tra noi e gli altri, \ntra noi e le cose e tra le cose stesse svaniscono. Il mio volto non ha nulla di differente da quello che emerge dalla sabbia,\nentrambi sono espressioni temporanee dello stesso magma universale. \n\n\"Portiamo in noi l'infanzia dell'universo\" Emanuele Coccia.",
+      "camera": "Fujifilm XE-3",
+      "ottica": "TTArtisan 27mm f/2.8 AF",
+      "luce": "Controllata",
+      "banner": "gemelli-1.jpg",
+      "ordine": [
+        "gemelli-2.jpg",
+        "gemelli-1.jpg",
+        "gemelli-3.jpg",
+        "gemelli-5.jpg",
+        "gemelli-4.jpg",
+        "gemelli-6.jpg"
+      ],
+      "dimensioni": {
+        "gemelli-1.jpg": {
+          "w": 1000,
+          "h": 667
+        },
+        "gemelli-2.jpg": {
+          "w": 1000,
+          "h": 667
+        },
+        "gemelli-3.jpg": {
+          "w": 1000,
+          "h": 667
+        },
+        "gemelli-4.jpg": {
+          "w": 1000,
+          "h": 667
+        },
+        "gemelli-5.jpg": {
+          "w": 1000,
+          "h": 667
+        },
+        "gemelli-6.jpg": {
+          "w": 667,
+          "h": 1000
+        }
+      }
+    },
+    {
+      "section": "art",
       "slug": "le-radici-ca-tieni",
       "titolo": "Le radici ca tieni\nMartano (LE) 2024",
       "descrizione": "Le radici sono il nostro patrimonio, nel sangue c'è la memoria della catena di eventi che arriva fino alla nostra nascita, \nla quale proseguirà lasciando la sua eredità alle generazioni a venire. Per intuire la nostra strada è necessario conoscere \nda dove siamo venuti. \n\nIn questo viaggio ho incontrato un demone che ha affievolito la fiamma dell'amore per la vita e per la natura nel cuore degli abitanti del Salento: Xylella fastidiosa, un batterio della  famiglia delle Xanthomonadaceae, che vive e si riproduce all'interno dell'apparato conduttore della linfa grezza (i cosiddetti vasi xilematici, portatori di acqua e sali minerali).\nIl batterio si è diffuso a partire dal 1994 in Sud America (Brasile) e a Taiwan (prima comparsa fuori dalle Americhe), \nnel 2010 è stato segnalato in Asia e in Italia (nel Salento).\n\nla Xylella ha portato morte nella terra e nelle menti del Salento,  tornerò per conoscerla meglio e smascherarla.",
       "camera": "Sony Alpha 6000",
       "ottica": "Sony SEL24-105 G f4.0",
       "luce": "Naturale",
-      "banner": "radici-005.jpg",
+      "banner": "radici-039.jpg",
       "ordine": [
         "radici-003.jpg",
         "radici-005.jpg",
-        "radici-004.jpg",
         "radici-012.jpg",
         "radici-006.jpg",
         "radici-015.jpg",
@@ -85,6 +128,11 @@
         "radici-034.jpg",
         "radici-041.jpg",
         "radici-042.jpg",
+        "radici-075.jpg",
+        "radici-076.jpg",
+        "radici-077.jpg",
+        "radici-078.jpg",
+        "radici-079.jpg",
         "radici-014.jpg",
         "radici-048.jpg",
         "radici-049.jpg",
@@ -105,20 +153,13 @@
         "radici-065.jpg",
         "radici-066.jpg",
         "radici-067.jpg",
-        "radici-068.jpg",
         "radici-069.jpg",
+        "radici-068.jpg",
         "radici-070.jpg",
         "radici-071.jpg",
         "radici-072.jpg",
         "radici-073.jpg",
         "radici-074.jpg",
-        "radici-075.jpg",
-        "radici-076.jpg",
-        "radici-077.jpg",
-        "radici-078.jpg",
-        "radici-079.jpg",
-        "radici-080.jpg",
-        "radici-081.jpg",
         "radici-082.jpg",
         "radici-083.jpg",
         "radici-084.jpg",
@@ -136,6 +177,8 @@
         "radici-096.jpg",
         "radici-097.jpg",
         "radici-098.jpg",
+        "radici-080.jpg",
+        "radici-081.jpg",
         "radici-051.jpg",
         "radici-052.jpg",
         "radici-053.jpg",
@@ -155,15 +198,7 @@
         "radici-037.jpg",
         "radici-038.jpg",
         "radici-039.jpg",
-        "radici-040.jpg",
-        "radici-023.jpg",
-        "radici-024.jpg",
-        "radici-025.jpg",
-        "radici-026.jpg",
-        "radici-031.jpg",
-        "radici-036.jpg",
-        "radici-045.jpg",
-        "radici-050.jpg"
+        "radici-040.jpg"
       ],
       "dimensioni": {
         "radici-001.jpg": {
@@ -581,50 +616,6 @@
         "radici-104.jpg": {
           "w": 1000,
           "h": 667
-        }
-      }
-    },
-    {
-      "section": "art",
-      "slug": "gemelli-cosmici",
-      "titolo": "Gemelli Cosmici\nRimini (RM) 2025",
-      "descrizione": "Osservando questo volto che emerge dalla sabbia mi affascina il suo essere così reale e così effimero, almeno quanto me stesso. Alla base degli elementi che compongono la materia vi sono le particelle elementari, cariche elettriche in equilibrio all'interno \ndi legami, il numero e la disposizione di queste cariche determinano l'elemento specifico. Dunque la materia non è altro che energia potenziale, ergo l'intero universo è un'unica unità di energia. In quest'ottica, i confini che abbiamo messo tra noi e gli altri, \ntra noi e le cose e tra le cose stesse svaniscono. Il mio volto non ha nulla di differente da quello che emerge dalla sabbia,\nentrambi sono espressioni temporanee dello stesso magma universale. \n\n\"Portiamo in noi l'infanzia dell'universo\" Emanuele Coccia.",
-      "camera": "Fujifilm XE-3",
-      "ottica": "TTArtisan 27mm f/2.8 AF",
-      "luce": "Controllata",
-      "banner": "gemelli-1.jpg",
-      "ordine": [
-        "gemelli-1.jpg",
-        "gemelli-2.jpg",
-        "gemelli-3.jpg",
-        "gemelli-4.jpg",
-        "gemelli-5.jpg",
-        "gemelli-6.jpg"
-      ],
-      "dimensioni": {
-        "gemelli-1.jpg": {
-          "w": 1000,
-          "h": 667
-        },
-        "gemelli-2.jpg": {
-          "w": 1000,
-          "h": 667
-        },
-        "gemelli-3.jpg": {
-          "w": 1000,
-          "h": 667
-        },
-        "gemelli-4.jpg": {
-          "w": 1000,
-          "h": 667
-        },
-        "gemelli-5.jpg": {
-          "w": 1000,
-          "h": 667
-        },
-        "gemelli-6.jpg": {
-          "w": 667,
-          "h": 1000
         }
       }
     },
