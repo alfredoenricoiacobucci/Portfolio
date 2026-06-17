@@ -251,7 +251,7 @@ export default function App({ Component, pageProps }) {
     >
       {isInAppBrowser ? (
         <>
-          {/* In-app browser: warning icon + Safari button only */}
+          {/* In-app browser: warning icon + copy URL button + instructions */}
           <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
               style={{ animation: "warningPulse 2.5s ease-in-out infinite" }}
@@ -261,8 +261,8 @@ export default function App({ Component, pageProps }) {
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </div>
-          <a
-            href="#"
+          <button
+            id="inAppCopyBtn"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -273,50 +273,53 @@ export default function App({ Component, pageProps }) {
               borderRadius: "12px",
               fontSize: "1rem",
               fontWeight: 700,
-              textDecoration: "none",
+              border: "none",
+              cursor: "pointer",
               letterSpacing: "0.01em",
             }}
-            onClick={(e) => {
-              e.preventDefault();
+            onClick={() => {
               const url = window.location.href;
-              const ua = navigator.userAgent || "";
-              const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-              const isAndroid = /Android/i.test(ua);
-
-              if (isAndroid) {
-                // Android: Intent URL opens in default browser (Chrome, Samsung, etc.)
-                try {
-                  const intentUrl = "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;action=android.intent.action.VIEW;end";
-                  window.location.href = intentUrl;
-                } catch(_) {
-                  // Fallback: try plain open
-                  window.open(url, "_blank");
-                }
-              } else if (isIOS) {
-                // iOS: multiple strategies in sequence
-                // 1) Try target=_blank link (works in some iOS WebViews)
-                const a = document.createElement("a");
-                a.href = url;
-                a.target = "_blank";
-                a.rel = "noopener noreferrer";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                // 2) Fallback after delay: try window.open
-                setTimeout(() => { window.open(url, "_blank"); }, 300);
-              } else {
-                // Generic fallback for other platforms
-                window.open(url, "_blank");
+              // Copy URL to clipboard
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                  const btn = document.getElementById("inAppCopyBtn");
+                  if (btn) {
+                    btn.textContent = "Link copiato!";
+                    setTimeout(() => {
+                      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copia link';
+                    }, 2000);
+                  }
+                }).catch(() => {
+                  // Fallback: select + copy
+                  const ta = document.createElement("textarea");
+                  ta.value = url;
+                  ta.style.position = "fixed";
+                  ta.style.opacity = "0";
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(ta);
+                  const btn = document.getElementById("inAppCopyBtn");
+                  if (btn) {
+                    btn.textContent = "Link copiato!";
+                    setTimeout(() => {
+                      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copia link';
+                    }, 2000);
+                  }
+                });
               }
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
-            {devicePlatform === "ios" ? "Apri in Safari" : "Apri nel browser"}
-          </a>
+            Copia link
+          </button>
+          <p style={{ fontSize: "0.85rem", opacity: 0.7, marginTop: "1.2rem", lineHeight: 1.6, maxWidth: "260px" }}>
+            Poi tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra<br/>
+            e seleziona <strong>{devicePlatform === "ios" ? "\"Apri in Safari\"" : "\"Apri nel browser\""}</strong>
+          </p>
         </>
       ) : (
         <>
