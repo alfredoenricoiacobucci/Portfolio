@@ -141,18 +141,29 @@ export default function App({ Component, pageProps }) {
   const [isPortrait, setIsPortrait] = useState(false);
   const [mobileEntered, setMobileEntered] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [devicePlatform, setDevicePlatform] = useState("unknown"); // "ios" | "android" | "unknown"
 
-  // Detect in-app browsers (Instagram, Facebook, TikTok, etc.)
+  // Detect in-app browsers (Instagram, Facebook, TikTok, etc.) and platform
   useEffect(() => {
     const ua = navigator.userAgent || "";
-    const inApp = /Instagram|FBAN|FBAV|Line\/|Twitter|TikTok|Snapchat/i.test(ua);
+    const inApp = /Instagram|FBAN|FBAV|Line\/|Twitter|TikTok|Snapchat|Musical\.ly|BytedanceWebview|MicroMessenger|WeChat/i.test(ua);
     setIsInAppBrowser(inApp);
+    // Detect platform
+    if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+      setDevicePlatform("ios");
+    } else if (/Android/i.test(ua)) {
+      setDevicePlatform("android");
+    }
   }, []);
 
   useEffect(() => {
     const checkMobile = () => {
       const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-      const smallScreen = Math.min(window.innerWidth, window.innerHeight) < 1024;
+      const ua = navigator.userAgent || "";
+      const inApp = /Instagram|FBAN|FBAV|Line\/|Twitter|TikTok|Snapchat|Musical\.ly|BytedanceWebview|MicroMessenger|WeChat/i.test(ua);
+      // For in-app browsers, any touch device counts (including large tablets like iPad Pro)
+      // For normal browsers, use the original size threshold
+      const smallScreen = inApp ? true : Math.min(window.innerWidth, window.innerHeight) < 1024;
       setIsMobile(touch && smallScreen);
 
       // Detect portrait using multiple APIs for in-app browser compatibility (Instagram, Facebook, etc.)
@@ -238,55 +249,90 @@ export default function App({ Component, pageProps }) {
     }}
       onTouchMove={(e) => e.preventDefault()}
     >
-      {/* Animated phone: rotates from vertical red to horizontal green */}
-      <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ animation: "phoneRotate 3s ease-in-out infinite" }}
-        >
-          <rect x="4" y="2" width="16" height="20" rx="2" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
-          <path d="M12 18h.01" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
-        </svg>
-      </div>
-      <p style={{ fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.5, maxWidth: "280px" }}>
-        Ruota il dispositivo in orizzontale per accedere al sito.
-      </p>
-      {isInAppBrowser && (
-        <a
-          href={typeof window !== "undefined" ? window.location.href : "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            marginTop: "1.5rem",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.75rem 1.5rem",
-            backgroundColor: "#f8f4ed",
-            color: "#0a0a0a",
-            borderRadius: "12px",
-            fontSize: "0.95rem",
-            fontWeight: 700,
-            textDecoration: "none",
-            letterSpacing: "0.01em",
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            // Try to open in external browser
-            const url = window.location.href;
-            // For Instagram/Facebook in-app browsers, use intent URL schemes
-            const safariUrl = "x-safari-" + url;
-            window.location.href = safariUrl;
-            // Fallback: try window.open after small delay
-            setTimeout(() => { window.open(url, "_system"); }, 300);
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          Apri in Safari
-        </a>
+      {isInAppBrowser ? (
+        <>
+          {/* In-app browser: warning icon + Safari button only */}
+          <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: "warningPulse 2.5s ease-in-out infinite" }}
+            >
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <a
+            href="#"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.85rem 1.8rem",
+              backgroundColor: "#f8f4ed",
+              color: "#0a0a0a",
+              borderRadius: "12px",
+              fontSize: "1rem",
+              fontWeight: 700,
+              textDecoration: "none",
+              letterSpacing: "0.01em",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              const url = window.location.href;
+              const ua = navigator.userAgent || "";
+              const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+              const isAndroid = /Android/i.test(ua);
+
+              if (isAndroid) {
+                // Android: Intent URL opens in default browser (Chrome, Samsung, etc.)
+                try {
+                  const intentUrl = "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;action=android.intent.action.VIEW;end";
+                  window.location.href = intentUrl;
+                } catch(_) {
+                  // Fallback: try plain open
+                  window.open(url, "_blank");
+                }
+              } else if (isIOS) {
+                // iOS: multiple strategies in sequence
+                // 1) Try target=_blank link (works in some iOS WebViews)
+                const a = document.createElement("a");
+                a.href = url;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                // 2) Fallback after delay: try window.open
+                setTimeout(() => { window.open(url, "_blank"); }, 300);
+              } else {
+                // Generic fallback for other platforms
+                window.open(url, "_blank");
+              }
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            {devicePlatform === "ios" ? "Apri in Safari" : "Apri nel browser"}
+          </a>
+        </>
+      ) : (
+        <>
+          {/* Normal browser: animated phone rotation */}
+          <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: "phoneRotate 3s ease-in-out infinite" }}
+            >
+              <rect x="4" y="2" width="16" height="20" rx="2" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
+              <path d="M12 18h.01" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
+            </svg>
+          </div>
+          <p style={{ fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.5, maxWidth: "280px" }}>
+            Ruota il dispositivo in orizzontale<br/>per accedere al sito.
+          </p>
+        </>
       )}
       <style>{`
         @keyframes phoneRotate {
@@ -298,6 +344,10 @@ export default function App({ Component, pageProps }) {
           0%, 20% { stroke: #c8102e; }
           50%, 70% { stroke: #22c55e; }
           100% { stroke: #c8102e; }
+        }
+        @keyframes warningPulse {
+          0%, 100% { stroke: #facc15; opacity: 0.5; }
+          50% { stroke: #facc15; opacity: 1; }
         }
       `}</style>
     </div>
