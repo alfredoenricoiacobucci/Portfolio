@@ -685,15 +685,13 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             priorityFirst
           />
           <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
-          {/* Sfumatura leggera in basso */}
+          {/* Sfumatura leggera in basso — sempre visibile per evitare riga */}
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0"
             style={{
               zIndex: 45,
               height: 'calc(2rem + 70px)',
-              background: "linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)",
-              opacity: bannerFadeOpacity,
-              transition: "opacity 250ms ease-out",
+              background: "linear-gradient(to top, black 0%, rgba(0,0,0,0.6) 40%, transparent 100%)",
             }}
           />
           {/* Titolo — stessa posizione di About: items-end, mb-8 */}
