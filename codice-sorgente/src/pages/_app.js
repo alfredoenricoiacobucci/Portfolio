@@ -265,7 +265,7 @@ export default function App({ Component, pageProps }) {
           {/* Instructions */}
           <p style={{ fontSize: "0.95rem", opacity: 0.85, lineHeight: 1.7, maxWidth: "280px", marginBottom: "1.2rem" }}>
             Tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra<br/>
-            e seleziona <strong>{devicePlatform === "ios" ? "\"Apri in Safari\"" : "\"Apri nel browser\""}</strong>
+            e seleziona <strong>"Apri nel browser esterno"</strong>
           </p>
           <p style={{ fontSize: "0.85rem", opacity: 0.5, lineHeight: 1.6, maxWidth: "260px", marginBottom: "1rem" }}>
             Oppure copia il link e incollalo dove vuoi
@@ -334,7 +334,7 @@ export default function App({ Component, pageProps }) {
             </svg>
           </div>
           <p style={{ fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.5, maxWidth: "280px" }}>
-            Ruota il dispositivo in orizzontale<br/>per accedere al sito.
+            Ruota il dispositivo in orizzontale per accedere al sito.
           </p>
         </>
       )}

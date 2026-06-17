@@ -48,8 +48,13 @@ export async function getStaticProps() {
     return results;
   };
 
-  const artworkImages = readImages("art").slice(0, 24);
-  const professionalImages = readImages("pro").slice(0, 24);
+  // Se l'utente ha scelto foto specifiche nell'editor, usa quelle; altrimenti auto-detect
+  const landingConfig = contenuti.landing || {};
+  const hasCustomArt = Array.isArray(landingConfig.artworkImages) && landingConfig.artworkImages.length > 0;
+  const hasCustomPro = Array.isArray(landingConfig.professionalImages) && landingConfig.professionalImages.length > 0;
+
+  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 24) : readImages("art").slice(0, 24);
+  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 24) : readImages("pro").slice(0, 24);
 
   // Leggi stringhe da contenuti/stringhe.txt
   let stringheRaw = "";
@@ -188,6 +193,19 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
   const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
   const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;
+
+  // Preload prime N immagini di entrambe le sezioni per evitare caricamento lento
+  useEffect(() => {
+    const preloadCount = Math.min(6, Math.max(filteredArt.length, filteredProf.length));
+    const toPreload = [
+      ...filteredArt.slice(0, preloadCount),
+      ...filteredProf.slice(0, preloadCount),
+    ];
+    toPreload.forEach((src) => {
+      const img = new window.Image();
+      img.src = `/_next/image?url=${encodeURIComponent(src)}&w=1920&q=60`;
+    });
+  }, [filteredArt, filteredProf]);
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
