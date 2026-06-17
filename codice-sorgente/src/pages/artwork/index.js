@@ -538,20 +538,6 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     return () => window.removeEventListener("keydown", onKey);
   }, [viewerOpen, selectedProject]);
 
-  // Preload immagini adiacenti nel viewer per transizione istantanea
-  useEffect(() => {
-    if (!viewerOpen || !selectedProject?.images?.length) return;
-    const imgs = selectedProject.images;
-    const total = imgs.length;
-    if (total <= 1) return;
-    [1, -1, 2, -2].forEach(offset => {
-      const idx = (viewerIndex + offset + total) % total;
-      if (idx === viewerIndex) return;
-      const src = imgs[idx]?.src || imgs[idx];
-      const img = new window.Image();
-      img.src = `/_next/image?url=${encodeURIComponent(src)}&w=2560&q=85`;
-    });
-  }, [viewerOpen, viewerIndex, selectedProject]);
 
   // Flag: siamo nella vista home (marquee visibile)?
   const isHome = !selectedProject;
@@ -1014,16 +1000,32 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               </>
             )}
             <div className="relative max-w-[95vw] max-h-full w-full h-full">
-              <Image
-                key={viewerIndex}
-                src={selectedProject.images[viewerIndex]?.src || selectedProject.images[viewerIndex]}
-                alt=""
-                fill
-                sizes="95vw"
-                quality={85}
-                priority
-                className="object-contain shadow-2xl select-none"
-              />
+              {/* Render current + adjacent images, hide non-active ones */}
+              {(() => {
+                const imgs = selectedProject.images;
+                const total = imgs.length;
+                // Show current + preload prev/next 2
+                // Renderizza TUTTE le immagini del progetto — ogni <Image> si carica una volta e resta in DOM
+                // Solo quella corrente è visibile (opacity 1), le altre sono nascoste (opacity 0)
+                return imgs.map((imgItem, idx) => {
+                  const src = imgItem?.src || imgItem;
+                  const isCurrent = idx === viewerIndex;
+                  return (
+                    <Image
+                      key={src}
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="95vw"
+                      quality={85}
+                      priority={idx === 0}
+                      loading={idx <= 4 ? "eager" : "lazy"}
+                      className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
+                      style={{ opacity: isCurrent ? 1 : 0, transition: "opacity 150ms ease", position: "absolute", pointerEvents: isCurrent ? "auto" : "none" }}
+                    />
+                  );
+                });
+              })()}
             </div>
           </div>
 

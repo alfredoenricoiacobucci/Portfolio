@@ -213,14 +213,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
   const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
 
-  // Preload ALL landing images for instant transitions
-  useEffect(() => {
-    const toPreload = [...shuffledArt, ...shuffledProf];
-    toPreload.forEach((src) => {
-      const img = new window.Image();
-      img.src = `/_next/image?url=${encodeURIComponent(src)}&w=1920&q=60`;
-    });
-  }, [shuffledArt, shuffledProf]);
+  // (preload rimosso — le immagini sono renderizzate come <Image> nascosti)
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
@@ -251,15 +244,49 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     >
       {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e swipe (mobile) */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        {/* artwork (white overlay stronger) */}
+        {/* artwork (white overlay stronger) — tutte le immagini pre-renderizzate, solo quella corrente visibile */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
-          {artSrc && <Image key={artSrc} src={artSrc} alt="" fill sizes="100vw" quality={60} priority className="landing-bg__img show" style={{objectFit:"cover"}} />}
+          {shuffledArt.map((src, i) => (
+            <Image
+              key={src}
+              src={src}
+              alt=""
+              fill
+              sizes="100vw"
+              quality={60}
+              priority={i === 0}
+              loading={i === 0 ? undefined : "eager"}
+              className="landing-bg__img"
+              style={{
+                objectFit: "cover",
+                opacity: src === artSrc ? 1 : 0,
+                transition: "opacity 700ms ease",
+              }}
+            />
+          ))}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
-        {/* professional (black overlay stronger) */}
+        {/* professional (black overlay stronger) — tutte le immagini pre-renderizzate */}
         <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
-          {profSrc && <Image key={profSrc} src={profSrc} alt="" fill sizes="100vw" quality={60} className="landing-bg__img show" style={{objectFit:"cover"}} />}
+          {shuffledProf.map((src, i) => (
+            <Image
+              key={src}
+              src={src}
+              alt=""
+              fill
+              sizes="100vw"
+              quality={60}
+              priority={i === 0}
+              loading={i === 0 ? undefined : "eager"}
+              className="landing-bg__img"
+              style={{
+                objectFit: "cover",
+                opacity: src === profSrc ? 1 : 0,
+                transition: "opacity 700ms ease",
+              }}
+            />
+          ))}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
       </div>
