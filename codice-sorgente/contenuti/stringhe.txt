@@ -8,8 +8,8 @@ NOME = Alfredo Enrico Iacobucci
 # Header
 LABEL_ARTWORK = Artwork
 LABEL_PROFESSIONAL = Professional
-LABEL_EMAIL = Email
-LABEL_ABOUT = About
+LABEL_EMAIL = email
+LABEL_ABOUT = about
 LABEL_HOME = Home
 LABEL_INSTA = Insta
 LINK_INSTA = https://instagram.com/alfredoenricoiacobucci

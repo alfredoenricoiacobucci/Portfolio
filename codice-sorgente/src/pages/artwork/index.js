@@ -684,7 +684,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             zoomMs={7000}
             priorityFirst
           />
-          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black/80" />
+          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
           {/* Sfumatura leggera in basso */}
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0"
@@ -832,7 +832,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 </span>
               )}
             </div>
-            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black/80" />
+            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
             <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
               <div className="mb-8 space-y-0 leading-tight">
                 <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">

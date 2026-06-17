@@ -264,8 +264,8 @@ export default function App({ Component, pageProps }) {
           </div>
           {/* Instructions */}
           <p style={{ fontSize: "0.95rem", opacity: 0.85, lineHeight: 1.7, maxWidth: "280px", marginBottom: "1.2rem" }}>
-            Tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra<br/>
-            e seleziona <strong>"Apri nel browser esterno"</strong>
+            Tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra e seleziona<br/>
+            <strong>"Apri nel browser esterno"</strong>
           </p>
           <p style={{ fontSize: "0.85rem", opacity: 0.5, lineHeight: 1.6, maxWidth: "260px", marginBottom: "1rem" }}>
             Oppure copia il link e incollalo dove vuoi
