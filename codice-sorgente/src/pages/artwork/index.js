@@ -674,7 +674,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem + 80px)' }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem + 80px)', background: 'black', marginBottom: '-1px' }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -743,7 +743,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
       {/* CONTENUTO PROGETTO — chevron toggle testo sotto banner, poi galleria, poi footer */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full">
+        <div key={`project-${currentSlug}`} className="w-full bg-black">
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
