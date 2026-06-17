@@ -252,7 +252,8 @@ export default function App({ Component, pageProps }) {
       {isInAppBrowser ? (
         <>
           {/* In-app browser: warning icon + copy URL button + instructions */}
-          <div style={{ marginBottom: "2rem", width: "80px", height: "80px" }}>
+          {/* Warning icon */}
+          <div style={{ marginBottom: "1.5rem", width: "80px", height: "80px" }}>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
               style={{ animation: "warningPulse 2.5s ease-in-out infinite" }}
             >
@@ -261,65 +262,65 @@ export default function App({ Component, pageProps }) {
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </div>
+          {/* Instructions */}
+          <p style={{ fontSize: "0.95rem", opacity: 0.85, lineHeight: 1.7, maxWidth: "280px", marginBottom: "1.2rem" }}>
+            Tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra<br/>
+            e seleziona <strong>{devicePlatform === "ios" ? "\"Apri in Safari\"" : "\"Apri nel browser\""}</strong>
+          </p>
+          <p style={{ fontSize: "0.85rem", opacity: 0.5, lineHeight: 1.6, maxWidth: "260px", marginBottom: "1rem" }}>
+            Oppure copia il link e incollalo dove vuoi
+          </p>
+          {/* Copy button */}
           <button
             id="inAppCopyBtn"
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              padding: "0.85rem 1.8rem",
-              backgroundColor: "#f8f4ed",
-              color: "#0a0a0a",
+              padding: "0.75rem 1.5rem",
+              backgroundColor: "rgba(248,244,237,0.12)",
+              color: "#f8f4ed",
               borderRadius: "12px",
-              fontSize: "1rem",
-              fontWeight: 700,
-              border: "none",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              border: "1px solid rgba(248,244,237,0.2)",
               cursor: "pointer",
               letterSpacing: "0.01em",
             }}
             onClick={() => {
               const url = window.location.href;
-              // Copy URL to clipboard
+              const copyFallback = () => {
+                const ta = document.createElement("textarea");
+                ta.value = url;
+                ta.style.position = "fixed";
+                ta.style.opacity = "0";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+              };
+              const showCopied = () => {
+                const btn = document.getElementById("inAppCopyBtn");
+                if (btn) {
+                  btn.textContent = "Link copiato!";
+                  setTimeout(() => {
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copia link';
+                  }, 2000);
+                }
+              };
               if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                  const btn = document.getElementById("inAppCopyBtn");
-                  if (btn) {
-                    btn.textContent = "Link copiato!";
-                    setTimeout(() => {
-                      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copia link';
-                    }, 2000);
-                  }
-                }).catch(() => {
-                  // Fallback: select + copy
-                  const ta = document.createElement("textarea");
-                  ta.value = url;
-                  ta.style.position = "fixed";
-                  ta.style.opacity = "0";
-                  document.body.appendChild(ta);
-                  ta.select();
-                  document.execCommand("copy");
-                  document.body.removeChild(ta);
-                  const btn = document.getElementById("inAppCopyBtn");
-                  if (btn) {
-                    btn.textContent = "Link copiato!";
-                    setTimeout(() => {
-                      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copia link';
-                    }, 2000);
-                  }
-                });
+                navigator.clipboard.writeText(url).then(showCopied).catch(() => { copyFallback(); showCopied(); });
+              } else {
+                copyFallback(); showCopied();
               }
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
             Copia link
           </button>
-          <p style={{ fontSize: "0.85rem", opacity: 0.7, marginTop: "1.2rem", lineHeight: 1.6, maxWidth: "260px" }}>
-            Poi tocca <span style={{ display: "inline-block", fontWeight: 800, letterSpacing: "2px" }}>⋯</span> in alto a destra<br/>
-            e seleziona <strong>{devicePlatform === "ios" ? "\"Apri in Safari\"" : "\"Apri nel browser\""}</strong>
-          </p>
         </>
       ) : (
         <>
