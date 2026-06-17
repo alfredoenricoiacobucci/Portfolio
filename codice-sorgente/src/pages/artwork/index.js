@@ -657,15 +657,16 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             navHistoryRef.current = [];
             router.push(basePath, undefined, { shallow: true });
           }}>{S.LABEL_HOME}</span>
-          <span>,</span><span className="inline-block w-[0.6em]" />
+          <span>,{" "}</span>
           <span className="cursor-pointer transition-colors hover-red" onClick={() => {
             if (selectedProject && selectedProject.name !== "About") {
               navHistoryRef.current.push(currentSlug);
             }
             router.push(`${basePath}?p=about`, undefined, { shallow: true });
           }}>{S.LABEL_ABOUT}</span>
-          <span>,</span><span className="inline-block w-[0.6em]" />
+          <span>,{" "}</span>
           <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>{S.LABEL_EMAIL}</span>
+          <span>.</span>
         </nav>
       </header>
 
