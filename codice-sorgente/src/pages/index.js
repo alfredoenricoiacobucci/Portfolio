@@ -1,5 +1,5 @@
 // pages/index.js
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 
@@ -85,6 +85,16 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const filteredArt = artworkImages;
   const filteredProf = professionalImages;
 
+  // Track loaded images — mostra solo immagini già scaricate per evitare flash bianchi
+  const loadedImgsRef = useRef(new Set());
+  const [, forceRender] = useState(0);
+  const onImgLoad = useCallback((src) => {
+    if (!loadedImgsRef.current.has(src)) {
+      loadedImgsRef.current.add(src);
+      forceRender(n => n + 1);
+    }
+  }, []);
+
   // ===== CURTAIN: overlay che scompare dopo il mount =====
   const [curtainVisible, setCurtainVisible] = useState(true);
 
@@ -100,7 +110,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   // area hover based on cursor position (left/right)
   const [hoverArea, setHoverArea] = useState(null);
 
-  // ===== AUTO-SWITCH MOBILE: alterna Artwork/Professional ogni 1.5s =====
+  // ===== AUTO-SWITCH MOBILE: alterna Artwork/Professional ogni 3.5s =====
   const [mobileArea, setMobileArea] = useState(null);
 
   useEffect(() => {
@@ -113,7 +123,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     const interval = setInterval(() => {
       i = (i + 1) % 2;
       setMobileArea(areas[i]);
-    }, 1500);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -246,47 +256,57 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       <div aria-hidden className="absolute inset-0 pointer-events-none">
         {/* artwork (white overlay stronger) — tutte le immagini pre-renderizzate, solo quella corrente visibile */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
-          {shuffledArt.map((src, i) => (
-            <Image
-              key={src}
-              src={src}
-              alt=""
-              fill
-              sizes="100vw"
-              quality={60}
-              priority={i === 0}
-              loading={i === 0 ? undefined : "eager"}
-              className="landing-bg__img"
-              style={{
-                objectFit: "cover",
-                opacity: src === artSrc ? 1 : 0,
-                transition: "opacity 700ms ease",
-              }}
-            />
-          ))}
+          {shuffledArt.map((src, i) => {
+            const isActive = src === artSrc;
+            const isLoaded = loadedImgsRef.current.has(src);
+            return (
+              <Image
+                key={src}
+                src={src}
+                alt=""
+                fill
+                sizes="100vw"
+                quality={60}
+                priority={i === 0}
+                loading={i < 3 ? "eager" : "lazy"}
+                onLoad={() => onImgLoad(src)}
+                className="landing-bg__img"
+                style={{
+                  objectFit: "cover",
+                  opacity: isActive && isLoaded ? 1 : 0,
+                  transition: "opacity 700ms ease",
+                }}
+              />
+            );
+          })}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
         {/* professional (black overlay stronger) — tutte le immagini pre-renderizzate */}
         <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
-          {shuffledProf.map((src, i) => (
-            <Image
-              key={src}
-              src={src}
-              alt=""
-              fill
-              sizes="100vw"
-              quality={60}
-              priority={i === 0}
-              loading={i === 0 ? undefined : "eager"}
-              className="landing-bg__img"
-              style={{
-                objectFit: "cover",
-                opacity: src === profSrc ? 1 : 0,
-                transition: "opacity 700ms ease",
-              }}
-            />
-          ))}
+          {shuffledProf.map((src, i) => {
+            const isActive = src === profSrc;
+            const isLoaded = loadedImgsRef.current.has(src);
+            return (
+              <Image
+                key={src}
+                src={src}
+                alt=""
+                fill
+                sizes="100vw"
+                quality={60}
+                priority={i === 0}
+                loading={i < 3 ? "eager" : "lazy"}
+                onLoad={() => onImgLoad(src)}
+                className="landing-bg__img"
+                style={{
+                  objectFit: "cover",
+                  opacity: isActive && isLoaded ? 1 : 0,
+                  transition: "opacity 700ms ease",
+                }}
+              />
+            );
+          })}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
       </div>
