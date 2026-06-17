@@ -140,20 +140,49 @@ export default function App({ Component, pageProps }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [mobileEntered, setMobileEntered] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
+  // Detect in-app browsers (Instagram, Facebook, TikTok, etc.)
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const inApp = /Instagram|FBAN|FBAV|Line\/|Twitter|TikTok|Snapchat/i.test(ua);
+    setIsInAppBrowser(inApp);
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
       const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
       const smallScreen = Math.min(window.innerWidth, window.innerHeight) < 1024;
       setIsMobile(touch && smallScreen);
-      setIsPortrait(window.innerHeight > window.innerWidth);
+
+      // Detect portrait using multiple APIs for in-app browser compatibility (Instagram, Facebook, etc.)
+      let portrait;
+      if (screen.orientation && screen.orientation.type) {
+        // Most reliable: Screen Orientation API
+        portrait = screen.orientation.type.startsWith("portrait");
+      } else if (typeof window.orientation === "number") {
+        // Deprecated but widely supported fallback
+        portrait = window.orientation === 0 || window.orientation === 180;
+      } else {
+        // Last resort: viewport dimensions
+        portrait = window.innerHeight > window.innerWidth;
+      }
+      setIsPortrait(portrait);
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    window.addEventListener("orientationchange", () => setTimeout(checkMobile, 100));
+    // orientationchange for legacy browsers
+    window.addEventListener("orientationchange", () => setTimeout(checkMobile, 200));
+    // Screen Orientation API change event
+    if (screen.orientation) {
+      screen.orientation.addEventListener("change", () => setTimeout(checkMobile, 100));
+    }
     return () => {
       window.removeEventListener("resize", checkMobile);
       window.removeEventListener("orientationchange", checkMobile);
+      if (screen.orientation) {
+        screen.orientation.removeEventListener("change", checkMobile);
+      }
     };
   }, []);
 
@@ -219,8 +248,46 @@ export default function App({ Component, pageProps }) {
         </svg>
       </div>
       <p style={{ fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.5, maxWidth: "280px" }}>
-        Ruota il telefono in orizzontale per visualizzare il portfolio.
+        Ruota il dispositivo in orizzontale per accedere al sito.
       </p>
+      {isInAppBrowser && (
+        <a
+          href={typeof window !== "undefined" ? window.location.href : "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            marginTop: "1.5rem",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#f8f4ed",
+            color: "#0a0a0a",
+            borderRadius: "12px",
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            textDecoration: "none",
+            letterSpacing: "0.01em",
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            // Try to open in external browser
+            const url = window.location.href;
+            // For Instagram/Facebook in-app browsers, use intent URL schemes
+            const safariUrl = "x-safari-" + url;
+            window.location.href = safariUrl;
+            // Fallback: try window.open after small delay
+            setTimeout(() => { window.open(url, "_system"); }, 300);
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          Apri in Safari
+        </a>
+      )}
       <style>{`
         @keyframes phoneRotate {
           0%, 20% { transform: rotate(0deg); }
