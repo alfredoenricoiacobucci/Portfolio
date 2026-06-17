@@ -1,5 +1,5 @@
 // pages/index.js
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 
@@ -171,6 +171,25 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     };
   }, []);
 
+  // Shuffle images once on mount so the sequence isn't always the same
+  const shuffledArt = useMemo(() => {
+    const arr = [...filteredArt];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [filteredArt]);
+
+  const shuffledProf = useMemo(() => {
+    const arr = [...filteredProf];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [filteredProf]);
+
   // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O auto-switch)
   const prevDisplayRef = useRef(null);
 
@@ -181,31 +200,27 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
     if (prev === null) return;
 
-    if (current === "artwork" && prev === "professional" && filteredArt.length > 0) {
-      artIndexRef.current = (artIndexRef.current + 1) % filteredArt.length;
+    if (current === "artwork" && prev === "professional" && shuffledArt.length > 0) {
+      artIndexRef.current = (artIndexRef.current + 1) % shuffledArt.length;
       setArtIndex(artIndexRef.current);
     }
-    if (current === "professional" && prev === "artwork" && filteredProf.length > 0) {
-      profIndexRef.current = (profIndexRef.current + 1) % filteredProf.length;
+    if (current === "professional" && prev === "artwork" && shuffledProf.length > 0) {
+      profIndexRef.current = (profIndexRef.current + 1) % shuffledProf.length;
       setProfIndex(profIndexRef.current);
     }
-  }, [mobileArea, hoverArea, filteredArt.length, filteredProf.length]);
+  }, [mobileArea, hoverArea, shuffledArt.length, shuffledProf.length]);
 
-  const artSrc = filteredArt.length ? filteredArt[artIndex % filteredArt.length] : null;
-  const profSrc = filteredProf.length ? filteredProf[profIndex % filteredProf.length] : null;
+  const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
+  const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
 
-  // Preload prime N immagini di entrambe le sezioni per evitare caricamento lento
+  // Preload ALL landing images for instant transitions
   useEffect(() => {
-    const preloadCount = Math.min(6, Math.max(filteredArt.length, filteredProf.length));
-    const toPreload = [
-      ...filteredArt.slice(0, preloadCount),
-      ...filteredProf.slice(0, preloadCount),
-    ];
+    const toPreload = [...shuffledArt, ...shuffledProf];
     toPreload.forEach((src) => {
       const img = new window.Image();
       img.src = `/_next/image?url=${encodeURIComponent(src)}&w=1920&q=60`;
     });
-  }, [filteredArt, filteredProf]);
+  }, [shuffledArt, shuffledProf]);
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {

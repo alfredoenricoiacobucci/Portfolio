@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Banner: overlap nero in fondo per eliminare gap sub-pixel */
+.project-banner::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: black;
+  z-index: 60;
+}
 
 /* === Modalità colore per Artwork (chiaro) / Professional (scuro) === */
 :root {

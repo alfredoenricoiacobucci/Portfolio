@@ -538,6 +538,21 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     return () => window.removeEventListener("keydown", onKey);
   }, [viewerOpen, selectedProject]);
 
+  // Preload immagini adiacenti nel viewer per transizione istantanea
+  useEffect(() => {
+    if (!viewerOpen || !selectedProject?.images?.length) return;
+    const imgs = selectedProject.images;
+    const total = imgs.length;
+    if (total <= 1) return;
+    [1, -1, 2, -2].forEach(offset => {
+      const idx = (viewerIndex + offset + total) % total;
+      if (idx === viewerIndex) return;
+      const src = imgs[idx]?.src || imgs[idx];
+      const img = new window.Image();
+      img.src = `/_next/image?url=${encodeURIComponent(src)}&w=2560&q=85`;
+    });
+  }, [viewerOpen, viewerIndex, selectedProject]);
+
   // Flag: siamo nella vista home (marquee visibile)?
   const isHome = !selectedProject;
 
@@ -1000,6 +1015,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             )}
             <div className="relative max-w-[95vw] max-h-full w-full h-full">
               <Image
+                key={viewerIndex}
                 src={selectedProject.images[viewerIndex]?.src || selectedProject.images[viewerIndex]}
                 alt=""
                 fill
