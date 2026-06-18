@@ -102,17 +102,15 @@ export async function getStaticProps() {
     props: {
       projects,
       about: (() => {
-        let col1 = aboutText, col2 = "";
-        if (aboutText.includes("---")) {
-          const parts = aboutText.split("---");
+        // Normalizza: singoli \n → spazio (soft-wrap dell'editor), \n\n → separatore paragrafi
+        const normalized = aboutText.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ").trim();
+        let col1 = normalized, col2 = "";
+        if (normalized.includes("---")) {
+          const parts = normalized.split("---");
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
-        } else {
-          const paragraphs = aboutText.split("\n").filter(Boolean);
-          const mid = Math.ceil(paragraphs.length / 2);
-          col1 = paragraphs.slice(0, mid).join("\n");
-          col2 = paragraphs.slice(mid).join("\n");
         }
+        // Niente split automatico — testo in una colonna unica come nell'editor
         return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
       })(),
       strings,

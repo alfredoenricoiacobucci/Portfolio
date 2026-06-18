@@ -53,8 +53,8 @@ export async function getStaticProps() {
   const hasCustomArt = Array.isArray(landingConfig.artworkImages) && landingConfig.artworkImages.length > 0;
   const hasCustomPro = Array.isArray(landingConfig.professionalImages) && landingConfig.professionalImages.length > 0;
 
-  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 24) : readImages("art").slice(0, 24);
-  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 24) : readImages("pro").slice(0, 24);
+  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 10) : readImages("art").slice(0, 10);
+  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 10) : readImages("pro").slice(0, 10);
 
   // Leggi stringhe da contenuti/stringhe.txt
   let stringheRaw = "";

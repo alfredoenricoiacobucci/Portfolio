@@ -333,8 +333,8 @@ export default function App({ Component, pageProps }) {
               <path d="M12 18h.01" style={{ animation: "phoneColor 3s ease-in-out infinite" }} />
             </svg>
           </div>
-          <p style={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.6, maxWidth: "340px", textAlign: "center" }}>
-            <span style={{ whiteSpace: "nowrap" }}>Ruota il dispositivo in orizzontale</span><br/>per accedere al sito.
+          <p style={{ fontSize: "0.95rem", fontWeight: 700, lineHeight: 1.6, textAlign: "center", padding: "0 1.5rem" }}>
+            Ruota il dispositivo in orizzontale<br/>per accedere al sito.
           </p>
         </>
       )}
