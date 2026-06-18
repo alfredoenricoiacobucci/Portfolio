@@ -112,10 +112,10 @@ body {
 /* overlays stronger for more coverage and slightly different for smooth crossfade */
 .landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 700ms ease; }
 .landing-bg__overlay--light {
-  background: linear-gradient(180deg, rgba(248,244,237,0.80) 0%, rgba(248,244,237,0.78) 40%, rgba(248,244,237,0.72) 100%);
+  background: linear-gradient(180deg, rgba(248,244,237,0.62) 0%, rgba(248,244,237,0.58) 40%, rgba(248,244,237,0.50) 100%);
 }
 .landing-bg__overlay--dark {
-  background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.9) 40%, rgba(0,0,0,0.85) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.55) 100%);
 }
 
 /* smoother crossfade: allow slight overlap and smoother timing */

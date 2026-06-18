@@ -909,7 +909,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             {projectsWithSlug.map((project, index) => (
               <div
                 key={project.slug}
-                className={`w-full ${mode === "professional" ? "border-b-[2.5px] border-white" : "border-b-4 border-black"} ${index === 0 ? (mode === "professional" ? "border-t-[2.5px]" : "border-t-4") : ""} min-h-[1vh] flex items-center overflow-hidden`}
+                className={`w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} min-h-[1vh] flex items-center overflow-hidden`}
               >
                 <div className={`marquee-track ${(mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0)) ? "reverse" : ""}`}>
                   <span
