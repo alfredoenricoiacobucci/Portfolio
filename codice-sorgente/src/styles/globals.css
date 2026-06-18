@@ -92,7 +92,7 @@ body {
 
 .landing-bg.visible { opacity: 1; }
 
-/* single img */
+/* single img — opacity gestita inline */
 .landing-bg__img {
   position: absolute;
   inset: 0;
@@ -100,13 +100,8 @@ body {
   height: 100%;
   object-fit: cover;
   transform-origin: center;
-  opacity: 0;
   transition: opacity 700ms ease;
   will-change: opacity;
-}
-
-.landing-bg__img.show {
-  opacity: 1;
 }
 
 /* overlays stronger for more coverage and slightly different for smooth crossfade */

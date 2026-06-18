@@ -1,6 +1,5 @@
 // pages/index.js
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 
 /**
@@ -53,8 +52,8 @@ export async function getStaticProps() {
   const hasCustomArt = Array.isArray(landingConfig.artworkImages) && landingConfig.artworkImages.length > 0;
   const hasCustomPro = Array.isArray(landingConfig.professionalImages) && landingConfig.professionalImages.length > 0;
 
-  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 10) : readImages("art").slice(0, 10);
-  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 10) : readImages("pro").slice(0, 10);
+  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 20) : readImages("art").slice(0, 20);
+  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 20) : readImages("pro").slice(0, 20);
 
   // Leggi stringhe da contenuti/stringhe.txt
   let stringheRaw = "";
@@ -213,6 +212,31 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
   const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
 
+  // Double-buffer: tiene la foto precedente visibile finché la nuova non è caricata
+  const [artLoaded, setArtLoaded] = useState(null); // src dell'immagine artwork pronta
+  const [profLoaded, setProfLoaded] = useState(null);
+  const prevArtRef = useRef(null);
+  const prevProfRef = useRef(null);
+
+  // Quando artSrc cambia, la vecchia diventa prevArt (resta visibile), la nuova si carica in background
+  useEffect(() => {
+    if (artSrc && artSrc !== artLoaded) {
+      prevArtRef.current = artLoaded; // salva quella attualmente visibile
+      const img = new window.Image();
+      img.onload = () => setArtLoaded(artSrc);
+      img.src = artSrc;
+    }
+  }, [artSrc]);
+
+  useEffect(() => {
+    if (profSrc && profSrc !== profLoaded) {
+      prevProfRef.current = profLoaded;
+      const img = new window.Image();
+      img.onload = () => setProfLoaded(profSrc);
+      img.src = profSrc;
+    }
+  }, [profSrc]);
+
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
     setMode(m);
@@ -242,15 +266,25 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     >
       {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e swipe (mobile) */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        {/* artwork */}
+        {/* artwork — double buffer crossfade */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
-          {artSrc && <Image src={artSrc} alt="" fill sizes="100vw" quality={60} priority className="landing-bg__img show" style={{objectFit:"cover"}} />}
+          {prevArtRef.current && (
+            <img src={prevArtRef.current} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: artLoaded === artSrc ? 0 : 1}} />
+          )}
+          {artLoaded && (
+            <img src={artLoaded} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />
+          )}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
-        {/* professional */}
+        {/* professional — double buffer crossfade */}
         <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
-          {profSrc && <Image src={profSrc} alt="" fill sizes="100vw" quality={60} className="landing-bg__img show" style={{objectFit:"cover"}} />}
+          {prevProfRef.current && (
+            <img src={prevProfRef.current} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: profLoaded === profSrc ? 0 : 1}} />
+          )}
+          {profLoaded && (
+            <img src={profLoaded} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />
+          )}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
       </div>
