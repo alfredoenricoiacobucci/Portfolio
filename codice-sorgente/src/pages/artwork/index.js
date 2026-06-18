@@ -111,8 +111,13 @@ export async function getStaticProps() {
           const parts = normalized.split("---");
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
+        } else {
+          // Split automatico a metà per due colonne
+          const sentences = normalized.split(/(?<=\.)\s+/);
+          const mid = Math.ceil(sentences.length / 2);
+          col1 = sentences.slice(0, mid).join(" ");
+          col2 = sentences.slice(mid).join(" ");
         }
-        // Niente split automatico — testo in una colonna unica come nell'editor
         return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
       })(),
       strings,

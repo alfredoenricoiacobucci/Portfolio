@@ -212,19 +212,28 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
   const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
 
-  // Preload prossima immagine in background (così è in cache quando serve)
+  // Preload: prime 5 immagini al mount + prossime 2 ad ogni cambio
+  useEffect(() => {
+    [...shuffledArt.slice(0, 5), ...shuffledProf.slice(0, 5)].forEach(src => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, [shuffledArt, shuffledProf]);
+
   useEffect(() => {
     if (!shuffledArt.length) return;
-    const nextIdx = (artIndex + 1) % shuffledArt.length;
-    const img = new window.Image();
-    img.src = shuffledArt[nextIdx];
+    [1, 2].forEach(offset => {
+      const img = new window.Image();
+      img.src = shuffledArt[(artIndex + offset) % shuffledArt.length];
+    });
   }, [artIndex, shuffledArt]);
 
   useEffect(() => {
     if (!shuffledProf.length) return;
-    const nextIdx = (profIndex + 1) % shuffledProf.length;
-    const img = new window.Image();
-    img.src = shuffledProf[nextIdx];
+    [1, 2].forEach(offset => {
+      const img = new window.Image();
+      img.src = shuffledProf[(profIndex + offset) % shuffledProf.length];
+    });
   }, [profIndex, shuffledProf]);
 
   // on click: persist selection and navigate to page
