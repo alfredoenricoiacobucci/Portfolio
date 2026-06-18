@@ -46,7 +46,9 @@ export async function getStaticProps() {
     const title = titleParts[0] || "";
     const titleExtra = titleParts.slice(1);
     const datePlace = titleLines.length > 1 ? titleLines[titleLines.length - 1] : "";
-    const description = (data.descrizione || "").trim();
+    // Normalizza: singoli \n → spazio (soft-wrap editor), \n\n → paragrafo
+    const rawDesc = (data.descrizione || "").trim();
+    const description = rawDesc.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ");
     const banner = (data.banner || "").trim();
 
     // Dati tecnici da JSON
