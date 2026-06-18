@@ -1,5 +1,5 @@
 // pages/index.js
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 
 /**
@@ -52,8 +52,9 @@ export async function getStaticProps() {
   const hasCustomArt = Array.isArray(landingConfig.artworkImages) && landingConfig.artworkImages.length > 0;
   const hasCustomPro = Array.isArray(landingConfig.professionalImages) && landingConfig.professionalImages.length > 0;
 
-  const artworkImages = hasCustomArt ? landingConfig.artworkImages.slice(0, 20) : readImages("art").slice(0, 20);
-  const professionalImages = hasCustomPro ? landingConfig.professionalImages.slice(0, 20) : readImages("pro").slice(0, 20);
+  // Passa TUTTE le immagini selezionate — il client gestisce i batch
+  const artworkImages = hasCustomArt ? landingConfig.artworkImages : readImages("art");
+  const professionalImages = hasCustomPro ? landingConfig.professionalImages : readImages("pro");
 
   // Leggi stringhe da contenuti/stringhe.txt
   let stringheRaw = "";
@@ -116,9 +117,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     return () => clearInterval(interval);
   }, []);
 
-  // indices (advance once per entering an area)
-  const artIndexRef = useRef(0);
-  const profIndexRef = useRef(0);
+  // State counters — bumped to trigger re-renders when cycling advances
   const [artIndex, setArtIndex] = useState(0);
   const [profIndex, setProfIndex] = useState(0);
 
@@ -170,24 +169,98 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     };
   }, []);
 
-  // Shuffle images once on mount so the sequence isn't always the same
-  const shuffledArt = useMemo(() => {
-    const arr = [...filteredArt];
-    for (let i = arr.length - 1; i > 0; i--) {
+  // ===== SMART IMAGE CYCLING =====
+  // Shuffle helper (Fisher-Yates)
+  const shuffle = (arr) => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+      [a[i], a[j]] = [a[j], a[i]];
     }
-    return arr;
-  }, [filteredArt]);
+    return a;
+  };
 
-  const shuffledProf = useMemo(() => {
-    const arr = [...filteredProf];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+  // Refs that hold the full cycling state (no re-renders on internal changes)
+  const artCycleRef = useRef(null);
+  const profCycleRef = useRef(null);
+
+  // Initialize cycle state: shuffled queue, pointer into it, current batch preloaded
+  const initCycle = (allImages) => {
+    const queue = shuffle(allImages);
+    const BATCH = 10;
+    // Preload first batch
+    queue.slice(0, BATCH).forEach(src => {
+      const img = new window.Image();
+      img.src = src;
+    });
+    return { queue, pointer: 0, total: queue.length, batchSize: BATCH };
+  };
+
+  // Advance one step in the cycle, return the new src
+  const advanceCycle = (cycle) => {
+    if (!cycle || cycle.total === 0) return null;
+    const { queue, total, batchSize } = cycle;
+    let ptr = cycle.pointer;
+
+    // If we've exhausted all images, reshuffle and restart
+    if (ptr >= total) {
+      cycle.queue = shuffle(queue);
+      cycle.pointer = 0;
+      ptr = 0;
+      // Preload first batch of the new cycle
+      cycle.queue.slice(0, batchSize).forEach(src => {
+        const img = new window.Image();
+        img.src = src;
+      });
     }
-    return arr;
-  }, [filteredProf]);
+
+    const src = cycle.queue[ptr];
+    cycle.pointer = ptr + 1;
+
+    // Calculate how many remain in the current logical batch
+    const batchStart = Math.floor(ptr / batchSize) * batchSize;
+    const batchEnd = batchStart + batchSize;
+    const remainingInBatch = batchEnd - (ptr + 1);
+
+    // When 5 or fewer remain in this batch, preload the next batch
+    if (remainingInBatch <= 5) {
+      const nextBatchStart = batchEnd;
+      const nextBatchEnd = Math.min(nextBatchStart + batchSize, total);
+      for (let i = nextBatchStart; i < nextBatchEnd; i++) {
+        const img = new window.Image();
+        img.src = cycle.queue[i];
+      }
+    }
+
+    return src;
+  };
+
+  // Init cycles on mount
+  useEffect(() => {
+    if (filteredArt.length > 0 && !artCycleRef.current) {
+      artCycleRef.current = initCycle(filteredArt);
+      // Set initial image
+      setArtIndex(prev => prev + 1); // trigger re-render to pick first src
+    }
+    if (filteredProf.length > 0 && !profCycleRef.current) {
+      profCycleRef.current = initCycle(filteredProf);
+      setProfIndex(prev => prev + 1);
+    }
+  }, [filteredArt, filteredProf]);
+
+  // Current displayed sources — derived from cycle refs
+  const artSrcRef = useRef(null);
+  const profSrcRef = useRef(null);
+
+  // Set initial src from first item in queue (safe during render — no window.Image here)
+  if (artCycleRef.current && !artSrcRef.current) {
+    artSrcRef.current = artCycleRef.current.queue[0];
+    artCycleRef.current.pointer = 1;
+  }
+  if (profCycleRef.current && !profSrcRef.current) {
+    profSrcRef.current = profCycleRef.current.queue[0];
+    profCycleRef.current.pointer = 1;
+  }
 
   // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O auto-switch)
   const prevDisplayRef = useRef(null);
@@ -199,42 +272,24 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
     if (prev === null) return;
 
-    if (current === "artwork" && prev === "professional" && shuffledArt.length > 0) {
-      artIndexRef.current = (artIndexRef.current + 1) % shuffledArt.length;
-      setArtIndex(artIndexRef.current);
+    if (current === "artwork" && prev === "professional" && artCycleRef.current) {
+      const newSrc = advanceCycle(artCycleRef.current);
+      if (newSrc) {
+        artSrcRef.current = newSrc;
+        setArtIndex(i => i + 1); // trigger re-render
+      }
     }
-    if (current === "professional" && prev === "artwork" && shuffledProf.length > 0) {
-      profIndexRef.current = (profIndexRef.current + 1) % shuffledProf.length;
-      setProfIndex(profIndexRef.current);
+    if (current === "professional" && prev === "artwork" && profCycleRef.current) {
+      const newSrc = advanceCycle(profCycleRef.current);
+      if (newSrc) {
+        profSrcRef.current = newSrc;
+        setProfIndex(i => i + 1);
+      }
     }
-  }, [mobileArea, hoverArea, shuffledArt.length, shuffledProf.length]);
+  }, [mobileArea, hoverArea]);
 
-  const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
-  const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
-
-  // Preload: prime 5 immagini al mount + prossime 2 ad ogni cambio
-  useEffect(() => {
-    [...shuffledArt.slice(0, 5), ...shuffledProf.slice(0, 5)].forEach(src => {
-      const img = new window.Image();
-      img.src = src;
-    });
-  }, [shuffledArt, shuffledProf]);
-
-  useEffect(() => {
-    if (!shuffledArt.length) return;
-    [1, 2].forEach(offset => {
-      const img = new window.Image();
-      img.src = shuffledArt[(artIndex + offset) % shuffledArt.length];
-    });
-  }, [artIndex, shuffledArt]);
-
-  useEffect(() => {
-    if (!shuffledProf.length) return;
-    [1, 2].forEach(offset => {
-      const img = new window.Image();
-      img.src = shuffledProf[(profIndex + offset) % shuffledProf.length];
-    });
-  }, [profIndex, shuffledProf]);
+  const artSrc = artSrcRef.current;
+  const profSrc = profSrcRef.current;
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
