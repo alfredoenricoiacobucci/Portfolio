@@ -435,6 +435,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  // Indici visitati — le immagini già caricate restano nel DOM per evitare ricaricamento
+  const viewerVisitedRef = useRef(new Set());
 
   // ===== TOGGLE BLOCCO TESTO SOTTO BANNER =====
   const [textOpen, setTextOpen] = useState(false);
@@ -744,7 +746,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
       {/* CONTENUTO PROGETTO — chevron toggle testo sotto banner, poi galleria, poi footer */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className="w-full bg-black">
+        <div key={`project-${currentSlug}`} className={`w-full ${mode === "professional" ? "bg-black" : "bg-base"}`}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
@@ -799,6 +801,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             <JustifiedGallery
               images={selectedProject.images || []}
               onImageClick={(i) => {
+                viewerVisitedRef.current = new Set();
                 setViewerIndex(i);
                 setViewerOpen(true);
                 if (selectedProject?.images?.[i]) {
@@ -906,7 +909,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             {projectsWithSlug.map((project, index) => (
               <div
                 key={project.slug}
-                className={`w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} min-h-[1vh] flex items-center overflow-hidden`}
+                className={`w-full ${mode === "professional" ? "border-b-[2.5px] border-white" : "border-b-4 border-black"} ${index === 0 ? (mode === "professional" ? "border-t-[2.5px]" : "border-t-4") : ""} min-h-[1vh] flex items-center overflow-hidden`}
               >
                 <div className={`marquee-track ${(mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0)) ? "reverse" : ""}`}>
                   <span
@@ -1000,15 +1003,22 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               </>
             )}
             <div className="relative max-w-[95vw] max-h-full w-full h-full">
-              {/* Render current + adjacent images, hide non-active ones */}
+              {/* Render corrente + ±3 adiacenti + già visitati — toggle con opacity */}
               {(() => {
                 const imgs = selectedProject.images;
                 const total = imgs.length;
-                // Show current + preload prev/next 2
-                // Renderizza TUTTE le immagini del progetto — ogni <Image> si carica una volta e resta in DOM
-                // Solo quella corrente è visibile (opacity 1), le altre sono nascoste (opacity 0)
-                return imgs.map((imgItem, idx) => {
-                  const src = imgItem?.src || imgItem;
+                // Segna l'indice corrente come visitato
+                viewerVisitedRef.current.add(viewerIndex);
+                // Calcola indici da renderizzare: corrente + ±3 + visitati
+                const nearby = new Set();
+                for (let o = -3; o <= 3; o++) {
+                  nearby.add((viewerIndex + o + total) % total);
+                }
+                // Unisci con visitati
+                viewerVisitedRef.current.forEach(i => nearby.add(i));
+                const indices = [...nearby].sort((a, b) => a - b);
+                return indices.map(idx => {
+                  const src = imgs[idx]?.src || imgs[idx];
                   const isCurrent = idx === viewerIndex;
                   return (
                     <Image
@@ -1018,10 +1028,10 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                       fill
                       sizes="95vw"
                       quality={85}
-                      priority={idx === 0}
-                      loading={idx <= 4 ? "eager" : "lazy"}
+                      priority={isCurrent}
+                      loading="eager"
                       className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
-                      style={{ opacity: isCurrent ? 1 : 0, transition: "opacity 150ms ease", position: "absolute", pointerEvents: isCurrent ? "auto" : "none" }}
+                      style={{ opacity: isCurrent ? 1 : 0, transition: "opacity 120ms ease", position: "absolute", pointerEvents: isCurrent ? "auto" : "none" }}
                     />
                   );
                 });
