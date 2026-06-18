@@ -212,30 +212,20 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   const artSrc = shuffledArt.length ? shuffledArt[artIndex % shuffledArt.length] : null;
   const profSrc = shuffledProf.length ? shuffledProf[profIndex % shuffledProf.length] : null;
 
-  // Double-buffer: tiene la foto precedente visibile finché la nuova non è caricata
-  const [artLoaded, setArtLoaded] = useState(null); // src dell'immagine artwork pronta
-  const [profLoaded, setProfLoaded] = useState(null);
-  const prevArtRef = useRef(null);
-  const prevProfRef = useRef(null);
-
-  // Quando artSrc cambia, la vecchia diventa prevArt (resta visibile), la nuova si carica in background
+  // Preload prossima immagine in background (così è in cache quando serve)
   useEffect(() => {
-    if (artSrc && artSrc !== artLoaded) {
-      prevArtRef.current = artLoaded; // salva quella attualmente visibile
-      const img = new window.Image();
-      img.onload = () => setArtLoaded(artSrc);
-      img.src = artSrc;
-    }
-  }, [artSrc]);
+    if (!shuffledArt.length) return;
+    const nextIdx = (artIndex + 1) % shuffledArt.length;
+    const img = new window.Image();
+    img.src = shuffledArt[nextIdx];
+  }, [artIndex, shuffledArt]);
 
   useEffect(() => {
-    if (profSrc && profSrc !== profLoaded) {
-      prevProfRef.current = profLoaded;
-      const img = new window.Image();
-      img.onload = () => setProfLoaded(profSrc);
-      img.src = profSrc;
-    }
-  }, [profSrc]);
+    if (!shuffledProf.length) return;
+    const nextIdx = (profIndex + 1) % shuffledProf.length;
+    const img = new window.Image();
+    img.src = shuffledProf[nextIdx];
+  }, [profIndex, shuffledProf]);
 
   // on click: persist selection and navigate to page
   const onClickMode = (m) => {
@@ -266,25 +256,15 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
     >
       {/* BACKGROUND LAYERS — reagiscono a hover (desktop) e swipe (mobile) */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        {/* artwork — double buffer crossfade */}
+        {/* artwork */}
         <div className={`landing-bg landing-bg--artwork ${displayMode !== "professional" ? "visible" : ""}`}>
-          {prevArtRef.current && (
-            <img src={prevArtRef.current} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: artLoaded === artSrc ? 0 : 1}} />
-          )}
-          {artLoaded && (
-            <img src={artLoaded} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />
-          )}
+          {artSrc && <img src={artSrc} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />}
           <div className="landing-bg__overlay landing-bg__overlay--light" />
         </div>
 
-        {/* professional — double buffer crossfade */}
+        {/* professional */}
         <div className={`landing-bg landing-bg--professional ${displayMode === "professional" ? "visible" : ""}`}>
-          {prevProfRef.current && (
-            <img src={prevProfRef.current} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: profLoaded === profSrc ? 0 : 1}} />
-          )}
-          {profLoaded && (
-            <img src={profLoaded} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />
-          )}
+          {profSrc && <img src={profSrc} alt="" className="landing-bg__img" style={{objectFit:"cover", opacity: 1}} />}
           <div className="landing-bg__overlay landing-bg__overlay--dark" />
         </div>
       </div>
