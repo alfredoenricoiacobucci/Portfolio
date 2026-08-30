@@ -277,17 +277,24 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 16px;
     line-height: 1.625;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    padding: 0;
+    border: none;
+    box-sizing: content-box;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     hyphens: auto;
     -webkit-hyphens: auto;
     letter-spacing: 0;
     text-align: left;
-    background: var(--panel);
+    background: transparent;
     resize: vertical;
+    outline: none;
+  }
+  .site-preview-wrap {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
   }
   textarea.site-preview-title {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -4793,14 +4800,15 @@
     // About: prima colonna al 58% (split asimmetrico come nel sito)
     const aboutColW = (siteContent - siteGap) * 0.58;
 
-    // Limita alla larghezza disponibile nel Manager
+    // Compenso padding (12px) + border (1px) per lato del wrapper
+    const wrapOffset = 26;
     const maxW = document.getElementById("content")?.clientWidth - 40 || 900;
 
     document.querySelectorAll(".site-col-text").forEach(el => {
-      el.style.width = Math.min(Math.round(projectDescW), maxW) + "px";
+      el.style.width = Math.min(Math.round(projectDescW + wrapOffset), maxW) + "px";
     });
     document.querySelectorAll(".site-col-half").forEach(el => {
-      el.style.width = Math.min(Math.round(aboutColW), maxW) + "px";
+      el.style.width = Math.min(Math.round(aboutColW + wrapOffset), maxW) + "px";
     });
   }
   window.addEventListener("resize", syncSiteWidths);
@@ -4846,12 +4854,19 @@
       <div class="field">
         <label>Descrizione</label>
         <div class="site-layout-project">
-          <div class="site-col-text">
+          <div class="site-col-text site-preview-wrap">
             <textarea id="f_descrizione" class="large site-preview" lang="it">${escapeHtml(p.descrizione || "")}</textarea>
           </div>
         </div>
       </div>
 
+      ${section === "art" ? `
+      <div class="field" style="margin-top:4px;">
+        <label>Esposizioni</label>
+        <div id="esposizioniList"></div>
+        <button class="ghost" id="btnAddEsposizione" style="margin-top:6px;font-size:12px;">+ Aggiungi esposizione</button>
+      </div>
+      ` : `
       <div class="three-col" style="margin-top:4px;">
         <div class="field">
           <label>Camera</label>
@@ -4866,6 +4881,7 @@
           <input type="text" id="f_luce" value="${escapeHtml(p.luce || "")}">
         </div>
       </div>
+      `}
 
       <div class="photos-section">
         <div class="photos-header">
@@ -4887,14 +4903,56 @@
     `;
 
     // Wire fields
-    ["titolo","descrizione","camera","ottica","luce"].forEach(field => {
+    const baseFields = ["titolo","descrizione"];
+    if (section !== "art") baseFields.push("camera","ottica","luce");
+    baseFields.forEach(field => {
       const el = document.getElementById(`f_${field}`);
+      if (!el) return;
       el.addEventListener("input", () => {
         p[field] = el.value;
         markDirty();
         if (field === "titolo") renderSidebar();
       });
     });
+
+    // Esposizioni editor (solo art)
+    if (section === "art") {
+      if (!Array.isArray(p.esposizioni)) p.esposizioni = [];
+      function renderEsposizioni() {
+        const list = document.getElementById("esposizioniList");
+        if (!list) return;
+        list.innerHTML = "";
+        p.esposizioni.forEach((esp, i) => {
+          const row = document.createElement("div");
+          row.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:start;";
+          row.innerHTML = `
+            <input type="text" placeholder="Nome evento" value="${escapeHtml(esp.nome || "")}" data-field="nome" style="font-size:12px;padding:6px 8px;">
+            <input type="text" placeholder="Data" value="${escapeHtml(esp.data || "")}" data-field="data" style="font-size:12px;padding:6px 8px;">
+            <input type="text" placeholder="Luogo" value="${escapeHtml(esp.luogo || "")}" data-field="luogo" style="font-size:12px;padding:6px 8px;">
+            <input type="text" placeholder="Info evento" value="${escapeHtml(esp.info || "")}" data-field="info" style="font-size:12px;padding:6px 8px;">
+            <button class="ghost" style="font-size:11px;padding:6px 8px;color:#c8102e;" title="Rimuovi">✕</button>
+          `;
+          row.querySelectorAll("input").forEach(inp => {
+            inp.addEventListener("input", () => {
+              p.esposizioni[i][inp.dataset.field] = inp.value;
+              markDirty();
+            });
+          });
+          row.querySelector("button").addEventListener("click", () => {
+            p.esposizioni.splice(i, 1);
+            markDirty();
+            renderEsposizioni();
+          });
+          list.appendChild(row);
+        });
+      }
+      renderEsposizioni();
+      document.getElementById("btnAddEsposizione").addEventListener("click", () => {
+        p.esposizioni.push({ nome: "", data: "", luogo: "", info: "" });
+        markDirty();
+        renderEsposizioni();
+      });
+    }
 
     // Upload area — drag & drop foto
     const uploadArea = document.getElementById("uploadArea");
@@ -4940,7 +4998,7 @@
 
       <div class="field">
         <label>Testo biografia</label>
-        <div class="site-col-half">
+        <div class="site-col-half site-preview-wrap">
           <textarea id="f_text" class="large site-preview" lang="it">${escapeHtml(fullText)}</textarea>
         </div>
         <div class="hint">La larghezza corrisponde a una colonna del sito. Il sito divide automaticamente il testo in due colonne uguali.</div>
@@ -7227,6 +7285,7 @@
       luce: "",
       banner: "",
     };
+    if (newSection === "art") newProj.esposizioni = [];
     state.projects.push(newProj);
     // Create placeholder file so the empty folder exists on GitHub
     if (getToken()) {

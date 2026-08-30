@@ -60,6 +60,10 @@ export async function getStaticProps() {
       if (Object.keys(techData).length === 0) techData = null;
     }
 
+    // Esposizioni (solo per progetti art)
+    const esposizioni = Array.isArray(data.esposizioni) ? data.esposizioni : [];
+    const section = data.section || "";
+
     // Lista file dall'array ordine in contenuti.json (già ordinata)
     const files = (data.ordine || []);
     // Dimensioni pre-calcolate da contenuti.json
@@ -84,7 +88,7 @@ export async function getStaticProps() {
       if (aIdx >= 0) anteprimaIndex = aIdx;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, techData };
+    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, techData, esposizioni, section };
   });
 
   // ---- ABOUT: tutto da contenuti.json ----
@@ -863,7 +867,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             </div>
           </div>
           {/* Chevron — centrata nello spazio extra (80px) in fondo al banner */}
-          {(selectedProject.description || selectedProject.techData) && (
+          {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div
               className="absolute left-0 right-0 bottom-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none project-chevron-wrap"
               style={{ height: "80px" }}
@@ -895,7 +899,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className={`w-full ${mode === "professional" ? "bg-black" : "bg-base"}`}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
-          {(selectedProject.description || selectedProject.techData) && (
+          {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
               {/* Contenuto testo — si rivela al click */}
               <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
@@ -908,10 +912,22 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                       </p>
                     </div>
                   )}
-                  {/* Micro colonna: dati tecnici in alto, copyright in basso */}
+                  {/* Micro colonna: dati tecnici/esposizioni in alto, copyright in basso */}
                   <div className="md:w-[180px] shrink-0 mt-6 md:mt-0 flex flex-col justify-between">
-                    {/* Dati tecnici in alto */}
-                    {selectedProject.techData && (
+                    {/* Esposizioni per art, dati tecnici per pro */}
+                    {selectedProject.section === "art" && selectedProject.esposizioni?.length > 0 ? (
+                      <div className={`text-xs leading-relaxed space-y-4 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                        <div className="uppercase tracking-wider font-semibold" style={{ fontSize: "9px" }}>Esposizioni</div>
+                        {selectedProject.esposizioni.map((esp, ei) => (
+                          <div key={ei} className="space-y-0.5">
+                            {esp.nome && <div className="font-medium">{esp.nome}</div>}
+                            {esp.data && <div>{esp.data}</div>}
+                            {esp.luogo && <div>{esp.luogo}</div>}
+                            {esp.info && <div className="italic">{esp.info}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : selectedProject.techData && (
                       <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
                         {selectedProject.techData.camera && (
                           <div>
