@@ -437,6 +437,9 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // Hover sui label
   const [hoverMode, setHoverMode] = useState(null);
 
+  // Hover sulle righe marquee: indice del progetto hoverato (-1 = nessuno)
+  const [hoverRowIndex, setHoverRowIndex] = useState(-1);
+
   // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
@@ -911,28 +914,80 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       ) : (
         <div key="home" className="w-full relative">
           <div className="flex flex-col gap-0 p-0">
-            {projectsWithSlug.map((project, index) => (
-              <div
-                key={project.slug}
-                className={`w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} min-h-[1vh] flex items-center overflow-hidden`}
-              >
-                <div className={`marquee-track ${(mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0)) ? "reverse" : ""}`}>
-                  <span
-                    className="marquee-seq"
-                    onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+            {projectsWithSlug.map((project, index) => {
+              const isHovered = hoverRowIndex === index;
+              const hoverBg = mode === "artwork" ? "#0a0a0a" : "#f8f4ed";
+              const previewImages = project.images?.slice(0, 6) || [];
+
+              return (
+                <div
+                  key={project.slug}
+                  className={`w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer`}
+                  style={{
+                    transition: "all 400ms cubic-bezier(.25,.8,.25,1)",
+                    background: isHovered ? hoverBg : "transparent",
+                  }}
+                  onMouseEnter={() => setHoverRowIndex(index)}
+                  onMouseLeave={() => setHoverRowIndex(-1)}
+                  onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+                >
+                  {/* Marquee text — nascosto durante hover */}
+                  <div
+                    className={`marquee-track ${(mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0)) ? "reverse" : ""}`}
+                    style={{
+                      opacity: isHovered ? 0 : 1,
+                      transition: "opacity 300ms ease",
+                      height: isHovered ? 0 : "auto",
+                      overflow: "hidden",
+                    }}
                   >
-                    {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
-                  </span>
-                  <span
-                    className="marquee-seq"
-                    aria-hidden="true"
-                    onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+                    <span
+                      className="marquee-seq"
+                    >
+                      {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
+                    </span>
+                    <span
+                      className="marquee-seq"
+                      aria-hidden="true"
+                    >
+                      {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
+                    </span>
+                  </div>
+
+                  {/* Preview foto — visibile solo durante hover */}
+                  <div
+                    style={{
+                      maxHeight: isHovered ? "220px" : "0px",
+                      opacity: isHovered ? 1 : 0,
+                      transition: "max-height 400ms cubic-bezier(.25,.8,.25,1), opacity 350ms ease",
+                      overflow: "hidden",
+                    }}
                   >
-                    {Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ")}
-                  </span>
+                    <div className="flex items-center gap-3 px-6 py-4" style={{ height: "200px" }}>
+                      {previewImages.map((img, i) => (
+                        <div
+                          key={img.src}
+                          className="h-full flex-shrink-0 overflow-hidden rounded-sm"
+                          style={{
+                            aspectRatio: `${img.w} / ${img.h}`,
+                            opacity: isHovered ? 1 : 0,
+                            transform: isHovered ? "translateY(0)" : "translateY(12px)",
+                            transition: `opacity 350ms ease ${i * 60}ms, transform 350ms ease ${i * 60}ms`,
+                          }}
+                        >
+                          <img
+                            src={img.src}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Gradient fade bottom — fixed, non interferisce col layout */}
