@@ -5,8 +5,18 @@ var sa = Application.currentApplication();
 sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
-var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib
+var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading
 os.chdir('/Users/enricoiacobucci/Desktop/Portfolio AEI')
+def git_sync(msg="auto: media update"):
+ def run():
+  try:
+   cwd=os.path.join(os.getcwd(),'codice-sorgente')
+   subprocess.run(['git','add','-A'],cwd=cwd,capture_output=True,timeout=10)
+   subprocess.run(['git','commit','-m',msg],cwd=cwd,capture_output=True,timeout=10)
+   subprocess.run(['git','pull','--rebase'],cwd=cwd,capture_output=True,timeout=30)
+   subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
+  except:pass
+ threading.Thread(target=run,daemon=True).start()
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
@@ -66,6 +76,7 @@ class H(http.server.SimpleHTTPRequestHandler):
     saved.append(name)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps({"saved":saved}).encode())
+   git_sync("auto: upload "+",".join(saved))
   elif self.path=='/delete-file':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
@@ -76,7 +87,9 @@ class H(http.server.SimpleHTTPRequestHandler):
     self.send_response(403);self.end_headers();self.wfile.write(b'{"error":"forbidden"}');return
    os.remove(safe)
    self.send_response(200);self.end_headers()
-   self.wfile.write(json.dumps({"deleted":os.path.basename(safe)}).encode())
+   fname=os.path.basename(safe)
+   self.wfile.write(json.dumps({"deleted":fname}).encode())
+   git_sync("auto: delete "+fname)
   else:
    self.send_response(404);self.end_headers()
  def log_message(self,*a):pass

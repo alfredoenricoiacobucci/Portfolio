@@ -7212,31 +7212,43 @@
 
   // ========== SAVE ==========
   document.getElementById("btnSave").onclick = async () => {
-    if (!getToken()) {
-      toast("Imposta prima il token GitHub nella sezione Impostazioni.", "err");
-      switchSection("impostazioni");
-      return;
-    }
     if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
     const btn = document.getElementById("btnSave");
     btn.disabled = true;
     btn.textContent = "Salvataggio...";
+    const isLocal = await checkLocalServer();
     try {
-      // Get current sha of contenuti.json
-      const existing = await ghGet("codice-sorgente/contenuti/contenuti.json");
-      const sha = existing ? existing.sha : undefined;
       const newJson = JSON.stringify(state, null, 2) + "\n";
-      const result = await ghPut("codice-sorgente/contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
-      clearDirty();
-      // Update embedded data for next page load
-      embeddedEl.textContent = newJson;
-      toast("Salvato su GitHub! Monitoraggio deploy…", "ok");
-      // Avvia il tracking del deploy Vercel
-      const commitSha = result?.commit?.sha;
-      if (commitSha) {
-        trackDeploy(commitSha);
+      if (isLocal) {
+        // Salva contenuti.json su disco e git push automatico
+        const b64 = btoa(unescape(encodeURIComponent(newJson)));
+        const r = await fetch("/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folder: "codice-sorgente/contenuti", files: [{ name: "contenuti.json", data: b64 }] })
+        });
+        if (!r.ok) throw new Error("Salvataggio locale fallito");
+        clearDirty();
+        embeddedEl.textContent = newJson;
+        toast("Salvato e pubblicato automaticamente!", "ok");
       } else {
-        toast("Salvato! Impossibile tracciare il deploy (SHA mancante).", "ok");
+        if (!getToken()) {
+          toast("Imposta prima il token GitHub nella sezione Impostazioni.", "err");
+          switchSection("impostazioni");
+          return;
+        }
+        const existing = await ghGet("codice-sorgente/contenuti/contenuti.json");
+        const sha = existing ? existing.sha : undefined;
+        const result = await ghPut("codice-sorgente/contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
+        clearDirty();
+        embeddedEl.textContent = newJson;
+        toast("Salvato su GitHub! Monitoraggio deploy…", "ok");
+        const commitSha = result?.commit?.sha;
+        if (commitSha) {
+          trackDeploy(commitSha);
+        } else {
+          toast("Salvato! Impossibile tracciare il deploy (SHA mancante).", "ok");
+        }
       }
     } catch(e) {
       toast("Errore salvataggio: " + e.message, "err");
