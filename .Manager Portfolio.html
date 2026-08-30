@@ -1009,6 +1009,13 @@
     .project-header { flex-direction: column; }
     .project-header .actions { margin-left: 0; width: 100%; }
   }
+  /* Toggle switch pill */
+  .toggle-pill { position:relative; display:inline-block; width:34px; height:18px; vertical-align:middle; }
+  .toggle-pill input { opacity:0; width:0; height:0; position:absolute; }
+  .toggle-pill .pill-track { position:absolute; inset:0; background:#555; border-radius:18px; transition:background 0.2s; cursor:pointer; }
+  .toggle-pill .pill-track::before { content:""; position:absolute; width:14px; height:14px; left:2px; top:2px; background:#aaa; border-radius:50%; transition:transform 0.2s, background 0.2s; }
+  .toggle-pill input:checked + .pill-track { background:#c8102e; }
+  .toggle-pill input:checked + .pill-track::before { transform:translateX(16px); background:#fff; }
 </style>
 </head>
 <body>
@@ -5126,9 +5133,9 @@
 
     function switchHtml(field, lbl) {
       const checked = sh[field] ? "checked" : "";
-      return `<label class="shared-toggle" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);cursor:pointer;margin-left:12px;">
-        <input type="checkbox" data-shared="${field}" ${checked} style="accent-color:#3b82f6;"> Comune
-      </label>`;
+      return `<span style="display:inline-flex;align-items:center;gap:6px;margin-left:12px;font-size:11px;color:var(--text3);">
+        <label class="toggle-pill"><input type="checkbox" data-shared="${field}" ${checked}><span class="pill-track"></span></label> Comune
+      </span>`;
     }
 
     content.innerHTML = `

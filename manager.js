@@ -152,10 +152,9 @@ editMenu.addItem($.NSMenuItem.alloc.initWithTitleActionKeyEquivalent("Seleziona 
 editMi.submenu = editMenu;
 nsApp.mainMenu = mb;
 
-// Window (88% of screen, centered)
-var sc = $.NSScreen.mainScreen.frame;
-var w = Math.floor(sc.size.width*0.88), h = Math.floor(sc.size.height*0.88);
-var r = $.NSMakeRect(Math.floor((sc.size.width-w)/2),Math.floor((sc.size.height-h)/2),w,h);
+// Window — massimizzata (zona visibile meno menu bar)
+var sc = $.NSScreen.mainScreen.visibleFrame;
+var r = $.NSMakeRect(sc.origin.x, sc.origin.y, sc.size.width, sc.size.height);
 var st = $.NSTitledWindowMask|$.NSClosableWindowMask|$.NSResizableWindowMask|$.NSMiniaturizableWindowMask;
 var win = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer(r,st,$.NSBackingStoreBuffered,false);
 win.title = "Manager Portfolio";
@@ -178,6 +177,12 @@ wv.loadRequest(req);
 
 win.makeKeyAndOrderFront(null);
 nsApp.activateIgnoringOtherApps(true);
+
+// Entra in fullscreen (bottone verde)
+win.setCollectionBehavior(1 << 7); // NSWindowCollectionBehaviorFullScreenPrimary
+delay(0.3);
+win.toggleFullScreen(null);
+
 nsApp.run;
 
 // Cleanup dopo la chiusura dell'app (nsApp.run ritorna qui)

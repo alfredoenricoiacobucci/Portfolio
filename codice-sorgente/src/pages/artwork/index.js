@@ -920,7 +920,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
       {/* CONTENUTO PROGETTO — chevron toggle testo sotto banner, poi galleria, poi footer */}
       {selectedProject && selectedProject.name !== "About" ? (
-        <div key={`project-${currentSlug}`} className={`w-full ${mode === "professional" ? "bg-black" : "bg-base"}`}>
+        <div key={`project-${currentSlug}`} className="w-full" style={{ backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
@@ -1086,7 +1086,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             </div>
 
             {/* BLOCCO CITAZIONE + FOTO — colori invertiti rispetto al resto */}
-            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-black text-white" : "bg-white text-black"}`} style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
+            <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem", backgroundColor: mode === "professional" ? ASP.colorBgArtwork : ASP.colorBgProfessional, color: mode === "professional" ? ASP.colorTextArtwork : ASP.colorTextProfessional }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
