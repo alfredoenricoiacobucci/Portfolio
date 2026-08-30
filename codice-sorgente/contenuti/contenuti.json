@@ -4245,19 +4245,20 @@
     "video": "",
     "trovaBeneTitolo": "Se sei alla ricerca di un professionista",
     "trovaBenePunti": [
-      "onesto che antepone il risultato al compenso",
+      "onesto che antepone il risultato al compenso,",
       "corretto al punto di mettere in discussione il tuo punto di vista quando necessario",
-      "con cui stabilire un rapporto di lungo periodo"
+      "e con cui stabilire un rapporto di lungo periodo;"
     ],
-    "trovaBeneChiusura": "allora avrai in me il tuo alleato leale per raggiungere i tuoi obiettivi",
+    "trovaBeneChiusura": "allora avrai in me il tuo alleato leale per raggiungere i tuoi obiettivi.",
     "trovaBeneHighlight": [
       "professionista",
       "onesto",
-      "compenso",
       "corretto",
-      "discussione",
       "necessario",
-      "rapporto"
+      "rapporto",
+      "alleato",
+      "leale",
+      "obiettivi"
     ]
   },
   "landing": {
