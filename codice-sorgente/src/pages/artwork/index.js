@@ -914,21 +914,45 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                   )}
                   {/* Micro colonna: dati tecnici/esposizioni in alto, copyright in basso */}
                   <div className="md:w-[180px] shrink-0 mt-6 md:mt-0 flex flex-col justify-between">
-                    {/* Esposizioni per art, dati tecnici per pro */}
-                    {selectedProject.section === "art" && selectedProject.esposizioni?.length > 0 ? (
-                      <div className={`text-xs leading-relaxed space-y-4 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
-                        <div className="uppercase tracking-wider font-semibold" style={{ fontSize: "9px" }}>Esposizioni</div>
-                        {selectedProject.esposizioni.map((esp, ei) => (
-                          <div key={ei} className="space-y-0.5">
-                            {esp.nome && <div className="font-medium">{esp.nome}</div>}
-                            {esp.data && <div>{esp.data}</div>}
-                            {esp.luogo && <div>{esp.luogo}</div>}
-                            {esp.info && <div className="italic">{esp.info}</div>}
-                          </div>
-                        ))}
-                      </div>
+                    {/* Esposizioni per art, attrezzatura per pro */}
+                    {selectedProject.section === "art" ? (
+                      selectedProject.esposizioni?.length > 0 && (
+                        <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                          <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "9px" }}>Esposizioni</div>
+                          {selectedProject.esposizioni.map((esp, ei) => (
+                            <div key={ei} className="space-y-3">
+                              {esp.nome && (
+                                <div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Nome evento</div>
+                                  <div>{esp.nome}</div>
+                                </div>
+                              )}
+                              {esp.data && (
+                                <div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Data</div>
+                                  <div>{esp.data}</div>
+                                </div>
+                              )}
+                              {esp.luogo && (
+                                <div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Luogo</div>
+                                  <div>{esp.luogo}</div>
+                                </div>
+                              )}
+                              {esp.info && (
+                                <div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Info evento</div>
+                                  <div>{esp.info}</div>
+                                </div>
+                              )}
+                              {ei < selectedProject.esposizioni.length - 1 && <hr className="border-current opacity-20" />}
+                            </div>
+                          ))}
+                        </div>
+                      )
                     ) : selectedProject.techData && (
                       <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                        <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "9px" }}>Attrezzatura</div>
                         {selectedProject.techData.camera && (
                           <div>
                             <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Camera</div>
