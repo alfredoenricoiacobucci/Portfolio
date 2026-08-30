@@ -112,19 +112,24 @@ export async function getStaticProps() {
     props: {
       projects,
       about: (() => {
-        // Normalizza: singoli \n → spazio (soft-wrap dell'editor), \n\n → separatore paragrafi
-        const normalized = aboutText.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ").trim();
+        // About: rispetta gli a capo dell'utente, --- separa le colonne
+        const normalized = aboutText.trim();
         let col1 = normalized, col2 = "";
         if (normalized.includes("---")) {
           const parts = normalized.split("---");
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
         } else {
-          // Split automatico a metà per due colonne
+          // Split automatico: prima colonna ~55% dei caratteri, spezza per frase
           const sentences = normalized.split(/(?<=\.)\s+/);
-          const mid = Math.ceil(sentences.length / 2);
-          col1 = sentences.slice(0, mid).join(" ");
-          col2 = sentences.slice(mid).join(" ");
+          const halfLen = Math.ceil(normalized.length * 0.55);
+          let accum = 0, splitIdx = sentences.length;
+          for (let i = 0; i < sentences.length; i++) {
+            accum += sentences[i].length;
+            if (accum >= halfLen) { splitIdx = i + 1; break; }
+          }
+          col1 = sentences.slice(0, splitIdx).join(" ");
+          col2 = sentences.slice(splitIdx).join(" ");
         }
         return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
       })(),
