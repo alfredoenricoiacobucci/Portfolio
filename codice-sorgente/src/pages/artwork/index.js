@@ -1175,7 +1175,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           transition: padding 400ms cubic-bezier(.25,.8,.25,1);
         }
         .marquee-row:hover .marquee-row__inner {
-          padding: 14rem 0;
+          padding: 4.5rem 0;
         }
       `}</style>
     </div>
