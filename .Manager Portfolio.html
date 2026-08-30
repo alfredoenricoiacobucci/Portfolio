@@ -7090,32 +7090,33 @@
     const uploadedNames = [];
     const uploadedDims = {};
 
-    // Calcola dimensioni per tutte le immagini
-    for (const file of fileList) {
-      const dim = await getImageDimensions(file);
-      if (dim) uploadedDims[file.name] = dim;
-    }
-
     const isLocal = await checkLocalServer();
 
     if (isLocal) {
-      // Upload locale: salva direttamente su disco
-      try {
-        const filesData = [];
-        for (const file of fileList) {
-          const b64 = await file2b64(file);
-          filesData.push({ name: file.name, data: b64 });
+      // Upload locale a batch di 3 file alla volta
+      const BATCH = 3;
+      for (let i = 0; i < fileList.length; i += BATCH) {
+        const batch = fileList.slice(i, i + BATCH);
+        toast(`Caricamento ${i + 1}–${Math.min(i + BATCH, fileList.length)} di ${fileList.length}…`, "");
+        try {
+          const filesData = [];
+          for (const file of batch) {
+            const dim = await getImageDimensions(file);
+            if (dim) uploadedDims[file.name] = dim;
+            const b64 = await file2b64(file);
+            filesData.push({ name: file.name, data: b64 });
+          }
+          const r = await fetch("/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ folder: folderPath, files: filesData })
+          });
+          const result = await r.json();
+          if (result.saved) uploadedNames.push(...result.saved);
+          else throw new Error(result.error || "Upload fallito");
+        } catch(e) {
+          toast(`Errore batch ${i + 1}: ${e.message}`, "err");
         }
-        const r = await fetch("/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ folder: folderPath, files: filesData })
-        });
-        const result = await r.json();
-        if (result.saved) uploadedNames.push(...result.saved);
-        else throw new Error(result.error || "Upload fallito");
-      } catch(e) {
-        toast(`Errore upload locale: ${e.message}`, "err");
       }
     } else {
       // Fallback: upload via GitHub API
@@ -7125,6 +7126,8 @@
       }
       for (const file of fileList) {
         try {
+          const dim = await getImageDimensions(file);
+          if (dim) uploadedDims[file.name] = dim;
           const b64 = await file2b64(file);
           await ghPut(`${folderPath}/${file.name}`, b64, `editor: upload ${file.name}`);
           uploadedNames.push(file.name);
@@ -7151,6 +7154,11 @@
     toast(isLocal ? "Foto salvate nella cartella del progetto." : "Caricamento completato.", "ok");
     if (key === "about") await fetchAboutMedia();
     else await fetchPhotos(key);
+    // Git push automatico dopo upload locale
+    if (isLocal && uploadedNames.length > 0) {
+      fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({message: `auto: upload ${uploadedNames.length} foto in ${folderPath}`}) }).catch(()=>{});
+    }
   }
 
   // ========== NEW PROJECT ==========

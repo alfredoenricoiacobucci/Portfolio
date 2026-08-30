@@ -76,7 +76,13 @@ class H(http.server.SimpleHTTPRequestHandler):
     saved.append(name)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps({"saved":saved}).encode())
-   git_sync("auto: upload "+",".join(saved))
+  elif self.path=='/git-sync':
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length)) if length else {}
+   msg=body.get('message','auto: media update')
+   git_sync(msg)
+   self.send_response(200);self.end_headers()
+   self.wfile.write(b'{"ok":true}')
   elif self.path=='/delete-file':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
