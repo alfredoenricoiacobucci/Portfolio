@@ -5315,8 +5315,20 @@
   }
 
   // ========== PHOTOS ==========
+  // Lista file locali via server Python (Manager app)
+  async function localListFiles(folder) {
+    const r = await fetch(`/list-files?folder=${encodeURIComponent(folder)}`);
+    if (!r.ok) throw new Error("list-files failed");
+    return await r.json(); // array di nomi file
+  }
+
+  function localPhotoUrl(folderPath, fileName) {
+    return `/local-photo/${folderPath}/${encodeURIComponent(fileName)}`;
+  }
+
   async function fetchPhotos(key) {
-    if (!getToken()) {
+    const isLocal = await checkLocalServer();
+    if (!isLocal && !getToken()) {
       document.getElementById("photosGrid").innerHTML =
         '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire le foto.</div>';
       return;
@@ -5324,13 +5336,19 @@
     const [section, slug] = key.split("/");
     const path = `codice-sorgente/contenuti/${section}/${slug}`;
     try {
-      const items = await ghListDir(path);
-      const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
-      photosByProject[key] = imgs.map(i => ({
-        name: i.name,
-        sha: i.sha,
-        url: photoRawUrl(path, i.name)
-      }));
+      if (isLocal) {
+        const names = await localListFiles(path);
+        const imgs = names.filter(n => /\.(jpg|jpeg|png|webp|gif)$/i.test(n));
+        photosByProject[key] = imgs.map(n => ({
+          name: n, sha: null, url: localPhotoUrl(path, n)
+        }));
+      } else {
+        const items = await ghListDir(path);
+        const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
+        photosByProject[key] = imgs.map(i => ({
+          name: i.name, sha: i.sha, url: photoRawUrl(path, i.name)
+        }));
+      }
       if (currentKey === key) renderPhotosGrid(key);
       renderSidebar();
     } catch(e) {
@@ -5340,16 +5358,25 @@
   }
 
   async function fetchAboutMedia() {
-    if (!getToken()) {
+    const isLocal = await checkLocalServer();
+    if (!isLocal && !getToken()) {
       document.getElementById("photosGrid").innerHTML =
         '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire i media.</div>';
       return;
     }
+    const aboutPath = "codice-sorgente/contenuti/about";
     try {
-      const items = await ghListDir("codice-sorgente/contenuti/about");
-      aboutMedia = items.filter(i => i.type === "file").map(i => ({
-        name: i.name, sha: i.sha, url: photoRawUrl("codice-sorgente/contenuti/about", i.name)
-      }));
+      if (isLocal) {
+        const names = await localListFiles(aboutPath);
+        aboutMedia = names.filter(n => /\.(jpg|jpeg|png|webp|gif|mp4|mov)$/i.test(n)).map(n => ({
+          name: n, sha: null, url: localPhotoUrl(aboutPath, n)
+        }));
+      } else {
+        const items = await ghListDir(aboutPath);
+        aboutMedia = items.filter(i => i.type === "file").map(i => ({
+          name: i.name, sha: i.sha, url: photoRawUrl(aboutPath, i.name)
+        }));
+      }
       if (currentKey === "about") renderAboutMediaGrid();
     } catch(e) {
       document.getElementById("photosGrid").innerHTML =
@@ -5358,26 +5385,32 @@
   }
 
   // Fetch conteggio foto di TUTTI i progetti (per popolare sidebar all'avvio)
-  // Usa batch da 4 per evitare rate-limiting GitHub e aggiorna la sidebar progressivamente.
   async function fetchAllPhotoCounts() {
-    if (!getToken()) return;
+    const isLocal = await checkLocalServer();
+    if (!isLocal && !getToken()) return;
     const toFetch = state.projects.filter(p => {
       const key = `${p.section}/${p.slug}`;
       return !photosByProject[key] || photosByProject[key].length === 0;
     });
-    const batchSize = 4;
+    const batchSize = isLocal ? 10 : 4;
     for (let i = 0; i < toFetch.length; i += batchSize) {
       const batch = toFetch.slice(i, i + batchSize);
       await Promise.all(batch.map(async (p) => {
         const key = `${p.section}/${p.slug}`;
+        const basePath = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
         try {
-          const items = await ghListDir(`codice-sorgente/contenuti/${p.section}/${p.slug}`);
-          const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
-          const basePath = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
-          photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: photoRawUrl(basePath, i.name) }));
+          if (isLocal) {
+            const names = await localListFiles(basePath);
+            const imgs = names.filter(n => /\.(jpg|jpeg|png|webp|gif)$/i.test(n));
+            photosByProject[key] = imgs.map(n => ({ name: n, sha: null, url: localPhotoUrl(basePath, n) }));
+          } else {
+            const items = await ghListDir(basePath);
+            const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
+            photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: photoRawUrl(basePath, i.name) }));
+          }
         } catch { /* cartella vuota o inesistente */ }
       }));
-      renderSidebar(); // aggiorna sidebar dopo ogni batch
+      renderSidebar();
     }
   }
 
@@ -5443,11 +5476,17 @@
       const names = indices.map(i => sorted[i].name);
       // Eliminazione diretta senza conferma
       const deletedNames = [];
+      const isLocal = await checkLocalServer();
       for (const i of indices) {
         const photo = sorted[i];
         try {
-          await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
-            `editor: delete ${section}/${slug}/${photo.name}`);
+          if (isLocal) {
+            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
+            if (!r.ok) throw new Error("delete failed");
+          } else {
+            await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+              `editor: delete ${section}/${slug}/${photo.name}`);
+          }
           deletedNames.push(photo.name);
         } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
       }
@@ -5528,8 +5567,14 @@
               const ph = sorted.find(x => x.name === name);
               if (!ph) return;
               try {
-                await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${name}`, ph.sha,
-                  `editor: delete ${section}/${slug}/${name}`);
+                const isLocal = await checkLocalServer();
+                if (isLocal) {
+                  const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${name}`}) });
+                  if (!r.ok) throw new Error("delete failed");
+                } else {
+                  await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${name}`, ph.sha,
+                    `editor: delete ${section}/${slug}/${name}`);
+                }
                 photosByProject[key] = photosByProject[key].filter(x => x.name !== name);
                 if (p.ordine) p.ordine = p.ordine.filter(n => n !== name);
                 lightboxData.photos = lightboxData.photos.filter(x => x.name !== name);
@@ -5633,8 +5678,14 @@
         e.stopPropagation();
         // Eliminazione diretta senza conferma
         try {
-          await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
-            `editor: delete ${section}/${slug}/${photo.name}`);
+          const isLocal = await checkLocalServer();
+          if (isLocal) {
+            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
+            if (!r.ok) throw new Error("delete failed");
+          } else {
+            await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
+              `editor: delete ${section}/${slug}/${photo.name}`);
+          }
           photosByProject[key] = sorted.filter(x => x.name !== photo.name);
           if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
           markDirty();
@@ -5731,8 +5782,14 @@
         e.stopPropagation();
         if (!confirm(`Eliminare ${media.name}?`)) return;
         try {
-          await ghDelete(`codice-sorgente/contenuti/about/${media.name}`, media.sha,
-            `editor: delete about/${media.name}`);
+          const isLocal = await checkLocalServer();
+          if (isLocal) {
+            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/about/${media.name}`}) });
+            if (!r.ok) throw new Error("delete failed");
+          } else {
+            await ghDelete(`codice-sorgente/contenuti/about/${media.name}`, media.sha,
+              `editor: delete about/${media.name}`);
+          }
           aboutMedia = aboutMedia.filter(x => x.name !== media.name);
           markDirty();
           renderAboutMediaGrid();
@@ -7012,8 +7069,8 @@
   async function checkLocalServer() {
     if (localServerAvailable !== null) return localServerAvailable;
     try {
-      const r = await fetch("/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "", files: [] }) });
-      localServerAvailable = true;
+      const r = await fetch("/list-files?folder=codice-sorgente/contenuti");
+      localServerAvailable = r.ok;
     } catch(e) { localServerAvailable = false; }
     return localServerAvailable;
   }

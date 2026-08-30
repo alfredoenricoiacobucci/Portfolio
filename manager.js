@@ -16,6 +16,32 @@ class H(http.server.SimpleHTTPRequestHandler):
    url=q.get('url',[''])[0]
    if url:webbrowser.open(url)
    self.send_response(200);self.end_headers();self.wfile.write(b'ok')
+  elif self.path.startswith('/list-files?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   folder=q.get('folder',[''])[0]
+   safe=os.path.normpath(os.path.join(os.getcwd(),folder))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not safe.startswith(base):
+    self.send_response(403);self.end_headers();self.wfile.write(b'[]');return
+   files=[]
+   if os.path.isdir(safe):
+    for f in sorted(os.listdir(safe)):
+     fp=os.path.join(safe,f)
+     if os.path.isfile(fp) and f.lower().split('.')[-1] in ('jpg','jpeg','png','webp','gif','mp4','mov'):
+      files.append(f)
+   self.send_response(200);self.end_headers()
+   self.wfile.write(json.dumps(files).encode())
+  elif self.path.startswith('/local-photo/'):
+   # Serve foto locali: /local-photo/codice-sorgente/contenuti/...
+   rel=urllib.parse.unquote(self.path[len('/local-photo/'):])
+   safe=os.path.normpath(os.path.join(os.getcwd(),rel))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not safe.startswith(base) or not os.path.isfile(safe):
+    self.send_response(404);self.end_headers();return
+   ext=safe.rsplit('.',1)[-1].lower()
+   ct={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif','mp4':'video/mp4','mov':'video/quicktime'}.get(ext,'application/octet-stream')
+   self.send_response(200);self.send_header('Content-Type',ct);self.end_headers()
+   with open(safe,'rb') as fp:self.wfile.write(fp.read())
   else:super().do_GET()
  def do_POST(self):
   if self.path=='/upload':
@@ -40,6 +66,17 @@ class H(http.server.SimpleHTTPRequestHandler):
     saved.append(name)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps({"saved":saved}).encode())
+  elif self.path=='/delete-file':
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length))
+   filepath=body.get('path','')
+   safe=os.path.normpath(os.path.join(os.getcwd(),filepath))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not safe.startswith(base) or not os.path.isfile(safe):
+    self.send_response(403);self.end_headers();self.wfile.write(b'{"error":"forbidden"}');return
+   os.remove(safe)
+   self.send_response(200);self.end_headers()
+   self.wfile.write(json.dumps({"deleted":os.path.basename(safe)}).encode())
   else:
    self.send_response(404);self.end_headers()
  def log_message(self,*a):pass
