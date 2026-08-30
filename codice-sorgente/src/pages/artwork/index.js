@@ -34,7 +34,7 @@ export async function getStaticProps() {
   };
 
   // ---- contenuti.json è l'UNICA fonte dati ----
-  const contenuti = readJSON(pathMod.join(contenutiDir, "contenuti.json")) || { projects: [], about: {} };
+  const contenuti = readJSON(pathMod.join(contenutiDir, "contenuti.json")) || { projects: [], aboutArt: {}, aboutPro: {}, aboutShared: {} };
 
   // ---- PROGETTI: tutto da contenuti.json, zero accesso al filesystem immagini ----
   const projects = (contenuti.projects || []).map((data) => {
@@ -94,12 +94,41 @@ export async function getStaticProps() {
     return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, anteprimaPosizione, techData, esposizioni, section };
   });
 
-  // ---- ABOUT: tutto da contenuti.json ----
-  const aboutData = contenuti.about || {};
-  const aboutText = (aboutData.text || "").trim();
-  const aboutQuote = (aboutData.quote || "").trim();
-  const aboutPhoto = aboutData.photo ? `/projects/about/${aboutData.photo}` : "";
-  const aboutVideo = aboutData.video ? `/projects/about/${aboutData.video}` : "";
+  // ---- ABOUT: doppio (art + pro) con campi condivisibili ----
+  const aboutArtRaw = contenuti.aboutArt || contenuti.about || {};
+  const aboutProRaw = contenuti.aboutPro || contenuti.about || {};
+  const shared = contenuti.aboutShared || {};
+
+  function buildAbout(data, fallback) {
+    const text = (shared.text ? fallback : data).text || "";
+    const quote = (shared.quote ? fallback : data).quote || "";
+    const photoField = (shared.photo ? fallback : data).photo || "";
+    const videoField = (shared.video ? fallback : data).video || "";
+    const aboutText = text.trim();
+    const aboutQuote = quote.trim();
+    const aboutPhoto = photoField ? `/projects/about/${photoField}` : "";
+    const aboutVideo = videoField ? `/projects/about/${videoField}` : "";
+    // Split testo in due colonne
+    let col1 = aboutText, col2 = "";
+    if (aboutText.includes("---")) {
+      const parts = aboutText.split("---");
+      col1 = parts[0].trim();
+      col2 = parts.slice(1).join("---").trim();
+    } else if (aboutText) {
+      const sentences = aboutText.split(/(?<=\.)\s+/);
+      const targetLen = Math.ceil(aboutText.length * 0.58);
+      let accum = 0, splitIdx = sentences.length;
+      for (let i = 0; i < sentences.length; i++) {
+        accum += sentences[i].length;
+        if (accum >= targetLen) { splitIdx = i + 1; break; }
+      }
+      col1 = sentences.slice(0, splitIdx).join(" ");
+      col2 = sentences.slice(splitIdx).join(" ");
+    }
+    return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
+  }
+  const aboutArt = buildAbout(aboutArtRaw, aboutArtRaw);
+  const aboutPro = buildAbout(aboutProRaw, aboutArtRaw);
 
   // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
   const stringheRaw = readText(pathMod.join(contenutiDir, "stringhe.txt"));
@@ -117,29 +146,8 @@ export async function getStaticProps() {
   return {
     props: {
       projects,
-      about: (() => {
-        // Il testo è già pulito (nessun soft-wrap). Gli a capo sono rispettati 1:1.
-        const normalized = aboutText.trim();
-        let col1 = normalized, col2 = "";
-        if (normalized.includes("---")) {
-          const parts = normalized.split("---");
-          col1 = parts[0].trim();
-          col2 = parts.slice(1).join("---").trim();
-        } else {
-          // Split automatico: prima colonna ~58% dei caratteri, spezza per frase completa
-          const sentences = normalized.split(/(?<=\.)\s+/);
-          const targetLen = Math.ceil(normalized.length * 0.58);
-          let accum = 0, splitIdx = sentences.length;
-          for (let i = 0; i < sentences.length; i++) {
-            accum += sentences[i].length;
-            if (accum >= targetLen) { splitIdx = i + 1; break; }
-          }
-          col1 = sentences.slice(0, splitIdx).join(" ");
-          col2 = sentences.slice(splitIdx).join(" ");
-        }
-        const trovaBeneTesto = (aboutData.trovaBeneTesto || "").trim();
-        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTesto };
-      })(),
+      aboutArt,
+      aboutPro,
       strings,
       aspetto: contenuti.aspetto || {},
     },
@@ -345,7 +353,7 @@ function JustifiedGallery({ images = [], onImageClick }) {
   );
 }
 
-export default function Portfolio({ projects, about = {}, strings = {}, aspetto: aspettoRaw = {} }) {
+export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, strings = {}, aspetto: aspettoRaw = {} }) {
   // Aspetto: valori personalizzabili dal Manager con fallback ai defaults
   const ASP = {
     colorBgArtwork: "#f8f4ed", colorBgProfessional: "#0a0a0a",
@@ -437,7 +445,19 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     setTimeout(() => {
       // Cambio mode locale (istantaneo, niente SSR round-trip)
       setMode(targetMode);
-      if (!isAbout) setSelectedProject(null);
+      if (isAbout) {
+        const ab = targetMode === "professional" ? aboutPro : aboutArt;
+        setSelectedProject({
+          name: "About",
+          description: ab.text || "",
+          description2: ab.text2 || "",
+          quote: ab.quote || "",
+          photo: ab.photo || "",
+          video: ab.video || "",
+        });
+      } else {
+        setSelectedProject(null);
+      }
       setViewerOpen(false);
       setTextOpen(false);
       window.scrollTo(0, 0);
@@ -627,14 +647,14 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       }
 
       if (q === "about") {
+        const ab = mode === "professional" ? aboutPro : aboutArt;
         setSelectedProject({
           name: "About",
-          description: about.text || "",
-          description2: about.text2 || "",
-          quote: about.quote || "",
-          photo: about.photo || "",
-          video: about.video || "",
-          trovaBeneTesto: about.trovaBeneTesto || "",
+          description: ab.text || "",
+          description2: ab.text2 || "",
+          quote: ab.quote || "",
+          photo: ab.photo || "",
+          video: ab.video || "",
         });
         setViewerOpen(false);
         setTextOpen(false);
@@ -1064,21 +1084,6 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 </a>
               </div>
             </div>
-
-            {/* SEZIONE EVIDENZIATA — sfondo invertito */}
-            {selectedProject.trovaBeneTesto && (
-            <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%' }}>
-              <div className="py-6 md:py-12 lg:py-16">
-                <div className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1]" style={{ whiteSpace: 'pre-line' }}>
-                  {selectedProject.trovaBeneTesto.split(/(\*[^*]+\*)/).map((part, i) =>
-                    part.startsWith('*') && part.endsWith('*')
-                      ? <span key={i} style={{ color: '#c8102e' }}>{part.slice(1, -1)}</span>
-                      : part
-                  )}
-                </div>
-              </div>
-            </div>
-            )}
 
             {/* BLOCCO CITAZIONE + FOTO */}
             <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>

@@ -4411,8 +4411,16 @@
   const draftRaw = localStorage.getItem(STORAGE_DRAFT);
   let state = draftRaw ? JSON.parse(draftRaw) : JSON.parse(JSON.stringify(embeddedData));
   state.projects = state.projects || [];
-  state.about = state.about || { text: "", quote: "", photo: "", video: "", trovaBeneTesto: "" };
-  if (!state.about.trovaBeneTesto) state.about.trovaBeneTesto = "";
+  // Migrazione: se esiste vecchio "about", migralo in aboutArt/aboutPro
+  if (state.about && !state.aboutArt) {
+    state.aboutArt = { text: state.about.text || "", quote: state.about.quote || "", photo: state.about.photo || "", video: state.about.video || "" };
+    state.aboutPro = { text: state.about.text || "", quote: state.about.quote || "", photo: state.about.photo || "", video: state.about.video || "" };
+    state.aboutShared = { text: true, quote: true, photo: true, video: true };
+    delete state.about;
+  }
+  state.aboutArt = state.aboutArt || { text: "", quote: "", photo: "", video: "" };
+  state.aboutPro = state.aboutPro || { text: "", quote: "", photo: "", video: "" };
+  state.aboutShared = state.aboutShared || { text: true, quote: true, photo: true, video: true };
   state.landing = state.landing || { artworkImages: [], professionalImages: [] };
 
   // Track photos per project: { [section/slug]: [{name, sha, url}] }
@@ -4420,7 +4428,7 @@
   // About media
   let aboutMedia = [];
 
-  let currentKey = null; // "art/slug" or "pro/slug" or "about"
+  let currentKey = null; // "art/slug" or "pro/slug" or "aboutArt" or "aboutPro"
   let dirty = draftRaw !== null;
 
   // ========== GITHUB SETTINGS ==========
@@ -4797,11 +4805,17 @@
       else listPro.appendChild(div);
     });
 
-    const aboutDiv = document.createElement("div");
-    aboutDiv.className = "item" + (currentKey === "about" ? " active" : "");
-    aboutDiv.innerHTML = `<span>About (bio)</span>`;
-    aboutDiv.onclick = () => selectProject("about");
-    listAbout.appendChild(aboutDiv);
+    const aboutArtDiv = document.createElement("div");
+    aboutArtDiv.className = "item" + (currentKey === "aboutArt" ? " active" : "");
+    aboutArtDiv.innerHTML = `<span>About (Artwork)</span>`;
+    aboutArtDiv.onclick = () => selectProject("aboutArt");
+    listAbout.appendChild(aboutArtDiv);
+
+    const aboutProDiv = document.createElement("div");
+    aboutProDiv.className = "item" + (currentKey === "aboutPro" ? " active" : "");
+    aboutProDiv.innerHTML = `<span>About (Professional)</span>`;
+    aboutProDiv.onclick = () => selectProject("aboutPro");
+    listAbout.appendChild(aboutProDiv);
 
     // Landing
     const listLanding = document.getElementById("listLanding");
@@ -4843,18 +4857,49 @@
     // Progetto: colonna testo = siteContent - 180px (sidebar tecnica) - gap
     const projectDescW = siteContent - 180 - siteGap;
 
-    // About: prima colonna al 58% (split asimmetrico come nel sito)
-    const aboutColW = (siteContent - siteGap) * 0.58;
+    // About: colonne flex-1 uguali (50/50 meno il gap)
+    const aboutColW = (siteContent - siteGap) / 2;
 
     // Compenso padding (12px) + border (1px) per lato del wrapper
     const wrapOffset = 26;
     const maxW = document.getElementById("content")?.clientWidth - 40 || 900;
 
+    const baseFontSize = 16; // text-base = 16px
     document.querySelectorAll(".site-col-text").forEach(el => {
-      el.style.width = Math.min(Math.round(projectDescW + wrapOffset), maxW) + "px";
+      const targetW = Math.round(projectDescW + wrapOffset);
+      const usedW = Math.min(targetW, maxW);
+      el.style.width = usedW + "px";
+      const ta = el.querySelector("textarea");
+      if (ta && usedW < targetW) {
+        ta.style.fontSize = Math.max(12, Math.round(baseFontSize * (usedW - wrapOffset) / projectDescW)) + "px";
+      } else if (ta) {
+        ta.style.fontSize = baseFontSize + "px";
+      }
     });
     document.querySelectorAll(".site-col-half").forEach(el => {
-      el.style.width = Math.min(Math.round(aboutColW + wrapOffset), maxW) + "px";
+      const targetW = Math.round(aboutColW + wrapOffset);
+      const usedW = Math.min(targetW, maxW);
+      el.style.width = usedW + "px";
+      const ta = el.querySelector("textarea");
+      if (ta && usedW < targetW) {
+        ta.style.fontSize = Math.max(12, Math.round(baseFontSize * (usedW - wrapOffset) / aboutColW)) + "px";
+      } else if (ta) {
+        ta.style.fontSize = baseFontSize + "px";
+      }
+    });
+    // Sezione evidenziata: usa tutta la larghezza disponibile nel Manager,
+    // scala il font proporzionalmente così il testo va a capo negli stessi punti del sito
+    const siteFontSize = 60; // lg:text-6xl = 3.75rem = 60px
+    document.querySelectorAll(".site-col-trovabene").forEach(el => {
+      const availW = maxW;
+      el.style.width = availW + "px";
+      const ta = el.querySelector("textarea");
+      if (ta) {
+        // Il testo nel sito ha larghezza siteContent. Nel Manager abbiamo availW - wrapOffset.
+        // Scaliamo il font: fontSize = siteFontSize * (availW - wrapOffset) / siteContent
+        const scale = (availW - wrapOffset) / siteContent;
+        ta.style.fontSize = Math.round(siteFontSize * scale) + "px";
+      }
     });
   }
   window.addEventListener("resize", syncSiteWidths);
@@ -4864,14 +4909,14 @@
     currentKey = key;
     renderSidebar();
     if (key === "landing") renderLanding();
-    else if (key === "about") renderAbout();
+    else if (key === "aboutArt" || key === "aboutPro") renderAbout(key);
     else renderProject(key);
     // Calcola larghezze textarea corrispondenti al sito
     syncSiteWidths();
     // Fetch photos asynchronously in background
     if (key === "landing") { /* nessun fetch, usa dati locali */ }
-    else if (key !== "about") fetchPhotos(key);
-    else fetchAboutMedia();
+    else if (key === "aboutArt" || key === "aboutPro") fetchAboutMedia();
+    else fetchPhotos(key);
   }
 
   function renderProject(key) {
@@ -5070,49 +5115,55 @@
     };
   }
 
-  function renderAbout() {
-    const a = state.about;
+  function renderAbout(key) {
+    const isArt = key === "aboutArt";
+    const a = isArt ? state.aboutArt : state.aboutPro;
+    const other = isArt ? state.aboutPro : state.aboutArt;
+    const sh = state.aboutShared;
+    const label = isArt ? "Artwork" : "Professional";
     const content = document.getElementById("content");
     content.classList.remove("empty-state");
 
-    const fullText = a.text || "";
+    function switchHtml(field, lbl) {
+      const checked = sh[field] ? "checked" : "";
+      return `<label class="shared-toggle" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);cursor:pointer;margin-left:12px;">
+        <input type="checkbox" data-shared="${field}" ${checked} style="accent-color:#3b82f6;"> Comune
+      </label>`;
+    }
 
     content.innerHTML = `
       <div class="project-header">
         <div>
-          <div class="badge about">About</div>
-          <div class="title">Pagina About (biografia)</div>
+          <div class="badge ${isArt ? "art" : "pro"}">${label}</div>
+          <div class="title">About (${label})</div>
           <div class="slug">contenuti/about/</div>
         </div>
       </div>
 
       <div class="field">
-        <label>Testo biografia</label>
+        <label>Testo biografia ${switchHtml("text", "Testo")}</label>
         <div class="site-col-half site-preview-wrap">
-          <textarea id="f_text" class="large site-preview" lang="it">${escapeHtml(fullText)}</textarea>
+          <textarea id="f_text" class="large site-preview" lang="it" style="white-space:pre-line;" ${sh.text && !isArt ? "disabled" : ""}>${escapeHtml(sh.text ? state.aboutArt.text || "" : a.text || "")}</textarea>
         </div>
-        <div class="hint">La larghezza corrisponde a una colonna del sito. Il sito divide automaticamente il testo in due colonne uguali.</div>
+        ${sh.text && !isArt ? '<div class="hint">Questo campo è comune — modificalo in About (Artwork).</div>' : '<div class="hint">La larghezza corrisponde a una colonna del sito. Il sito divide automaticamente il testo in due colonne uguali.</div>'}
       </div>
 
       <div class="field">
-        <label>Citazione</label>
-        <textarea id="f_quote">${escapeHtml(a.quote || "")}</textarea>
-      </div>
-
-      <div class="field" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
-        <label>Sezione evidenziata — usa *parola* per il rosso, gli a capo sono rispettati</label>
-        <div id="trovaBenePreview" style="margin-top:8px;padding:24px;background:#0a0a0a;color:#f8f4ed;border-radius:6px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:28px;font-weight:800;line-height:1.1;white-space:pre-line;min-height:80px;"></div>
-        <textarea id="f_trovaBeneTesto" class="site-preview-title" style="min-height:120px;white-space:pre-line;background:var(--panel);border:1px solid var(--border);border-radius:4px;width:100%;resize:vertical;margin-top:8px;">${escapeHtml(a.trovaBeneTesto || "")}</textarea>
+        <label>Citazione ${switchHtml("quote", "Citazione")}</label>
+        <textarea id="f_quote" ${sh.quote && !isArt ? "disabled" : ""}>${escapeHtml(sh.quote ? state.aboutArt.quote || "" : a.quote || "")}</textarea>
+        ${sh.quote && !isArt ? '<div class="hint">Questo campo è comune — modificalo in About (Artwork).</div>' : ''}
       </div>
 
       <div class="two-col">
         <div class="field">
-          <label>Foto (nome file nella cartella media/)</label>
-          <input type="text" id="f_photo" value="${escapeHtml(a.photo || "")}">
+          <label>Foto ${switchHtml("photo", "Foto")}</label>
+          <input type="text" id="f_photo" value="${escapeHtml(sh.photo ? state.aboutArt.photo || "" : a.photo || "")}" ${sh.photo && !isArt ? "disabled" : ""}>
+          ${sh.photo && !isArt ? '<div class="hint">Comune — modifica in About (Artwork).</div>' : ''}
         </div>
         <div class="field">
-          <label>Video (nome file nella cartella media/)</label>
-          <input type="text" id="f_video" value="${escapeHtml(a.video || "")}">
+          <label>Video ${switchHtml("video", "Video")}</label>
+          <input type="text" id="f_video" value="${escapeHtml(sh.video ? state.aboutArt.video || "" : a.video || "")}" ${sh.video && !isArt ? "disabled" : ""}>
+          ${sh.video && !isArt ? '<div class="hint">Comune — modifica in About (Artwork).</div>' : ''}
         </div>
       </div>
 
@@ -5126,41 +5177,57 @@
         </div>
         <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;">
         <div class="photos-grid" id="photosGrid">
-          <div style="color:var(--text3);font-size:12px;">Caricamento media da GitHub…</div>
+          <div style="color:var(--text3);font-size:12px;">Caricamento media…</div>
         </div>
       </div>
     `;
 
-    // Bind testo About
+    // Bind shared toggles
+    document.querySelectorAll("[data-shared]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const field = cb.dataset.shared;
+        sh[field] = cb.checked;
+        // When toggling to shared, sync pro value from art
+        if (cb.checked) {
+          state.aboutPro[field] = state.aboutArt[field];
+        }
+        markDirty();
+        renderAbout(key);
+        syncSiteWidths();
+      });
+    });
+
+    // Bind fields (solo se non disabled)
     const textEl = document.getElementById("f_text");
-    textEl.addEventListener("input", () => { a.text = textEl.value; markDirty(); });
+    if (!textEl.disabled) {
+      textEl.addEventListener("input", () => {
+        if (sh.text) { state.aboutArt.text = textEl.value; state.aboutPro.text = textEl.value; }
+        else { a.text = textEl.value; }
+        markDirty();
+      });
+    }
 
     ["quote","photo","video"].forEach(f => {
       const el = document.getElementById(`f_${f}`);
-      el.addEventListener("input", () => { a[f] = el.value; markDirty(); });
+      if (!el.disabled) {
+        el.addEventListener("input", () => {
+          if (sh[f]) { state.aboutArt[f] = el.value; state.aboutPro[f] = el.value; }
+          else { a[f] = el.value; }
+          markDirty();
+        });
+      }
     });
-
-    // Bind sezione evidenziata
-    const tbEl = document.getElementById("f_trovaBeneTesto");
-    const tbPreview = document.getElementById("trovaBenePreview");
-    function updateTrovaBenePreview() {
-      const raw = tbEl.value;
-      const safe = escapeHtml(raw);
-      tbPreview.innerHTML = safe.replace(/\*([^*]+)\*/g, '<span style="color:#c8102e;">$1</span>');
-    }
-    tbEl.addEventListener("input", () => { a.trovaBeneTesto = tbEl.value; markDirty(); updateTrovaBenePreview(); });
-    updateTrovaBenePreview();
 
     const uploadArea = document.getElementById("uploadArea");
     const fileInput = document.getElementById("fileInput");
     uploadArea.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleUpload(e.target.files, "about");
+    fileInput.onchange = (e) => handleUpload(e.target.files, key);
     uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add("drag"); };
     uploadArea.ondragleave = () => uploadArea.classList.remove("drag");
     uploadArea.ondrop = (e) => {
       e.preventDefault();
       uploadArea.classList.remove("drag");
-      handleUpload(e.dataTransfer.files, "about");
+      handleUpload(e.dataTransfer.files, key);
     };
   }
 
@@ -5534,7 +5601,7 @@
           name: i.name, sha: i.sha, url: photoRawUrl(aboutPath, i.name)
         }));
       }
-      if (currentKey === "about") renderAboutMediaGrid();
+      if (currentKey === "aboutArt" || currentKey === "aboutPro") renderAboutMediaGrid();
     } catch(e) {
       document.getElementById("photosGrid").innerHTML =
         `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
@@ -5943,13 +6010,15 @@
       `;
       card.querySelector('[data-act="set"]').onclick = (e) => {
         e.stopPropagation();
-        if (isVideo) {
-          state.about.video = media.name;
-          document.getElementById("f_video").value = media.name;
+        const aboutTarget = currentKey === "aboutPro" ? state.aboutPro : state.aboutArt;
+        const field = isVideo ? "video" : "photo";
+        if (state.aboutShared[field]) {
+          state.aboutArt[field] = media.name;
+          state.aboutPro[field] = media.name;
         } else {
-          state.about.photo = media.name;
-          document.getElementById("f_photo").value = media.name;
+          aboutTarget[field] = media.name;
         }
+        document.getElementById(isVideo ? "f_video" : "f_photo").value = media.name;
         markDirty();
       };
       card.querySelector('[data-act="delete"]').onclick = async (e) => {
@@ -7109,7 +7178,9 @@
           const remoteState = JSON.parse(decoded);
           if (remoteState.projects) {
             state.projects = remoteState.projects;
-            state.about = remoteState.about || state.about;
+            state.aboutArt = remoteState.aboutArt || state.aboutArt;
+            state.aboutPro = remoteState.aboutPro || state.aboutPro;
+            state.aboutShared = remoteState.aboutShared || state.aboutShared;
             clearDirty();
             embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
             renderSidebar();
@@ -7162,7 +7233,7 @@
     document.getElementById("imp_fix_photos").onclick = async () => {
       toast("Ricaricamento foto…", "");
       await fetchAllPhotoCounts();
-      if (currentKey && currentKey !== "about") await fetchPhotos(currentKey);
+      if (currentKey && currentKey !== "aboutArt" && currentKey !== "aboutPro") await fetchPhotos(currentKey);
       toast("Foto ricaricate.", "ok");
     };
 
@@ -7198,7 +7269,9 @@
           }
           if (!confirm(`Importare ${imported.projects.length} progetti?`)) return;
           state.projects = imported.projects;
-          if (imported.about) state.about = imported.about;
+          if (imported.aboutArt) state.aboutArt = imported.aboutArt;
+          if (imported.aboutPro) state.aboutPro = imported.aboutPro;
+          if (imported.aboutShared) state.aboutShared = imported.aboutShared;
           if (imported.aspetto) state.aspetto = imported.aspetto;
           markDirty();
           renderSidebar();
@@ -7254,7 +7327,7 @@
     if (!fileList.length) return;
 
     let folderPath;
-    if (key === "about") folderPath = "codice-sorgente/contenuti/about";
+    if (key === "aboutArt" || key === "aboutPro") folderPath = "codice-sorgente/contenuti/about";
     else {
       const [section, slug] = key.split("/");
       folderPath = `codice-sorgente/contenuti/${section}/${slug}`;
@@ -7312,7 +7385,7 @@
     }
 
     // Aggiorna ordine e dimensioni in contenuti.json per i progetti (non about)
-    if (key !== "about" && uploadedNames.length > 0) {
+    if (key !== "aboutArt" && key !== "aboutPro" && uploadedNames.length > 0) {
       const [section, slug] = key.split("/");
       const p = state.projects.find(x => x.section === section && x.slug === slug);
       if (p) {
@@ -7326,7 +7399,7 @@
       }
     }
     toast(isLocal ? "Foto salvate nella cartella del progetto." : "Caricamento completato.", "ok");
-    if (key === "about") await fetchAboutMedia();
+    if (key === "aboutArt" || key === "aboutPro") await fetchAboutMedia();
     else await fetchPhotos(key);
     // Git push automatico dopo upload locale
     if (isLocal && uploadedNames.length > 0) {
@@ -7594,7 +7667,9 @@
       }
       // Sovrascrivi completamente lo state con i dati freschi da GitHub
       state.projects = remoteState.projects;
-      state.about = remoteState.about || state.about;
+      state.aboutArt = remoteState.aboutArt || state.aboutArt;
+      state.aboutPro = remoteState.aboutPro || state.aboutPro;
+      state.aboutShared = remoteState.aboutShared || state.aboutShared;
       state.landing = remoteState.landing || state.landing;
       state.version = remoteState.version || state.version;
       clearDirty();
@@ -7605,7 +7680,7 @@
       renderSidebar();
       if (currentKey) {
         if (currentKey === "landing") renderLanding();
-        else if (currentKey === "about") renderAbout();
+        else if (currentKey === "aboutArt" || currentKey === "aboutPro") renderAbout(currentKey);
         else renderProject(currentKey);
       }
       initStepOk(4);
