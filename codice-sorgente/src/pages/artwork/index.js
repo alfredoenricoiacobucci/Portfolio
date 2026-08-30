@@ -77,7 +77,15 @@ export async function getStaticProps() {
       bannerStartIndex = idx >= 0 ? idx : 0;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, techData };
+    // Indice anteprima hover (campo "anteprima" in contenuti.json, fallback a banner)
+    const anteprimaFile = (data.anteprima || "").trim();
+    let anteprimaIndex = bannerStartIndex; // default: usa banner
+    if (anteprimaFile && files.length > 0) {
+      const aIdx = files.findIndex((f) => f.toLowerCase() === anteprimaFile.toLowerCase());
+      if (aIdx >= 0) anteprimaIndex = aIdx;
+    }
+
+    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, techData };
   });
 
   // ---- ABOUT: tutto da contenuti.json ----
@@ -445,7 +453,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     hoverTimerRef.current = setTimeout(() => {
       if (preloadedSlugsRef.current.has(project.slug)) return;
       preloadedSlugsRef.current.add(project.slug);
-      const bannerImg = project.images?.[project.bannerStartIndex || 0] || project.images?.[0];
+      const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
       if (bannerImg) {
         const i = new window.Image();
         i.src = bannerImg.src;
@@ -932,8 +940,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           <div className="flex flex-col gap-0 p-0">
             {projectsWithSlug.map((project, index) => {
               const isReverse = mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0);
-              const bannerImg = project.images?.[project.bannerStartIndex || 0];
-              const bannerSrc = bannerImg?.src || project.images?.[0]?.src || "";
+              const anteprimaImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0];
+              const bannerSrc = anteprimaImg?.src || project.images?.[0]?.src || "";
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
@@ -1159,13 +1167,15 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           text-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
 
-        /* Riga si espande su hover per mostrare più banner */
+        /* Riga si espande su hover a 5x l'altezza testo, testo centrato nel quinto centrale */
         .marquee-row__inner {
           padding: 0;
+          display: flex;
+          align-items: center;
           transition: padding 400ms cubic-bezier(.25,.8,.25,1);
         }
         .marquee-row:hover .marquee-row__inner {
-          padding: 2.5rem 0;
+          padding: 14rem 0;
         }
       `}</style>
     </div>
