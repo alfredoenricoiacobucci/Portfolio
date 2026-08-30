@@ -437,7 +437,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // Hover sui label
   const [hoverMode, setHoverMode] = useState(null);
 
-  // Preload immagini progetto su hover (debounced)
+  // Preload banner su hover (debounced)
   const hoverTimerRef = useRef(null);
   const preloadedSlugsRef = useRef(new Set());
   const onRowHover = useCallback((project) => {
@@ -445,11 +445,12 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     hoverTimerRef.current = setTimeout(() => {
       if (preloadedSlugsRef.current.has(project.slug)) return;
       preloadedSlugsRef.current.add(project.slug);
-      (project.images || []).slice(0, 8).forEach((img) => {
+      const bannerImg = project.images?.[project.bannerStartIndex || 0] || project.images?.[0];
+      if (bannerImg) {
         const i = new window.Image();
-        i.src = img.src;
-      });
-    }, 80);
+        i.src = bannerImg.src;
+      }
+    }, 50);
   }, []);
   const onRowLeave = useCallback(() => {
     clearTimeout(hoverTimerRef.current);
@@ -931,7 +932,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           <div className="flex flex-col gap-0 p-0">
             {projectsWithSlug.map((project, index) => {
               const isReverse = mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0);
-              const previewImages = project.images?.slice(0, 8) || [];
+              const bannerImg = project.images?.[project.bannerStartIndex || 0];
+              const bannerSrc = bannerImg?.src || project.images?.[0]?.src || "";
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
@@ -942,37 +944,20 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                   onMouseLeave={onRowLeave}
                   onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
                 >
-                  {/* Marquee text — resta visibile, colore si inverte su hover */}
-                  <div className={`marquee-track ${isReverse ? "reverse" : ""}`}>
-                    <span className="marquee-seq">{marqueeText}</span>
-                    <span className="marquee-seq" aria-hidden="true">{marqueeText}</span>
-                  </div>
+                  {/* Contenitore relativo — il banner si posiziona dietro al testo */}
+                  <div className="marquee-row__inner">
+                    {/* Banner background — visibile solo su hover */}
+                    {bannerSrc && (
+                      <div className="marquee-row__banner">
+                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" loading="lazy" />
+                        <div className="marquee-row__banner-overlay" />
+                      </div>
+                    )}
 
-                  {/* Preview foto — si apre sotto il testo su hover via CSS */}
-                  <div className="marquee-preview">
-                    <div className={`marquee-preview__strip ${isReverse ? "reverse" : ""}`}>
-                      {previewImages.map((img) => (
-                        <img
-                          key={img.src}
-                          src={img.src}
-                          alt=""
-                          className="marquee-preview__img"
-                          style={{ aspectRatio: `${img.w} / ${img.h}` }}
-                          loading="lazy"
-                        />
-                      ))}
-                      {/* Duplica per loop continuo */}
-                      {previewImages.map((img) => (
-                        <img
-                          key={img.src + "_dup"}
-                          src={img.src}
-                          alt=""
-                          className="marquee-preview__img"
-                          aria-hidden="true"
-                          style={{ aspectRatio: `${img.w} / ${img.h}` }}
-                          loading="lazy"
-                        />
-                      ))}
+                    {/* Marquee text — sempre visibile, scorre sopra il banner */}
+                    <div className={`marquee-track ${isReverse ? "reverse" : ""}`} style={{ position: "relative", zIndex: 2 }}>
+                      <span className="marquee-seq">{marqueeText}</span>
+                      <span className="marquee-seq" aria-hidden="true">{marqueeText}</span>
                     </div>
                   </div>
                 </div>
@@ -1133,46 +1118,54 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           transition: color 300ms ease;
         }
 
-        /* === HOVER EXPAND: sfondo + inversione colore testo === */
+        /* === HOVER EXPAND: riga si allarga, banner appare dietro === */
         .marquee-row {
           transition: background-color 300ms ease;
         }
 
-        /* Artwork: hover → sfondo nero, testo bianco */
-        .marquee-row:hover {
-          background-color: ${mode === "artwork" ? "#0a0a0a" : "#f8f4ed"};
-        }
-        .marquee-row:hover .marquee-seq {
-          color: ${mode === "artwork" ? "#f8f4ed" : "#0a0a0a"};
-        }
-
-        /* === PREVIEW FOTO: si apre sotto il testo === */
-        .marquee-preview {
-          max-height: 0;
+        .marquee-row__inner {
+          position: relative;
           overflow: hidden;
-          transition: max-height 400ms cubic-bezier(.25,.8,.25,1);
-        }
-        .marquee-row:hover .marquee-preview {
-          max-height: 320px;
         }
 
-        .marquee-preview__strip {
-          display: flex;
-          gap: 10px;
-          padding: 10px 0 14px 0;
-          width: max-content;
-          will-change: transform;
-          animation: marqueeX 40s linear infinite;
+        /* Banner: immagine di sfondo dietro al testo */
+        .marquee-row__banner {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          opacity: 0;
+          transition: opacity 400ms ease;
         }
-        .marquee-preview__strip.reverse {
-          animation-direction: reverse;
+        .marquee-row:hover .marquee-row__banner {
+          opacity: 1;
         }
 
-        .marquee-preview__img {
-          height: 260px;
-          flex-shrink: 0;
+        .marquee-row__banner-img {
+          width: 100%;
+          height: 100%;
           object-fit: cover;
-          border-radius: 2px;
+        }
+
+        /* Overlay semi-trasparente sopra il banner per leggibilità testo */
+        .marquee-row__banner-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.45);
+        }
+
+        /* Testo diventa bianco su hover (banner scuro sotto) */
+        .marquee-row:hover .marquee-seq {
+          color: #f8f4ed;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        /* Riga si espande su hover per mostrare più banner */
+        .marquee-row__inner {
+          padding: 0;
+          transition: padding 400ms cubic-bezier(.25,.8,.25,1);
+        }
+        .marquee-row:hover .marquee-row__inner {
+          padding: 2.5rem 0;
         }
       `}</style>
     </div>
