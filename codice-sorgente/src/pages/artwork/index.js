@@ -481,24 +481,25 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       lastTime = time;
       const s = bannerScrollRef.current[slug];
       const imgEl = document.querySelector(`[data-banner-slug="${slug}"]`);
-      if (!fading) {
-        s.position += SPEED * dt;
-        if (s.position >= END_POS && imgEl) {
-          // Dissolvenza: fade out → reset → fade in
-          fading = true;
-          imgEl.style.transition = "opacity 0.5s ease";
+      // Scorre sempre, anche durante la dissolvenza
+      s.position += SPEED * dt;
+      if (s.position >= END_POS && !fading) {
+        // Dissolvenza: fade out → reset position → fade in (scroll continua)
+        fading = true;
+        if (imgEl) {
+          imgEl.style.transition = "opacity 0.4s ease";
           imgEl.style.opacity = "0";
-          setTimeout(() => {
-            s.position = START_POS;
-            if (imgEl) {
-              imgEl.style.objectPosition = `center ${START_POS}%`;
-              imgEl.style.opacity = "1";
-            }
-            setTimeout(() => { fading = false; if (imgEl) imgEl.style.transition = ""; }, 500);
-          }, 500);
         }
-        if (imgEl && !fading) imgEl.style.objectPosition = `center ${s.position}%`;
+        setTimeout(() => {
+          s.position = START_POS;
+          if (imgEl) {
+            imgEl.style.objectPosition = `center ${START_POS}%`;
+            imgEl.style.opacity = "1";
+          }
+          setTimeout(() => { fading = false; if (imgEl) imgEl.style.transition = ""; }, 400);
+        }, 400);
       }
+      if (imgEl && !fading) imgEl.style.objectPosition = `center ${s.position}%`;
       bannerRafRef.current = requestAnimationFrame(animate);
     };
     bannerRafRef.current = requestAnimationFrame(animate);
@@ -513,18 +514,26 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     if (bannerRafRef.current) cancelAnimationFrame(bannerRafRef.current);
   }, []);
 
-  const onRowHover = useCallback((project) => {
-    clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => {
-      if (!preloadedSlugsRef.current.has(project.slug)) {
-        preloadedSlugsRef.current.add(project.slug);
-        const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
-        if (bannerImg) { const i = new window.Image(); i.src = bannerImg.src; }
-      }
-      startBannerScroll(project.slug);
-    }, 50);
+  // Preload + scroll — chiamato da hover (desktop) e tap (mobile)
+  const preloadAndScroll = useCallback((project) => {
+    if (!preloadedSlugsRef.current.has(project.slug)) {
+      preloadedSlugsRef.current.add(project.slug);
+      const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
+      if (bannerImg) { const i = new window.Image(); i.src = bannerImg.src; }
+    }
+    startBannerScroll(project.slug);
   }, [startBannerScroll]);
+
+  // Desktop only: hover apre anteprima (su touch è gestito dal tap)
+  const onRowHover = useCallback((project) => {
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (isTouch) return; // Su mobile il hover viene ignorato, si usa solo il tap
+    clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => preloadAndScroll(project), 50);
+  }, [preloadAndScroll]);
   const onRowLeave = useCallback(() => {
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (isTouch) return;
     clearTimeout(hoverTimerRef.current);
     stopBannerScroll();
   }, [stopBannerScroll]);
@@ -566,7 +575,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       // Primo tap → mostra anteprima, chiudi eventuali altre
       e.preventDefault();
       setActiveRowSlug(project.slug);
-      onRowHover(project);
+      preloadAndScroll(project);
     }
   };
 
@@ -1015,13 +1024,15 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
             {/* SEZIONE: Probabilmente ti troverai bene con me se...
                 Sfondo invertito per alternanza visiva nella pagina */}
-            <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: ASP.aboutQuotePadding + 'rem', paddingBottom: ASP.aboutQuotePadding + 'rem' }}>
-              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-6 md:mb-8">Sicuramente ti troverai bene con me se</h2>
-              <ul className="list-none pl-0 space-y-2 md:space-y-3 text-sm md:text-base leading-relaxed project-text">
+            <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%' }}>
+              <div className="py-6 md:py-12 lg:py-16">
+              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">Sicuramente ti troverai bene con me se</h2>
+              <ul className="list-none pl-0 space-y-1 md:space-y-3 text-sm md:text-base leading-relaxed project-text">
                 <li>… preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
                 <li>… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
                 <li>… cerchi un rapporto duraturo, non una vendita veloce.</li>
               </ul>
+              </div>
             </div>
 
             {/* BLOCCO CITAZIONE + FOTO */}
@@ -1261,7 +1272,11 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           opacity: 0;
           transition: opacity 400ms ease;
         }
-        .marquee-row:hover .marquee-row__banner,
+        @media (hover: hover) and (pointer: fine) {
+          .marquee-row:hover .marquee-row__banner { opacity: 1; }
+          .marquee-row:hover .marquee-seq { color: #f8f4ed; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+          .marquee-row:hover .marquee-row__inner { padding: 4.5rem 0; }
+        }
         .marquee-row.active .marquee-row__banner {
           opacity: 1;
         }
@@ -1280,21 +1295,19 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           background: rgba(0, 0, 0, 0.45);
         }
 
-        /* Testo diventa bianco su hover/active (banner scuro sotto) */
-        .marquee-row:hover .marquee-seq,
+        /* Testo diventa bianco su active (hover è nel media query sopra) */
         .marquee-row.active .marquee-seq {
           color: #f8f4ed;
           text-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
 
-        /* Riga si espande su hover/active, testo centrato */
+        /* Riga si espande su active, testo centrato (hover è nel media query sopra) */
         .marquee-row__inner {
           padding: 0;
           display: flex;
           align-items: center;
           transition: padding 400ms cubic-bezier(.25,.8,.25,1);
         }
-        .marquee-row:hover .marquee-row__inner,
         .marquee-row.active .marquee-row__inner {
           padding: 4.5rem 0;
         }
@@ -1305,7 +1318,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             padding: 2.5rem 0;
           }
           .marquee-track {
-            animation-duration: 140s !important;
+            animation-duration: 110s !important;
           }
         }
       `}</style>
