@@ -124,6 +124,11 @@ ObjC.registerSubclass({
   name:"MPDel8",superclass:"NSObject",protocols:["NSApplicationDelegate"],
   methods:{
     "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
+    "applicationDidFinishLaunching:":{types:["void",["id"]],implementation:function(notif){
+      // Fullscreen dopo che il run loop è attivo
+      win.setCollectionBehavior(128); // NSWindowCollectionBehaviorFullScreenPrimary
+      win.toggleFullScreen(null);
+    }},
     "applicationShouldTerminate:":{types:["unsigned long",["id"]],implementation:function(s){
       try { task.terminate; } catch(e) {}
       try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
@@ -177,12 +182,6 @@ wv.loadRequest(req);
 
 win.makeKeyAndOrderFront(null);
 nsApp.activateIgnoringOtherApps(true);
-
-// Entra in fullscreen (bottone verde)
-win.setCollectionBehavior(1 << 7); // NSWindowCollectionBehaviorFullScreenPrimary
-delay(0.3);
-win.toggleFullScreen(null);
-
 nsApp.run;
 
 // Cleanup dopo la chiusura dell'app (nsApp.run ritorna qui)
