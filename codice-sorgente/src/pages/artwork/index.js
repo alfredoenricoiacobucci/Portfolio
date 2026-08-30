@@ -88,7 +88,10 @@ export async function getStaticProps() {
       if (aIdx >= 0) anteprimaIndex = aIdx;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, techData, esposizioni, section };
+    // Posizione focale anteprima (default: center 33%)
+    const anteprimaPosizione = data.anteprimaPosizione || { x: 50, y: 33 };
+
+    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, anteprimaPosizione, techData, esposizioni, section };
   });
 
   // ---- ABOUT: tutto da contenuti.json ----
@@ -1112,6 +1115,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               const anteprimaImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
               const bannerSrc = anteprimaImg?.src || "";
               const isVertical = anteprimaImg && anteprimaImg.h > anteprimaImg.w;
+              const aPos = project.anteprimaPosizione || { x: 50, y: 33 };
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
@@ -1127,7 +1131,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                     {/* Banner background — visibile solo su hover */}
                     {bannerSrc && (
                       <div className="marquee-row__banner">
-                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" />
+                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" style={{ objectPosition: `${aPos.x}% ${aPos.y}%` }} />
                         <div className="marquee-row__banner-overlay" />
                       </div>
                     )}
@@ -1327,7 +1331,6 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center 33%;
         }
 
         /* Overlay semi-trasparente sopra il banner per leggibilità testo */

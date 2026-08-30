@@ -690,6 +690,52 @@
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
+  /* Focal point editor */
+  .focal-editor {
+    margin-top: 8px;
+    position: relative;
+    display: inline-block;
+    cursor: crosshair;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .focal-editor img {
+    display: block;
+    max-width: 100%;
+    max-height: 200px;
+    pointer-events: none;
+  }
+  .focal-editor .focal-strip {
+    position: absolute;
+    left: 0; right: 0;
+    height: 25%;
+    border: 2px solid #3b82f6;
+    background: rgba(59,130,246,0.12);
+    pointer-events: none;
+    transition: top 0.15s ease;
+  }
+  .focal-editor .focal-dot {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #3b82f6;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    transition: left 0.15s ease, top 0.15s ease;
+  }
+  .focal-editor .focal-crossh,
+  .focal-editor .focal-crossv {
+    position: absolute;
+    background: rgba(59,130,246,0.4);
+    pointer-events: none;
+    transition: left 0.15s ease, top 0.15s ease;
+  }
+  .focal-editor .focal-crossh { left:0; right:0; height:1px; }
+  .focal-editor .focal-crossv { top:0; bottom:0; width:1px; }
+
   .upload-area {
     border: 2px dashed var(--border-hi);
     border-radius: 6px;
@@ -4883,6 +4929,16 @@
       </div>
       `}
 
+      <div class="field" id="focalPointSection" style="display:none;margin-top:8px;">
+        <label>Punto focale anteprima <span id="focalCoords" style="font-weight:normal;color:var(--text3);font-size:11px;"></span></label>
+        <div class="focal-editor" id="focalEditor">
+          <img id="focalImg" src="" alt="">
+          <div class="focal-crossh" id="focalCrossH"></div>
+          <div class="focal-crossv" id="focalCrossV"></div>
+          <div class="focal-dot" id="focalDot"></div>
+        </div>
+      </div>
+
       <div class="photos-section">
         <div class="photos-header">
           <h3>Foto del progetto</h3>
@@ -4953,6 +5009,40 @@
         renderEsposizioni();
       });
     }
+
+    // Focal point editor
+    function updateFocalPointUI() {
+      const sec = document.getElementById("focalPointSection");
+      const img = document.getElementById("focalImg");
+      const dot = document.getElementById("focalDot");
+      const crossH = document.getElementById("focalCrossH");
+      const crossV = document.getElementById("focalCrossV");
+      const coords = document.getElementById("focalCoords");
+      if (!p.anteprima) { sec.style.display = "none"; return; }
+      // Find the anteprima photo URL
+      const photos = photosByProject[key] || [];
+      const antPhoto = photos.find(ph => ph.name === p.anteprima);
+      if (!antPhoto) { sec.style.display = "none"; return; }
+      sec.style.display = "";
+      img.src = antPhoto.url;
+      if (!p.anteprimaPosizione) p.anteprimaPosizione = { x: 50, y: 33 };
+      const pos = p.anteprimaPosizione;
+      dot.style.left = pos.x + "%";
+      dot.style.top = pos.y + "%";
+      crossH.style.top = pos.y + "%";
+      crossV.style.left = pos.x + "%";
+      coords.textContent = `(${Math.round(pos.x)}%, ${Math.round(pos.y)}%)`;
+    }
+    document.getElementById("focalEditor").addEventListener("click", (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      p.anteprimaPosizione = { x: Math.round(x), y: Math.round(y) };
+      markDirty();
+      updateFocalPointUI();
+    });
+    // Will be called after photos load
+    window._updateFocalPointUI = updateFocalPointUI;
 
     // Upload area — drag & drop foto
     const uploadArea = document.getElementById("uploadArea");
@@ -5330,6 +5420,7 @@
           markDirty();
           updateLightboxAnteprimaBtn();
           renderPhotosGrid(d.projectKey);
+          if (window._updateFocalPointUI) window._updateFocalPointUI();
         }
       };
     }
@@ -5416,6 +5507,7 @@
       }
       if (currentKey === key) renderPhotosGrid(key);
       renderSidebar();
+      if (window._updateFocalPointUI) window._updateFocalPointUI();
     } catch(e) {
       document.getElementById("photosGrid").innerHTML =
         `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
@@ -5751,6 +5843,7 @@
         p.anteprima = photo.name;
         markDirty();
         renderPhotosGrid(key);
+        if (window._updateFocalPointUI) window._updateFocalPointUI();
       };
       card.querySelector('[data-act="delete"]').onclick = async (e) => {
         e.stopPropagation();
