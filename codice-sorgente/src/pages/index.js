@@ -263,14 +263,14 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
   }
 
   // Avanza l'immagine solo quando si INCROCIA dall'altro lato (mouse O auto-switch)
-  const prevDisplayRef = useRef(null);
+  // Inizia su "artwork" (il default) così il primo hover su artwork non causa cambio foto
+  const prevDisplayRef = useRef("artwork");
 
   useEffect(() => {
     const current = hoverArea ?? mobileArea;
     const prev = prevDisplayRef.current;
+    if (!current || current === prev) return;
     prevDisplayRef.current = current;
-
-    if (prev === null) return;
 
     if (current === "artwork" && prev === "professional" && artCycleRef.current) {
       const newSrc = advanceCycle(artCycleRef.current);
@@ -336,7 +336,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
       {/* CONTENT */}
       <div className="relative z-10 text-center p-6 space-y-4">
         {/* Name — colore reattivo a displayMode (hover, gyro, default) */}
-        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+        <h1 className={`text-2xl md:text-[2rem] tracking-tight font-semibold transition-colors duration-400 ease-in-out ${isDark ? "text-white" : "text-black"}`} style={{ textShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
           {landingName}
         </h1>
 
@@ -350,18 +350,18 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
             onMouseEnter={() => !isTouch && setHoverArea("artwork")}
             onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("artwork")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "artwork" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
+            className={`cursor-pointer transition-all duration-400 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "artwork" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Artwork
           </span>
 
-          <span className={`font-semibold text-[20px] transition-colors duration-700 ease-in-out ${isDark ? "text-white" : "text-black"}`}>/</span>
+          <span className={`font-semibold text-[20px] transition-colors duration-400 ease-in-out ${isDark ? "text-white" : "text-black"}`}>/</span>
 
           <span
             onMouseEnter={() => !isTouch && setHoverArea("professional")}
             onMouseLeave={() => !isTouch && setHoverArea(null)}
             onClick={() => onClickMode("professional")}
-            className={`cursor-pointer transition-all duration-700 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "professional" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
+            className={`cursor-pointer transition-all duration-400 ease-in-out font-semibold text-[20px] hover-red ${(displayMode === "professional" ? "opacity-100" : "opacity-40") + " " + (isDark ? "text-white" : "text-black")}`}
           >
             Professional
           </span>
@@ -371,7 +371,7 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
 
       {/* COPYRIGHT — fondo pagina, centrato, stesso grigio della colonna tecnica */}
       <div
-        className={`absolute bottom-4 left-0 right-0 text-center text-xs transition-colors duration-700 ${isDark ? "text-white/40" : "text-black/35"}`}
+        className={`absolute bottom-4 left-0 right-0 text-center text-xs transition-colors duration-400 ${isDark ? "text-white/40" : "text-black/35"}`}
         style={{ zIndex: 10 }}
       >
         © {new Date().getFullYear()} Tutti i diritti riservati.

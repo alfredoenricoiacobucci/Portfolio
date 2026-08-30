@@ -85,7 +85,7 @@ body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 700ms cubic-bezier(.2,.9,.2,1);
+  transition: opacity 400ms cubic-bezier(.2,.9,.2,1);
   z-index: 0;
   will-change: opacity;
 }
@@ -100,12 +100,12 @@ body {
   height: 100%;
   object-fit: cover;
   transform-origin: center;
-  transition: opacity 700ms ease;
+  transition: opacity 400ms ease;
   will-change: opacity;
 }
 
 /* overlays stronger for more coverage and slightly different for smooth crossfade */
-.landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 700ms ease; }
+.landing-bg__overlay { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 400ms ease; }
 .landing-bg__overlay--light {
   background: linear-gradient(180deg, rgba(248,244,237,0.72) 0%, rgba(248,244,237,0.68) 40%, rgba(248,244,237,0.60) 100%);
 }
@@ -114,8 +114,8 @@ body {
 }
 
 /* smoother crossfade: allow slight overlap and smoother timing */
-.landing-bg--artwork { z-index: 0; transition: opacity 700ms ease; contain: paint; }
-.landing-bg--professional { z-index: 1; transition: opacity 700ms ease; contain: paint; }
+.landing-bg--artwork { z-index: 0; transition: opacity 400ms ease; contain: paint; }
+.landing-bg--professional { z-index: 1; transition: opacity 400ms ease; contain: paint; }
 
 /* Landing dark modifier: force text bianco caldo in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {

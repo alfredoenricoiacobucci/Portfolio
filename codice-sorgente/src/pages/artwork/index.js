@@ -474,15 +474,31 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
     let lastTime = performance.now();
     const RANGE = END_POS - START_POS;
     const SPEED = RANGE / 12; // Percorre il range in 12s
+    let fading = false;
     const animate = (time) => {
       if (activeBannerSlugRef.current !== slug) return;
       const dt = (time - lastTime) / 1000;
       lastTime = time;
       const s = bannerScrollRef.current[slug];
-      s.position += SPEED * dt;
-      if (s.position >= END_POS) s.position = START_POS;
       const imgEl = document.querySelector(`[data-banner-slug="${slug}"]`);
-      if (imgEl) imgEl.style.objectPosition = `center ${s.position}%`;
+      if (!fading) {
+        s.position += SPEED * dt;
+        if (s.position >= END_POS && imgEl) {
+          // Dissolvenza: fade out → reset → fade in
+          fading = true;
+          imgEl.style.transition = "opacity 0.5s ease";
+          imgEl.style.opacity = "0";
+          setTimeout(() => {
+            s.position = START_POS;
+            if (imgEl) {
+              imgEl.style.objectPosition = `center ${START_POS}%`;
+              imgEl.style.opacity = "1";
+            }
+            setTimeout(() => { fading = false; if (imgEl) imgEl.style.transition = ""; }, 500);
+          }, 500);
+        }
+        if (imgEl && !fading) imgEl.style.objectPosition = `center ${s.position}%`;
+      }
       bannerRafRef.current = requestAnimationFrame(animate);
     };
     bannerRafRef.current = requestAnimationFrame(animate);
@@ -971,6 +987,16 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                   {S.INSTAGRAM_HANDLE}
                 </a>
               </div>
+            </div>
+
+            {/* SEZIONE: Probabilmente ti troverai bene con me se... */}
+            <div className={`w-full ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '3rem' }}>
+              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: "inherit" }}>Probabilmente ti troverai bene con me se...</h3>
+              <ul className="list-disc pl-5 space-y-2 text-base leading-relaxed project-text">
+                <li>Preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
+                <li>Credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
+                <li>Preferisci un rapporto lungo piuttosto che una vendita veloce.</li>
+              </ul>
             </div>
 
             {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional.
