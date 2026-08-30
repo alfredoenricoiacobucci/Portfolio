@@ -992,11 +992,11 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             {/* SEZIONE: Probabilmente ti troverai bene con me se...
                 Sfondo invertito per alternanza visiva nella pagina */}
             <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: ASP.aboutQuotePadding + 'rem', paddingBottom: ASP.aboutQuotePadding + 'rem' }}>
-              <h2 className="text-4xl md:text-6xl font-extrabold leading-[1.1] mb-8">Probabilmente ti troverai bene con me se...</h2>
-              <ul className="list-disc pl-6 space-y-3 text-base leading-relaxed project-text">
-                <li>Preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
-                <li>Credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
-                <li>Preferisci un rapporto lungo piuttosto che una vendita veloce.</li>
+              <h2 className="text-4xl md:text-6xl font-extrabold leading-[1.1] mb-8">Sicuramente ti troverai bene con me se</h2>
+              <ul className="list-none pl-0 space-y-3 text-base leading-relaxed project-text">
+                <li>… preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
+                <li>… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
+                <li>… cerchi un rapporto duraturo, non una vendita veloce.</li>
               </ul>
             </div>
 
