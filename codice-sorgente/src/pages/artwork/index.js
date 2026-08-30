@@ -1052,14 +1052,14 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 return <>
                   <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">{highlightText(titolo)}</h2>
                   {punti.length > 0 && (
-                    <ul className="list-disc pl-5 space-y-1 md:space-y-3 text-sm md:text-base lg:text-lg leading-relaxed project-text mb-3 md:mb-8">
+                    <ul className="list-disc pl-5 space-y-1 md:space-y-3 text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">
                       {punti.filter(Boolean).map((punto, i) => (
                         <li key={i}>{highlightText(punto)}</li>
                       ))}
                     </ul>
                   )}
                   {chiusura && (
-                    <p className="text-sm md:text-base lg:text-lg leading-relaxed project-text">{highlightText(chiusura)}</p>
+                    <p className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1]">{highlightText(chiusura)}</p>
                   )}
                 </>;
               })()}
