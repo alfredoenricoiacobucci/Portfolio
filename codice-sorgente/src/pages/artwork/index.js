@@ -132,11 +132,8 @@ export async function getStaticProps() {
           col1 = sentences.slice(0, splitIdx).join(" ");
           col2 = sentences.slice(splitIdx).join(" ");
         }
-        const trovaBeneTitolo = (aboutData.trovaBeneTitolo || "").trim();
-        const trovaBenePunti = Array.isArray(aboutData.trovaBenePunti) ? aboutData.trovaBenePunti : [];
-        const trovaBeneChiusura = (aboutData.trovaBeneChiusura || "").trim();
-        const trovaBeneHighlight = Array.isArray(aboutData.trovaBeneHighlight) ? aboutData.trovaBeneHighlight : [];
-        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTitolo, trovaBenePunti, trovaBeneChiusura, trovaBeneHighlight };
+        const trovaBeneTesto = (aboutData.trovaBeneTesto || "").trim();
+        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTesto };
       })(),
       strings,
       aspetto: contenuti.aspetto || {},
@@ -632,10 +629,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           quote: about.quote || "",
           photo: about.photo || "",
           video: about.video || "",
-          trovaBeneTitolo: about.trovaBeneTitolo || "",
-          trovaBenePunti: about.trovaBenePunti || [],
-          trovaBeneChiusura: about.trovaBeneChiusura || "",
-          trovaBeneHighlight: about.trovaBeneHighlight || [],
+          trovaBeneTesto: about.trovaBeneTesto || "",
         });
         setViewerOpen(false);
         setTextOpen(false);
@@ -1030,41 +1024,20 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               </div>
             </div>
 
-            {/* SEZIONE: Se sei alla ricerca di un professionista...
-                Sfondo invertito per alternanza visiva nella pagina */}
+            {/* SEZIONE EVIDENZIATA — sfondo invertito */}
+            {selectedProject.trovaBeneTesto && (
             <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%' }}>
               <div className="py-6 md:py-12 lg:py-16">
-              {(() => {
-                const hl = selectedProject.trovaBeneHighlight || [];
-                const highlightText = (text) => {
-                  if (!hl.length) return text;
-                  const regex = new RegExp(`(${hl.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
-                  const parts = text.split(regex);
-                  return parts.map((part, i) =>
-                    hl.some(w => w.toLowerCase() === part.toLowerCase())
-                      ? <span key={i} style={{ color: '#c8102e' }}>{part}</span>
+                <div className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1]" style={{ whiteSpace: 'pre-line' }}>
+                  {selectedProject.trovaBeneTesto.split(/(\*[^*]+\*)/).map((part, i) =>
+                    part.startsWith('*') && part.endsWith('*')
+                      ? <span key={i} style={{ color: '#c8102e' }}>{part.slice(1, -1)}</span>
                       : part
-                  );
-                };
-                const titolo = selectedProject.trovaBeneTitolo || "Se sei alla ricerca di un professionista";
-                const punti = selectedProject.trovaBenePunti?.length > 0 ? selectedProject.trovaBenePunti : [];
-                const chiusura = selectedProject.trovaBeneChiusura || "";
-                return <>
-                  <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">{highlightText(titolo)}</h2>
-                  {punti.length > 0 && (
-                    <ul className="list-disc pl-5 space-y-1 md:space-y-3 text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">
-                      {punti.filter(Boolean).map((punto, i) => (
-                        <li key={i}>{highlightText(punto)}</li>
-                      ))}
-                    </ul>
                   )}
-                  {chiusura && (
-                    <p className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1]">{highlightText(chiusura)}</p>
-                  )}
-                </>;
-              })()}
+                </div>
               </div>
             </div>
+            )}
 
             {/* BLOCCO CITAZIONE + FOTO */}
             <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
