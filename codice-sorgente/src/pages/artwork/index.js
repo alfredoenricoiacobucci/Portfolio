@@ -132,7 +132,9 @@ export async function getStaticProps() {
           col1 = sentences.slice(0, splitIdx).join(" ");
           col2 = sentences.slice(splitIdx).join(" ");
         }
-        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo };
+        const trovaBeneTitolo = (aboutData.trovaBeneTitolo || "").trim();
+        const trovaBenePunti = Array.isArray(aboutData.trovaBenePunti) ? aboutData.trovaBenePunti : [];
+        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTitolo, trovaBenePunti };
       })(),
       strings,
       aspetto: contenuti.aspetto || {},
@@ -628,6 +630,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           quote: about.quote || "",
           photo: about.photo || "",
           video: about.video || "",
+          trovaBeneTitolo: about.trovaBeneTitolo || "",
+          trovaBenePunti: about.trovaBenePunti || [],
         });
         setViewerOpen(false);
         setTextOpen(false);
@@ -1026,11 +1030,15 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                 Sfondo invertito per alternanza visiva nella pagina */}
             <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%' }}>
               <div className="py-6 md:py-12 lg:py-16">
-              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">Sicuramente ti troverai bene con me se</h2>
+              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">{selectedProject.trovaBeneTitolo || "Sicuramente ti troverai bene con me se"}</h2>
               <ul className="list-none pl-0 space-y-1 md:space-y-3 text-sm md:text-base leading-relaxed project-text">
-                <li>… preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
-                <li>… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
-                <li>… cerchi un rapporto duraturo, non una vendita veloce.</li>
+                {(selectedProject.trovaBenePunti?.length > 0 ? selectedProject.trovaBenePunti : [
+                  "… preferisci un parere onesto, anche quando mette in discussione quello che pensi.",
+                  "… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.",
+                  "… cerchi un rapporto duraturo, non una vendita veloce."
+                ]).filter(Boolean).map((punto, i) => (
+                  <li key={i}>{punto}</li>
+                ))}
               </ul>
               </div>
             </div>

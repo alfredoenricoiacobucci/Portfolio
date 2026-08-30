@@ -1244,7 +1244,8 @@
   const draftRaw = localStorage.getItem(STORAGE_DRAFT);
   let state = draftRaw ? JSON.parse(draftRaw) : JSON.parse(JSON.stringify(embeddedData));
   state.projects = state.projects || [];
-  state.about = state.about || { text: "", quote: "", photo: "", video: "" };
+  state.about = state.about || { text: "", quote: "", photo: "", video: "", trovaBeneTitolo: "", trovaBenePunti: ["", "", ""] };
+  if (!state.about.trovaBenePunti) state.about.trovaBenePunti = ["", "", ""];
   state.landing = state.landing || { artworkImages: [], professionalImages: [] };
 
   // Track photos per project: { [section/slug]: [{name, sha, url}] }
@@ -1813,6 +1814,23 @@
         <textarea id="f_quote">${escapeHtml(a.quote || "")}</textarea>
       </div>
 
+      <div class="field" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+        <label>Sezione "Ti troverai bene" — Titolo</label>
+        <input type="text" id="f_trovaBeneTitolo" value="${escapeHtml(a.trovaBeneTitolo || "Sicuramente ti troverai bene con me se")}">
+      </div>
+      <div class="field">
+        <label>Punto 1</label>
+        <input type="text" id="f_trovaBene0" value="${escapeHtml((a.trovaBenePunti || [])[0] || "")}">
+      </div>
+      <div class="field">
+        <label>Punto 2</label>
+        <input type="text" id="f_trovaBene1" value="${escapeHtml((a.trovaBenePunti || [])[1] || "")}">
+      </div>
+      <div class="field">
+        <label>Punto 3</label>
+        <input type="text" id="f_trovaBene2" value="${escapeHtml((a.trovaBenePunti || [])[2] || "")}">
+      </div>
+
       <div class="two-col">
         <div class="field">
           <label>Foto (nome file nella cartella media/)</label>
@@ -1846,6 +1864,15 @@
     ["quote","photo","video"].forEach(f => {
       const el = document.getElementById(`f_${f}`);
       el.addEventListener("input", () => { a[f] = el.value; markDirty(); });
+    });
+
+    // Bind "ti troverai bene"
+    const titEl = document.getElementById("f_trovaBeneTitolo");
+    titEl.addEventListener("input", () => { a.trovaBeneTitolo = titEl.value; markDirty(); });
+    if (!a.trovaBenePunti) a.trovaBenePunti = ["", "", ""];
+    [0, 1, 2].forEach(i => {
+      const el = document.getElementById(`f_trovaBene${i}`);
+      el.addEventListener("input", () => { a.trovaBenePunti[i] = el.value; markDirty(); });
     });
 
     const uploadArea = document.getElementById("uploadArea");
