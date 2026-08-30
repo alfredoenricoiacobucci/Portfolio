@@ -989,19 +989,19 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               </div>
             </div>
 
-            {/* SEZIONE: Probabilmente ti troverai bene con me se... */}
-            <div className={`w-full ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '3rem' }}>
-              <h3 className="text-base font-semibold mb-4" style={{ fontFamily: "inherit" }}>Probabilmente ti troverai bene con me se...</h3>
-              <ul className="list-disc pl-5 space-y-2 text-base leading-relaxed project-text">
+            {/* SEZIONE: Probabilmente ti troverai bene con me se...
+                Sfondo invertito per alternanza visiva nella pagina */}
+            <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: ASP.aboutQuotePadding + 'rem', paddingBottom: ASP.aboutQuotePadding + 'rem' }}>
+              <h2 className="text-4xl md:text-6xl font-extrabold leading-[1.1] mb-8">Probabilmente ti troverai bene con me se...</h2>
+              <ul className="list-disc pl-6 space-y-3 text-base leading-relaxed project-text">
                 <li>Preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
                 <li>Credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
                 <li>Preferisci un rapporto lungo piuttosto che una vendita veloce.</li>
               </ul>
             </div>
 
-            {/* BLOCCO SEPARATORE — nero in artwork, bianco in professional.
-                Spaziature uguali: sopra la citazione, tra citazione e foto, sotto la foto. */}
-            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-white" : "bg-[#0a0a0a]"}`} style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
+            {/* BLOCCO CITAZIONE + FOTO */}
+            <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
