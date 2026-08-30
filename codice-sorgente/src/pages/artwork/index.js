@@ -463,8 +463,9 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
   const startBannerScroll = useCallback((slug) => {
     activeBannerSlugRef.current = slug;
-    const state = bannerScrollRef.current[slug] || { position: 0, leaveTime: 0 };
-    if (state.leaveTime && Date.now() - state.leaveTime > 5000) state.position = 0;
+    const START_POS = 33; // Parte dal secondo terzo della foto
+    const state = bannerScrollRef.current[slug] || { position: START_POS, leaveTime: 0 };
+    if (state.leaveTime && Date.now() - state.leaveTime > 5000) state.position = START_POS;
     bannerScrollRef.current[slug] = state;
     let lastTime = performance.now();
     const SPEED = 100 / 20; // 0→100% in 20s
@@ -474,7 +475,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       lastTime = time;
       const s = bannerScrollRef.current[slug];
       s.position += SPEED * dt;
-      if (s.position >= 100) s.position = 0;
+      if (s.position >= 100) s.position = START_POS;
       const el = document.querySelector(`[data-banner-slug="${slug}"]`);
       if (el) el.style.objectPosition = `center ${s.position}%`;
       bannerRafRef.current = requestAnimationFrame(animate);
@@ -1213,7 +1214,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center 0%;
+          object-position: center 33%;
         }
 
         /* Overlay semi-trasparente sopra il banner per leggibilità testo */
