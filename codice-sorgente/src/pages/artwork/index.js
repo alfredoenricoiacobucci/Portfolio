@@ -454,21 +454,58 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   // Preload banner su hover (debounced)
   const hoverTimerRef = useRef(null);
   const preloadedSlugsRef = useRef(new Set());
+
+  // Banner scroll verticale: scorre dall'alto al basso durante hover
+  // Se si ritorna entro 5s, riprende da dove era rimasto
+  const bannerScrollRef = useRef({}); // { [slug]: { position: 0-100, leaveTime } }
+  const bannerRafRef = useRef(null);
+  const activeBannerSlugRef = useRef(null);
+
+  const startBannerScroll = useCallback((slug) => {
+    activeBannerSlugRef.current = slug;
+    const state = bannerScrollRef.current[slug] || { position: 0, leaveTime: 0 };
+    if (state.leaveTime && Date.now() - state.leaveTime > 5000) state.position = 0;
+    bannerScrollRef.current[slug] = state;
+    let lastTime = performance.now();
+    const SPEED = 100 / 20; // 0→100% in 20s
+    const animate = (time) => {
+      if (activeBannerSlugRef.current !== slug) return;
+      const dt = (time - lastTime) / 1000;
+      lastTime = time;
+      const s = bannerScrollRef.current[slug];
+      s.position += SPEED * dt;
+      if (s.position >= 100) s.position = 0;
+      const el = document.querySelector(`[data-banner-slug="${slug}"]`);
+      if (el) el.style.objectPosition = `center ${s.position}%`;
+      bannerRafRef.current = requestAnimationFrame(animate);
+    };
+    bannerRafRef.current = requestAnimationFrame(animate);
+  }, []);
+
+  const stopBannerScroll = useCallback(() => {
+    const slug = activeBannerSlugRef.current;
+    if (slug && bannerScrollRef.current[slug]) {
+      bannerScrollRef.current[slug].leaveTime = Date.now();
+    }
+    activeBannerSlugRef.current = null;
+    if (bannerRafRef.current) cancelAnimationFrame(bannerRafRef.current);
+  }, []);
+
   const onRowHover = useCallback((project) => {
     clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
-      if (preloadedSlugsRef.current.has(project.slug)) return;
-      preloadedSlugsRef.current.add(project.slug);
-      const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
-      if (bannerImg) {
-        const i = new window.Image();
-        i.src = bannerImg.src;
+      if (!preloadedSlugsRef.current.has(project.slug)) {
+        preloadedSlugsRef.current.add(project.slug);
+        const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
+        if (bannerImg) { const i = new window.Image(); i.src = bannerImg.src; }
       }
+      startBannerScroll(project.slug);
     }, 50);
-  }, []);
+  }, [startBannerScroll]);
   const onRowLeave = useCallback(() => {
     clearTimeout(hoverTimerRef.current);
-  }, []);
+    stopBannerScroll();
+  }, [stopBannerScroll]);
 
   // Mobile: primo tap → anteprima (classe "active"), secondo tap → naviga
   const [activeRowSlug, setActiveRowSlug] = useState(null);
@@ -980,7 +1017,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                     {/* Banner background — visibile solo su hover */}
                     {bannerSrc && (
                       <div className="marquee-row__banner">
-                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" loading="lazy" />
+                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} loading="lazy" />
                         <div className="marquee-row__banner-overlay" />
                       </div>
                     )}
@@ -1176,6 +1213,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center 0%;
         }
 
         /* Overlay semi-trasparente sopra il banner per leggibilità testo */
