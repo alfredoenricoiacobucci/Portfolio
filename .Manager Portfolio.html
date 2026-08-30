@@ -6990,34 +6990,76 @@
     });
   }
 
+  // Controlla se il server locale è disponibile (Manager app)
+  let localServerAvailable = null;
+  async function checkLocalServer() {
+    if (localServerAvailable !== null) return localServerAvailable;
+    try {
+      const r = await fetch("/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "", files: [] }) });
+      localServerAvailable = true;
+    } catch(e) { localServerAvailable = false; }
+    return localServerAvailable;
+  }
+
   async function handleUpload(files, key) {
-    if (!getToken()) {
-      toast("Imposta prima il token GitHub.", "err");
-      return;
-    }
     const fileList = Array.from(files || []);
     if (!fileList.length) return;
-    let basePath;
-    if (key === "about") basePath = "codice-sorgente/contenuti/about";
+
+    let folderPath;
+    if (key === "about") folderPath = "codice-sorgente/contenuti/about";
     else {
       const [section, slug] = key.split("/");
-      basePath = `codice-sorgente/contenuti/${section}/${slug}`;
+      folderPath = `codice-sorgente/contenuti/${section}/${slug}`;
     }
+
     toast(`Caricamento di ${fileList.length} file…`, "");
     const uploadedNames = [];
     const uploadedDims = {};
+
+    // Calcola dimensioni per tutte le immagini
     for (const file of fileList) {
+      const dim = await getImageDimensions(file);
+      if (dim) uploadedDims[file.name] = dim;
+    }
+
+    const isLocal = await checkLocalServer();
+
+    if (isLocal) {
+      // Upload locale: salva direttamente su disco
       try {
-        const b64 = await file2b64(file);
-        await ghPut(`${basePath}/${file.name}`, b64, `editor: upload ${file.name}`);
-        uploadedNames.push(file.name);
-        // Calcola dimensioni per il layout della galleria
-        const dim = await getImageDimensions(file);
-        if (dim) uploadedDims[file.name] = dim;
+        const filesData = [];
+        for (const file of fileList) {
+          const b64 = await file2b64(file);
+          filesData.push({ name: file.name, data: b64 });
+        }
+        const r = await fetch("/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folder: folderPath, files: filesData })
+        });
+        const result = await r.json();
+        if (result.saved) uploadedNames.push(...result.saved);
+        else throw new Error(result.error || "Upload fallito");
       } catch(e) {
-        toast(`Errore su ${file.name}: ${e.message}`, "err");
+        toast(`Errore upload locale: ${e.message}`, "err");
+      }
+    } else {
+      // Fallback: upload via GitHub API
+      if (!getToken()) {
+        toast("Imposta prima il token GitHub.", "err");
+        return;
+      }
+      for (const file of fileList) {
+        try {
+          const b64 = await file2b64(file);
+          await ghPut(`${folderPath}/${file.name}`, b64, `editor: upload ${file.name}`);
+          uploadedNames.push(file.name);
+        } catch(e) {
+          toast(`Errore su ${file.name}: ${e.message}`, "err");
+        }
       }
     }
+
     // Aggiorna ordine e dimensioni in contenuti.json per i progetti (non about)
     if (key !== "about" && uploadedNames.length > 0) {
       const [section, slug] = key.split("/");
@@ -7025,7 +7067,6 @@
       if (p) {
         if (!p.ordine) p.ordine = [];
         if (!p.dimensioni) p.dimensioni = {};
-        // Aggiungi i nuovi file in coda all'ordine (se non già presenti)
         for (const name of uploadedNames) {
           if (!p.ordine.includes(name)) p.ordine.push(name);
           if (uploadedDims[name]) p.dimensioni[name] = uploadedDims[name];
@@ -7033,7 +7074,7 @@
         markDirty();
       }
     }
-    toast("Caricamento completato.", "ok");
+    toast(isLocal ? "Foto salvate nella cartella del progetto." : "Caricamento completato.", "ok");
     if (key === "about") await fetchAboutMedia();
     else await fetchPhotos(key);
   }

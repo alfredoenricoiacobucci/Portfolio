@@ -5,7 +5,52 @@ var sa = Application.currentApplication();
 sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
-var pyCode = "import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys\nos.chdir('/Users/enricoiacobucci/Desktop/Portfolio AEI')\nsignal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))\nsignal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))\nclass H(http.server.SimpleHTTPRequestHandler):\n def do_GET(self):\n  if self.path.startswith('/open-url?'):\n   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)\n   url=q.get('url',[''])[0]\n   if url:webbrowser.open(url)\n   self.send_response(200)\n   self.end_headers()\n   self.wfile.write(b'ok')\n  else:super().do_GET()\n def log_message(self,*a):pass\n def end_headers(self):\n  self.send_header('Cache-Control','no-store, no-cache, must-revalidate, max-age=0')\n  self.send_header('Pragma','no-cache')\n  self.send_header('Expires','0')\n  super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nhttpd=socketserver.TCPServer(('127.0.0.1',8471),H)\nhttpd.serve_forever()";
+var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib
+os.chdir('/Users/enricoiacobucci/Desktop/Portfolio AEI')
+signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
+signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
+class H(http.server.SimpleHTTPRequestHandler):
+ def do_GET(self):
+  if self.path.startswith('/open-url?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   url=q.get('url',[''])[0]
+   if url:webbrowser.open(url)
+   self.send_response(200);self.end_headers();self.wfile.write(b'ok')
+  else:super().do_GET()
+ def do_POST(self):
+  if self.path=='/upload':
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length))
+   folder=body.get('folder','')
+   files=body.get('files',[])
+   if not folder or not files:
+    self.send_response(400);self.end_headers();self.wfile.write(b'{"error":"missing folder or files"}');return
+   # Security: folder must be under codice-sorgente/contenuti/
+   safe=os.path.normpath(os.path.join(os.getcwd(),folder))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not safe.startswith(base):
+    self.send_response(403);self.end_headers();self.wfile.write(b'{"error":"forbidden path"}');return
+   os.makedirs(safe,exist_ok=True)
+   saved=[]
+   for f in files:
+    name=os.path.basename(f['name'])
+    data=base64.b64decode(f['data'])
+    filepath=os.path.join(safe,name)
+    with open(filepath,'wb') as fp:fp.write(data)
+    saved.append(name)
+   self.send_response(200);self.end_headers()
+   self.wfile.write(json.dumps({"saved":saved}).encode())
+  else:
+   self.send_response(404);self.end_headers()
+ def log_message(self,*a):pass
+ def end_headers(self):
+  self.send_header('Cache-Control','no-store, no-cache, must-revalidate, max-age=0')
+  self.send_header('Pragma','no-cache')
+  self.send_header('Expires','0')
+  super().end_headers()
+socketserver.TCPServer.allow_reuse_address=True
+httpd=socketserver.TCPServer(('127.0.0.1',8471),H)
+httpd.serve_forever()`;
 
 var task = $.NSTask.alloc.init;
 task.launchPath = "/usr/bin/python3";
