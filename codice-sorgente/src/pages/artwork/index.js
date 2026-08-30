@@ -134,7 +134,9 @@ export async function getStaticProps() {
         }
         const trovaBeneTitolo = (aboutData.trovaBeneTitolo || "").trim();
         const trovaBenePunti = Array.isArray(aboutData.trovaBenePunti) ? aboutData.trovaBenePunti : [];
-        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTitolo, trovaBenePunti };
+        const trovaBeneChiusura = (aboutData.trovaBeneChiusura || "").trim();
+        const trovaBeneHighlight = Array.isArray(aboutData.trovaBeneHighlight) ? aboutData.trovaBeneHighlight : [];
+        return { text: col1, text2: col2, quote: aboutQuote, photo: aboutPhoto, video: aboutVideo, trovaBeneTitolo, trovaBenePunti, trovaBeneChiusura, trovaBeneHighlight };
       })(),
       strings,
       aspetto: contenuti.aspetto || {},
@@ -632,6 +634,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           video: about.video || "",
           trovaBeneTitolo: about.trovaBeneTitolo || "",
           trovaBenePunti: about.trovaBenePunti || [],
+          trovaBeneChiusura: about.trovaBeneChiusura || "",
+          trovaBeneHighlight: about.trovaBeneHighlight || [],
         });
         setViewerOpen(false);
         setTextOpen(false);
@@ -1026,20 +1030,39 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               </div>
             </div>
 
-            {/* SEZIONE: Probabilmente ti troverai bene con me se...
+            {/* SEZIONE: Se sei alla ricerca di un professionista...
                 Sfondo invertito per alternanza visiva nella pagina */}
             <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%' }}>
               <div className="py-6 md:py-12 lg:py-16">
-              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">{selectedProject.trovaBeneTitolo || "Sicuramente ti troverai bene con me se"}</h2>
-              <ul className="list-none pl-0 space-y-1 md:space-y-3 text-sm md:text-base leading-relaxed project-text">
-                {(selectedProject.trovaBenePunti?.length > 0 ? selectedProject.trovaBenePunti : [
-                  "… preferisci un parere onesto, anche quando mette in discussione quello che pensi.",
-                  "… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.",
-                  "… cerchi un rapporto duraturo, non una vendita veloce."
-                ]).filter(Boolean).map((punto, i) => (
-                  <li key={i}>{punto}</li>
-                ))}
-              </ul>
+              {(() => {
+                const hl = selectedProject.trovaBeneHighlight || [];
+                const highlightText = (text) => {
+                  if (!hl.length) return text;
+                  const regex = new RegExp(`(${hl.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+                  const parts = text.split(regex);
+                  return parts.map((part, i) =>
+                    hl.some(w => w.toLowerCase() === part.toLowerCase())
+                      ? <span key={i} style={{ color: '#c8102e' }}>{part}</span>
+                      : part
+                  );
+                };
+                const titolo = selectedProject.trovaBeneTitolo || "Se sei alla ricerca di un professionista";
+                const punti = selectedProject.trovaBenePunti?.length > 0 ? selectedProject.trovaBenePunti : [];
+                const chiusura = selectedProject.trovaBeneChiusura || "";
+                return <>
+                  <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-3 md:mb-8">{highlightText(titolo)}</h2>
+                  {punti.length > 0 && (
+                    <ul className="list-disc pl-5 space-y-1 md:space-y-3 text-sm md:text-base lg:text-lg leading-relaxed project-text mb-3 md:mb-8">
+                      {punti.filter(Boolean).map((punto, i) => (
+                        <li key={i}>{highlightText(punto)}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {chiusura && (
+                    <p className="text-sm md:text-base lg:text-lg leading-relaxed project-text">{highlightText(chiusura)}</p>
+                  )}
+                </>;
+              })()}
               </div>
             </div>
 

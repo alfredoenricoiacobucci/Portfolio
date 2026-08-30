@@ -4348,8 +4348,9 @@
   const draftRaw = localStorage.getItem(STORAGE_DRAFT);
   let state = draftRaw ? JSON.parse(draftRaw) : JSON.parse(JSON.stringify(embeddedData));
   state.projects = state.projects || [];
-  state.about = state.about || { text: "", quote: "", photo: "", video: "", trovaBeneTitolo: "", trovaBenePunti: ["", "", ""] };
+  state.about = state.about || { text: "", quote: "", photo: "", video: "", trovaBeneTitolo: "", trovaBenePunti: ["", "", ""], trovaBeneChiusura: "", trovaBeneHighlight: [] };
   if (!state.about.trovaBenePunti) state.about.trovaBenePunti = ["", "", ""];
+  if (!state.about.trovaBeneHighlight) state.about.trovaBeneHighlight = [];
   state.landing = state.landing || { artworkImages: [], professionalImages: [] };
 
   // Track photos per project: { [section/slug]: [{name, sha, url}] }
@@ -4951,6 +4952,14 @@
         <label>Punto 3</label>
         <input type="text" id="f_trovaBene2" value="${escapeHtml((a.trovaBenePunti || [])[2] || "")}">
       </div>
+      <div class="field">
+        <label>Frase di chiusura</label>
+        <input type="text" id="f_trovaBeneChiusura" value="${escapeHtml(a.trovaBeneChiusura || "")}">
+      </div>
+      <div class="field">
+        <label>Parole evidenziate in rosso (separate da virgola)</label>
+        <input type="text" id="f_trovaBeneHighlight" value="${escapeHtml((a.trovaBeneHighlight || []).join(', '))}">
+      </div>
 
       <div class="two-col">
         <div class="field">
@@ -4995,6 +5004,10 @@
       const el = document.getElementById(`f_trovaBene${i}`);
       el.addEventListener("input", () => { a.trovaBenePunti[i] = el.value; markDirty(); });
     });
+    const chiusuraEl = document.getElementById("f_trovaBeneChiusura");
+    chiusuraEl.addEventListener("input", () => { a.trovaBeneChiusura = chiusuraEl.value; markDirty(); });
+    const hlEl = document.getElementById("f_trovaBeneHighlight");
+    hlEl.addEventListener("input", () => { a.trovaBeneHighlight = hlEl.value.split(',').map(s => s.trim()).filter(Boolean); markDirty(); });
 
     const uploadArea = document.getElementById("uploadArea");
     const fileInput = document.getElementById("fileInput");
