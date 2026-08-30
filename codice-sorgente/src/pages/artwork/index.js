@@ -463,21 +463,26 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
 
   const startBannerScroll = useCallback((slug) => {
     activeBannerSlugRef.current = slug;
-    const START_POS = 33; // Parte dal secondo terzo della foto
+    // Determina start/end dal data attribute (verticale vs orizzontale)
+    const el = document.querySelector(`[data-banner-slug="${slug}"]`);
+    const isVert = el?.dataset.bannerVertical === "1";
+    const START_POS = isVert ? 40 : 33;
+    const END_POS = 66; // Rimane nel secondo terzo
     const state = bannerScrollRef.current[slug] || { position: START_POS, leaveTime: 0 };
     if (state.leaveTime && Date.now() - state.leaveTime > 5000) state.position = START_POS;
     bannerScrollRef.current[slug] = state;
     let lastTime = performance.now();
-    const SPEED = 100 / 20; // 0→100% in 20s
+    const RANGE = END_POS - START_POS;
+    const SPEED = RANGE / 12; // Percorre il range in 12s
     const animate = (time) => {
       if (activeBannerSlugRef.current !== slug) return;
       const dt = (time - lastTime) / 1000;
       lastTime = time;
       const s = bannerScrollRef.current[slug];
       s.position += SPEED * dt;
-      if (s.position >= 100) s.position = START_POS;
-      const el = document.querySelector(`[data-banner-slug="${slug}"]`);
-      if (el) el.style.objectPosition = `center ${s.position}%`;
+      if (s.position >= END_POS) s.position = START_POS;
+      const imgEl = document.querySelector(`[data-banner-slug="${slug}"]`);
+      if (imgEl) imgEl.style.objectPosition = `center ${s.position}%`;
       bannerRafRef.current = requestAnimationFrame(animate);
     };
     bannerRafRef.current = requestAnimationFrame(animate);
@@ -1001,8 +1006,9 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           <div className="flex flex-col gap-0 p-0">
             {projectsWithSlug.map((project, index) => {
               const isReverse = mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0);
-              const anteprimaImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0];
-              const bannerSrc = anteprimaImg?.src || project.images?.[0]?.src || "";
+              const anteprimaImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
+              const bannerSrc = anteprimaImg?.src || "";
+              const isVertical = anteprimaImg && anteprimaImg.h > anteprimaImg.w;
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
@@ -1018,7 +1024,7 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
                     {/* Banner background — visibile solo su hover */}
                     {bannerSrc && (
                       <div className="marquee-row__banner">
-                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} loading="lazy" />
+                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" />
                         <div className="marquee-row__banner-overlay" />
                       </div>
                     )}
