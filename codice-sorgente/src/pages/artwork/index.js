@@ -112,21 +112,22 @@ export async function getStaticProps() {
     props: {
       projects,
       about: (() => {
-        // About: rispetta gli a capo dell'utente, --- separa le colonne
-        const normalized = aboutText.trim();
+        // Normalizza: \n\n = paragrafo, \n singoli = soft-wrap editor → spazio
+        // L'utente può usare --- per separare esplicitamente le colonne
+        const normalized = aboutText.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ").trim();
         let col1 = normalized, col2 = "";
         if (normalized.includes("---")) {
           const parts = normalized.split("---");
           col1 = parts[0].trim();
           col2 = parts.slice(1).join("---").trim();
         } else {
-          // Split automatico: prima colonna ~55% dei caratteri, spezza per frase
+          // Split automatico: prima colonna ~58% dei caratteri, spezza per frase completa
           const sentences = normalized.split(/(?<=\.)\s+/);
-          const halfLen = Math.ceil(normalized.length * 0.55);
+          const targetLen = Math.ceil(normalized.length * 0.58);
           let accum = 0, splitIdx = sentences.length;
           for (let i = 0; i < sentences.length; i++) {
             accum += sentences[i].length;
-            if (accum >= halfLen) { splitIdx = i + 1; break; }
+            if (accum >= targetLen) { splitIdx = i + 1; break; }
           }
           col1 = sentences.slice(0, splitIdx).join(" ");
           col2 = sentences.slice(splitIdx).join(" ");
@@ -468,6 +469,23 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   const onRowLeave = useCallback(() => {
     clearTimeout(hoverTimerRef.current);
   }, []);
+
+  // Mobile: primo tap → anteprima (classe "active"), secondo tap → naviga
+  const [activeRowSlug, setActiveRowSlug] = useState(null);
+  const onRowClick = (project, e) => {
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!isTouch) {
+      router.push(hrefProject(project.slug), undefined, { shallow: true });
+      return;
+    }
+    if (activeRowSlug === project.slug) {
+      router.push(hrefProject(project.slug), undefined, { shallow: true });
+    } else {
+      e.preventDefault();
+      setActiveRowSlug(project.slug);
+      onRowHover(project);
+    }
+  };
 
   // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -952,10 +970,10 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
               return (
                 <div
                   key={project.slug}
-                  className={`marquee-row w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer`}
+                  className={`marquee-row w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
                   onMouseEnter={() => onRowHover(project)}
                   onMouseLeave={onRowLeave}
-                  onClick={() => router.push(hrefProject(project.slug), undefined, { shallow: true })}
+                  onClick={(e) => onRowClick(project, e)}
                 >
                   {/* Contenitore relativo — il banner si posiziona dietro al testo */}
                   <div className="marquee-row__inner">
@@ -1149,7 +1167,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           opacity: 0;
           transition: opacity 400ms ease;
         }
-        .marquee-row:hover .marquee-row__banner {
+        .marquee-row:hover .marquee-row__banner,
+        .marquee-row.active .marquee-row__banner {
           opacity: 1;
         }
 
@@ -1166,21 +1185,30 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           background: rgba(0, 0, 0, 0.45);
         }
 
-        /* Testo diventa bianco su hover (banner scuro sotto) */
-        .marquee-row:hover .marquee-seq {
+        /* Testo diventa bianco su hover/active (banner scuro sotto) */
+        .marquee-row:hover .marquee-seq,
+        .marquee-row.active .marquee-seq {
           color: #f8f4ed;
           text-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
 
-        /* Riga si espande su hover a 5x l'altezza testo, testo centrato nel quinto centrale */
+        /* Riga si espande su hover/active, testo centrato */
         .marquee-row__inner {
           padding: 0;
           display: flex;
           align-items: center;
           transition: padding 400ms cubic-bezier(.25,.8,.25,1);
         }
-        .marquee-row:hover .marquee-row__inner {
+        .marquee-row:hover .marquee-row__inner,
+        .marquee-row.active .marquee-row__inner {
           padding: 4.5rem 0;
+        }
+
+        /* Mobile: padding ridotto per schermo più piccolo */
+        @media (hover: none) and (pointer: coarse) {
+          .marquee-row.active .marquee-row__inner {
+            padding: 2.5rem 0;
+          }
         }
       `}</style>
     </div>

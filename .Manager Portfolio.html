@@ -2336,28 +2336,12 @@
         <div class="overlay">
           <div class="name">${escapeHtml(photo.name)}</div>
           <div class="photo-actions">
-            <button data-act="select">${isSelected ? '✓' : '○'}</button>
             <button data-act="banner">Banner</button>
-            <button data-act="anteprima" style="font-size:10px">Anteprima</button>
+            <button data-act="anteprima">Anteprima</button>
             <button data-act="delete">Elimina</button>
           </div>
         </div>
       `;
-
-      // Click su bottone Seleziona
-      card.querySelector('[data-act="select"]').onclick = (e) => {
-        e.stopPropagation();
-        if (e.shiftKey && lastClickedIdx !== null) {
-          const from = Math.min(lastClickedIdx, idx);
-          const to = Math.max(lastClickedIdx, idx);
-          for (let i = from; i <= to; i++) selectedPhotos.add(i);
-        } else {
-          if (selectedPhotos.has(idx)) selectedPhotos.delete(idx);
-          else selectedPhotos.add(idx);
-        }
-        lastClickedIdx = idx;
-        renderPhotosGrid(key);
-      };
 
       // Click sulla card: se ci sono selezioni attive → toggle selezione, altrimenti → lightbox
       card.addEventListener("click", (e) => {
