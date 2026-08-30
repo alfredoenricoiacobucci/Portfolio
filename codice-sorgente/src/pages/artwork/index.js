@@ -530,7 +530,28 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
   }, [stopBannerScroll]);
 
   // Mobile: primo tap → anteprima (classe "active"), secondo tap → naviga
+  // Reset quando si arriva alla pagina (da landing o navigazione)
   const [activeRowSlug, setActiveRowSlug] = useState(null);
+
+  // Chiudi anteprima toccando fuori dalle righe (mobile)
+  useEffect(() => {
+    if (!activeRowSlug) return;
+    const onTouchOutside = (e) => {
+      if (!e.target.closest(".marquee-row")) {
+        setActiveRowSlug(null);
+        stopBannerScroll();
+      }
+    };
+    document.addEventListener("touchstart", onTouchOutside, { passive: true });
+    return () => document.removeEventListener("touchstart", onTouchOutside);
+  }, [activeRowSlug, stopBannerScroll]);
+
+  // Reset activeRowSlug quando si cambia progetto o si torna alla home
+  useEffect(() => {
+    setActiveRowSlug(null);
+    stopBannerScroll();
+  }, [selectedProject, stopBannerScroll]);
+
   const onRowClick = (project, e) => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (!isTouch) {
@@ -538,8 +559,11 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
       return;
     }
     if (activeRowSlug === project.slug) {
+      // Secondo tap → naviga
+      setActiveRowSlug(null);
       router.push(hrefProject(project.slug), undefined, { shallow: true });
     } else {
+      // Primo tap → mostra anteprima, chiudi eventuali altre
       e.preventDefault();
       setActiveRowSlug(project.slug);
       onRowHover(project);
@@ -992,8 +1016,8 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
             {/* SEZIONE: Probabilmente ti troverai bene con me se...
                 Sfondo invertito per alternanza visiva nella pagina */}
             <div className={`w-full ${mode === "professional" ? "bg-white text-black" : "bg-[#0a0a0a] text-[#f8f4ed]"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: ASP.aboutQuotePadding + 'rem', paddingBottom: ASP.aboutQuotePadding + 'rem' }}>
-              <h2 className="text-4xl md:text-6xl font-extrabold leading-[1.1] mb-8">Sicuramente ti troverai bene con me se</h2>
-              <ul className="list-none pl-0 space-y-3 text-base leading-relaxed project-text">
+              <h2 className="text-2xl md:text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-6 md:mb-8">Sicuramente ti troverai bene con me se</h2>
+              <ul className="list-none pl-0 space-y-2 md:space-y-3 text-sm md:text-base leading-relaxed project-text">
                 <li>… preferisci un parere onesto, anche quando mette in discussione quello che pensi.</li>
                 <li>… credi che scegliere il professionista giusto sia meglio che scegliere quello più economico.</li>
                 <li>… cerchi un rapporto duraturo, non una vendita veloce.</li>
@@ -1275,10 +1299,13 @@ export default function Portfolio({ projects, about = {}, strings = {}, aspetto:
           padding: 4.5rem 0;
         }
 
-        /* Mobile: padding ridotto per schermo più piccolo */
+        /* Mobile: padding ridotto, marquee più lento */
         @media (hover: none) and (pointer: coarse) {
           .marquee-row.active .marquee-row__inner {
             padding: 2.5rem 0;
+          }
+          .marquee-track {
+            animation-duration: 140s !important;
           }
         }
       `}</style>
