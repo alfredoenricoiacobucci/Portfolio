@@ -1085,8 +1085,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
             </div>
 
-            {/* BLOCCO CITAZIONE + FOTO */}
-            <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
+            {/* BLOCCO CITAZIONE + FOTO — colori invertiti rispetto al resto */}
+            <div className={`w-full about-quote-block ${mode === "professional" ? "bg-black text-white" : "bg-white text-black"}`} style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem" }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
