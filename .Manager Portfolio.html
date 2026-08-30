@@ -129,9 +129,11 @@
     border-right: 1px solid var(--border);
     padding: 18px 0;
     overflow-y: auto;
-    max-height: calc(100vh - 61px);
+    height: calc(100vh - 61px);
     position: sticky;
     top: 61px;
+    align-self: start;
+    -webkit-overflow-scrolling: touch;
   }
   .sidebar .section-title {
     font-size: 10px;
@@ -151,6 +153,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: background 0.12s ease, color 0.12s ease;
   }
   .sidebar .item:hover { background: #1a1a1a; color: var(--text); }
   .sidebar .item.active {
@@ -359,6 +362,7 @@
     overflow: hidden;
     cursor: grab;
     user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
     -webkit-user-select: none;
   }
   .photo-card:active { cursor: grabbing; }
@@ -426,7 +430,11 @@
   .photo-card.selected {
     outline: 2px solid #60a5fa;
     outline-offset: -2px;
+    transform: scale(0.96);
   }
+  .photo-card:active { transform: scale(0.95); }
+  .photo-card.dragging { opacity: 0.4; transform: scale(0.92); }
+  .photo-card.drag-over { outline: 2px dashed #60a5fa; outline-offset: -2px; }
   .photo-card.selected .select-badge {
     display: flex;
   }
@@ -4937,20 +4945,8 @@
       </div>
 
       <div class="field" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
-        <label>Sezione "Ti troverai bene" — Titolo</label>
-        <input type="text" id="f_trovaBeneTitolo" value="${escapeHtml(a.trovaBeneTitolo || "Sicuramente ti troverai bene con me se")}">
-      </div>
-      <div class="field">
-        <label>Punto 1</label>
-        <input type="text" id="f_trovaBene0" value="${escapeHtml((a.trovaBenePunti || [])[0] || "")}">
-      </div>
-      <div class="field">
-        <label>Punto 2</label>
-        <input type="text" id="f_trovaBene1" value="${escapeHtml((a.trovaBenePunti || [])[1] || "")}">
-      </div>
-      <div class="field">
-        <label>Punto 3</label>
-        <input type="text" id="f_trovaBene2" value="${escapeHtml((a.trovaBenePunti || [])[2] || "")}">
+        <label>Sezione evidenziata — Testo principale</label>
+        <textarea id="f_trovaBeneTitolo" rows="3" style="font-size:13px;">${escapeHtml(a.trovaBeneTitolo || "")}</textarea>
       </div>
       <div class="field">
         <label>Frase di chiusura</label>
@@ -4996,14 +4992,9 @@
       el.addEventListener("input", () => { a[f] = el.value; markDirty(); });
     });
 
-    // Bind "ti troverai bene"
+    // Bind sezione evidenziata
     const titEl = document.getElementById("f_trovaBeneTitolo");
     titEl.addEventListener("input", () => { a.trovaBeneTitolo = titEl.value; markDirty(); });
-    if (!a.trovaBenePunti) a.trovaBenePunti = ["", "", ""];
-    [0, 1, 2].forEach(i => {
-      const el = document.getElementById(`f_trovaBene${i}`);
-      el.addEventListener("input", () => { a.trovaBenePunti[i] = el.value; markDirty(); });
-    });
     const chiusuraEl = document.getElementById("f_trovaBeneChiusura");
     chiusuraEl.addEventListener("input", () => { a.trovaBeneChiusura = chiusuraEl.value; markDirty(); });
     const hlEl = document.getElementById("f_trovaBeneHighlight");
@@ -5464,10 +5455,10 @@
     // Pulisci selezione se le foto sono cambiate
     selectedPhotos.forEach(i => { if (i >= sorted.length) selectedPhotos.delete(i); });
 
-    grid.innerHTML = "";
-
     // Rimuovi barra precedente
     grid.parentNode.querySelectorAll(".selection-bar").forEach(el => el.remove());
+
+    const frag = document.createDocumentFragment();
 
     // Barra selezione (visibile solo se c'è selezione)
     const selBar = document.createElement("div");
@@ -5490,18 +5481,31 @@
       // Eliminazione diretta senza conferma
       const deletedNames = [];
       const isLocal = await checkLocalServer();
-      for (const i of indices) {
-        const photo = sorted[i];
-        try {
-          if (isLocal) {
-            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
-            if (!r.ok) throw new Error("delete failed");
-          } else {
+      toast(`Eliminazione di ${indices.length} foto…`, "");
+      if (isLocal) {
+        // Batch: elimina tutte in parallelo (max 10 alla volta)
+        for (let b = 0; b < indices.length; b += 10) {
+          const batch = indices.slice(b, b + 10);
+          await Promise.all(batch.map(async (i) => {
+            const photo = sorted[i];
+            try {
+              const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
+              if (r.ok) deletedNames.push(photo.name);
+            } catch {}
+          }));
+        }
+        // Un solo git sync alla fine
+        fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({message: `auto: delete ${deletedNames.length} foto da ${slug}`}) }).catch(()=>{});
+      } else {
+        for (const i of indices) {
+          const photo = sorted[i];
+          try {
             await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
               `editor: delete ${section}/${slug}/${photo.name}`);
-          }
-          deletedNames.push(photo.name);
-        } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
+            deletedNames.push(photo.name);
+          } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
+        }
       }
       if (deletedNames.length > 0) {
         const nameSet = new Set(deletedNames);
@@ -5708,8 +5712,11 @@
           toast("Foto eliminata.", "ok");
         } catch(err) { toast("Errore: " + err.message, "err"); }
       };
-      grid.appendChild(card);
+      frag.appendChild(card);
     });
+
+    grid.innerHTML = "";
+    grid.appendChild(frag);
 
     // Applica view mode
     grid.classList.remove("view-list");
