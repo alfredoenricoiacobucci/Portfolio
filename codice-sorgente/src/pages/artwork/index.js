@@ -46,9 +46,8 @@ export async function getStaticProps() {
     const title = titleParts[0] || "";
     const titleExtra = titleParts.slice(1);
     const datePlace = titleLines.length > 1 ? titleLines[titleLines.length - 1] : "";
-    // Normalizza: singoli \n → spazio (soft-wrap editor), \n\n → paragrafo
-    const rawDesc = (data.descrizione || "").trim();
-    const description = rawDesc.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ");
+    // Gli a capo nel testo sono rispettati 1:1 (pre-line nel rendering)
+    const description = (data.descrizione || "").trim();
     const banner = (data.banner || "").trim();
 
     // Dati tecnici da JSON
@@ -112,9 +111,8 @@ export async function getStaticProps() {
     props: {
       projects,
       about: (() => {
-        // Normalizza: \n\n = paragrafo, \n singoli = soft-wrap editor → spazio
-        // L'utente può usare --- per separare esplicitamente le colonne
-        const normalized = aboutText.replace(/\n{2,}/g, "\n\n").replace(/(?<!\n)\n(?!\n)/g, " ").trim();
+        // Il testo è già pulito (nessun soft-wrap). Gli a capo sono rispettati 1:1.
+        const normalized = aboutText.trim();
         let col1 = normalized, col2 = "";
         if (normalized.includes("---")) {
           const parts = normalized.split("---");
