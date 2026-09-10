@@ -120,20 +120,12 @@ delay(2);
 var nsApp = $.NSApplication.sharedApplication;
 nsApp.setActivationPolicy($.NSApplicationActivationPolicyRegular);
 
+ObjC.import("stdlib");
+
 ObjC.registerSubclass({
   name:"MPDel8",superclass:"NSObject",protocols:["NSApplicationDelegate"],
   methods:{
-    "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
-    "applicationDidFinishLaunching:":{types:["void",["id"]],implementation:function(notif){
-      // Fullscreen dopo che il run loop è attivo
-      win.setCollectionBehavior(128); // NSWindowCollectionBehaviorFullScreenPrimary
-      win.toggleFullScreen(null);
-    }},
-    "applicationShouldTerminate:":{types:["unsigned long",["id"]],implementation:function(s){
-      try { task.terminate; } catch(e) {}
-      try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
-      return 1; /* NSTerminateNow */
-    }}
+    "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}}
   }
 });
 nsApp.delegate = $.MPDel8.alloc.init;
@@ -157,33 +149,43 @@ editMenu.addItem($.NSMenuItem.alloc.initWithTitleActionKeyEquivalent("Seleziona 
 editMi.submenu = editMenu;
 nsApp.mainMenu = mb;
 
-// Window — massimizzata (zona visibile meno menu bar)
-var sc = $.NSScreen.mainScreen.visibleFrame;
-var r = $.NSMakeRect(sc.origin.x, sc.origin.y, sc.size.width, sc.size.height);
+// Window — piccola iniziale, poi setFrame alla visibleFrame intera
 var st = $.NSTitledWindowMask|$.NSClosableWindowMask|$.NSResizableWindowMask|$.NSMiniaturizableWindowMask;
-var win = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer(r,st,$.NSBackingStoreBuffered,false);
+var win = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer($.NSMakeRect(0,0,800,600),st,$.NSBackingStoreBuffered,false);
 win.title = "Manager Portfolio";
 win.setTitlebarAppearsTransparent(true);
+win.backgroundColor = $.NSColor.colorWithSRGBRedGreenBlueAlpha(0.11, 0.11, 0.11, 1.0);
+// Imposta il FRAME (non content rect) alla zona visibile intera
+var vf = $.NSScreen.mainScreen.visibleFrame;
+win.setFrameDisplay(vf, true);
 
 // WKWebView with no cache + injected JS overrides
 var cfg = $.WKWebViewConfiguration.alloc.init;
-var injectCode = "window.confirm=function(){return true};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();document.execCommand('undo');}},true);";
+var injectCode = "(function(){var s=document.createElement('style');s.textContent='html,body{background:#1c1c1c!important}';document.documentElement.appendChild(s)})();window.confirm=function(){return true};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();document.execCommand('undo');}},true);";
 var userScript = $.WKUserScript.alloc.initWithSourceInjectionTimeForMainFrameOnly(injectCode, $.WKUserScriptInjectionTimeAtDocumentStart, true);
 cfg.userContentController.addUserScript(userScript);
 
 var wv = $.WKWebView.alloc.initWithFrameConfiguration(win.contentView.bounds,cfg);
+wv.setOpaque(false);
 wv.autoresizingMask = $.NSViewWidthSizable|$.NSViewHeightSizable;
 win.contentView.addSubview(wv);
 win.makeFirstResponder(wv);
+
+// Mostra la finestra SOLO quando la pagina è caricata (no flash bianca)
+ObjC.registerSubclass({
+  name:"NavDel",superclass:"NSObject",protocols:["WKNavigationDelegate"],
+  methods:{
+    "webView:didFinishNavigation:":{types:["void",["id","id"]],implementation:function(w,n){
+      win.makeKeyAndOrderFront(null);
+      nsApp.activateIgnoringOtherApps(true);
+    }}
+  }
+});
+wv.navigationDelegate = $.NavDel.alloc.init;
+
 var pageURL = $.NSURL.URLWithString("http://127.0.0.1:8471/.Manager%20Portfolio.html");
 var req = $.NSMutableURLRequest.requestWithURL(pageURL);
 req.cachePolicy = 1;
 wv.loadRequest(req);
 
-win.makeKeyAndOrderFront(null);
-nsApp.activateIgnoringOtherApps(true);
 nsApp.run;
-
-// Cleanup dopo la chiusura dell'app (nsApp.run ritorna qui)
-try { task.terminate; } catch(e) {}
-try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}

@@ -1,0 +1,7 @@
+frame: 0,0 1440x900
+visibleFrame: 0,42 1440x828
+PRIMA setFrameDisplay — winFrame: 400x332
+DOPO setFrameDisplay — winFrame: 1440x828
+PRIMA zoom — winFrame: 1440x828
+DOPO zoom — winFrame: 1420x808
+DELEGATE: shouldTerminate FIRED

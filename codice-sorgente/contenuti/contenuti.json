@@ -5,7 +5,7 @@
       "section": "art",
       "slug": "xylella",
       "titolo": "Xylella, Bellezza Fragile\nMartano (LE) 2025",
-      "descrizione": "L'uomo è parte dell'ecosistema terrestre. In ogni ecosistema la più piccola variazione può rompere un anello e l'intera catena si spezzerà. L'epidemia di Xylella, ha mandato in rovina secoli di lavoro e sacrifici di generazioni di famiglie di un'intera regione. E a noi non rimane che osservare inermi, a raccogliere i cocci. Ho cercato cercato di smascherare questa epidemia, scavando fino alla sua anima per guardarla negli occhi: ho visto che forma ha, come si muove e mi ha parlato.",
+      "descrizione": "L'uomo è parte dell'ecosistema terrestre. In ogni ecosistema la più piccola variazione può rompere un anello e l'intera catena si spezzerà. L'epidemia di Xylella, ha mandato in rovina secoli di lavoro e sacrifici di generazioni di famiglie di un'intera regione. A noi non rimane che osservare inermi, e raccogliere ciò che è rimasto. Ho cercato cercato di smascherare questa epidemia, scavando fino alla sua anima per guardarla negli occhi. Ho visto che forma ha, come si muove e mi ha parlato.",
       "camera": "Leica SL2S",
       "ottica": "Sigma Art 24-70 f2.8 DG DN",
       "luce": "Naturale e Controllata",
@@ -50,7 +50,11 @@
         }
       },
       "anteprima": "xylella-4.jpg",
-      "esposizioni": []
+      "esposizioni": [],
+      "anteprimaPosizione": {
+        "x": 50,
+        "y": 33
+      }
     },
     {
       "section": "art",
@@ -629,7 +633,7 @@
       "section": "art",
       "slug": "labirinto-di-cemento",
       "titolo": "Labirinto di cemento\nJesi (AN) 2024",
-      "descrizione": "É freddo, non so dove andare, mi sono perso. Nel labirinto ho incontrato qualcuno che conoscevo già, era il mio riflesso di qualche anno fa. Dopo essermi avventurato in qualcosa di più grande di me ho capito che o sarei morto o avrei raggiunto un mondo nuovo, proprio quando stavo per mollare ho incontrato colui che sarei diventato dopo, mi ha preso per mano e mi ha accompagnato fuori. Ora sono qui.",
+      "descrizione": "É freddo. Non so dove sono, non so dove andare... mi sono perso. Nel labirinto ho incontrato qualcuno che conoscevo gia, \nera il mio riflesso di qualche anno fa. Dopo essermi avventurato in qualcosa di più grande di me ho capito che se non fossi morto, avrei raggiunto un mondo nuovo. Proprio quando stavo per mollare ho incontrato colui che sarei diventato dopo, \nmi ha preso per mano e mi ha accompagnato fuori. Ora sono qui.",
       "camera": "Sony Alpha 6000",
       "ottica": "Sony SEL24-105 G f4.0",
       "luce": "Naturale",
@@ -729,7 +733,11 @@
         }
       },
       "anteprima": "cimitero-14.jpg",
-      "esposizioni": []
+      "esposizioni": [],
+      "anteprimaPosizione": {
+        "x": 50,
+        "y": 33
+      }
     },
     {
       "section": "art",
@@ -4182,24 +4190,6 @@
       "anteprima": "Shot by AE x Benevierre (Q-30-100)-155.jpg"
     }
   ],
-  "aboutArt": {
-    "text": "Alfredo Enrico Iacobucci è un artista multimediale, che ha studiato Nuove Tecnologie dell’Arte all’Accademia di Belle Arti di Urbino. Si occupa di direzione creativa, risoluzione di problemi, fotografia e post-produzione; il suo lavoro si sviluppa attraverso serie fotografiche, installazioni site-specific e collaborazioni professionali in ambito editoriale, performativo e commerciale. Per fare ciò è fondamentale un approccio attento a comprendere le diverse esigenze di ogni progetto. I suoi campi di maggiore interesse sono la Danza e la Performance e il suo strumento è la luce, la utilizza per scolpire i corpi e farne emergere la loro naturale drammaturgia. Il focus non è sull’estetica, ma sulla traccia che rimane impressa prima sulla retina e un istante dopo sul sensore della fotocamera: la traccia è l’impronta del carattere, il carattere è l’impronta del nostro passato. Il suo intento è superare i limiti della percezione per comprendere la realtà, utilizzando fotografia, installazione e linguaggi misti per indagare la relazione tra corpo, immagine e spazio.",
-    "quote": "Quand’è meglio di adesso?",
-    "photo": "",
-    "video": ""
-  },
-  "aboutShared": {
-    "text": true,
-    "quote": true,
-    "photo": true,
-    "video": true
-  },
-  "aboutPro": {
-    "text": "Alfredo Enrico Iacobucci è un artista multimediale, che ha studiato Nuove Tecnologie dell’Arte all’Accademia di Belle Arti di Urbino. Si occupa di direzione creativa, risoluzione di problemi, fotografia e post-produzione; il suo lavoro si sviluppa attraverso serie fotografiche, installazioni site-specific e collaborazioni professionali in ambito editoriale, performativo e commerciale. Per fare ciò è fondamentale un approccio attento a comprendere le diverse esigenze di ogni progetto. I suoi campi di maggiore interesse sono la Danza e la Performance e il suo strumento è la luce, la utilizza per scolpire i corpi e farne emergere la loro naturale drammaturgia. Il focus non è sull’estetica, ma sulla traccia che rimane impressa prima sulla retina e un istante dopo sul sensore della fotocamera: la traccia è l’impronta del carattere, il carattere è l’impronta del nostro passato. Il suo intento è superare i limiti della percezione per comprendere la realtà, utilizzando fotografia, installazione e linguaggi misti per indagare la relazione tra corpo, immagine e spazio.",
-    "quote": "Quand’è meglio di adesso?",
-    "photo": "",
-    "video": ""
-  },
   "landing": {
     "artworkImages": [
       "/projects/art/xylella/xylella-1.jpg",
@@ -4288,5 +4278,23 @@
       "/projects/pro/artisti-in-piazza/PB-55.jpg",
       "/projects/pro/artisti-in-piazza/PB-51.jpg"
     ]
+  },
+  "aboutArt": {
+    "text": "Alfredo Enrico Iacobucci è un artista multimediale, che ha studiato Nuove Tecnologie dell’Arte all’Accademia di Belle Arti di Urbino. Si occupa di direzione creativa, risoluzione di problemi, fotografia e post-produzione; il suo lavoro si sviluppa attraverso serie fotografiche, installazioni site-specific e collaborazioni professionali in ambito editoriale, performativo e commerciale. Per fare ciò è fondamentale un approccio attento a comprendere le diverse esigenze di ogni progetto. I suoi campi di maggiore interesse sono la Danza e la Performance e il suo strumento è la luce, la utilizza per scolpire i corpi e farne emergere la loro naturale drammaturgia. Il focus non è sull’estetica, ma sulla traccia che rimane impressa prima sulla retina e un istante dopo sul sensore della fotocamera: la traccia è l’impronta del carattere, il carattere è l’impronta del nostro passato. Il suo intento è superare i limiti della percezione per comprendere la realtà, utilizzando fotografia, installazione e linguaggi misti per indagare la relazione tra corpo, immagine e spazio.",
+    "quote": "Quand’è meglio di adesso?",
+    "photo": "",
+    "video": ""
+  },
+  "aboutPro": {
+    "text": "Alfredo Enrico Iacobucci è un artista multimediale, che ha studiato Nuove Tecnologie dell’Arte all’Accademia di Belle Arti di Urbino. Si occupa di direzione creativa, risoluzione di problemi, fotografia e post-produzione; il suo lavoro si sviluppa attraverso serie fotografiche, installazioni site-specific e collaborazioni professionali in ambito editoriale, performativo e commerciale. Per fare ciò è fondamentale un approccio attento a comprendere le diverse esigenze di ogni progetto. I suoi campi di maggiore interesse sono la Danza e la Performance e il suo strumento è la luce, la utilizza per scolpire i corpi e farne emergere la loro naturale drammaturgia. Il focus non è sull’estetica, ma sulla traccia che rimane impressa prima sulla retina e un istante dopo sul sensore della fotocamera: la traccia è l’impronta del carattere, il carattere è l’impronta del nostro passato. Il suo intento è superare i limiti della percezione per comprendere la realtà, utilizzando fotografia, installazione e linguaggi misti per indagare la relazione tra corpo, immagine e spazio.",
+    "quote": "Quand’è meglio di adesso?",
+    "photo": "",
+    "video": ""
+  },
+  "aboutShared": {
+    "text": true,
+    "quote": true,
+    "photo": true,
+    "video": true
   }
 }
