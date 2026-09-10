@@ -4854,12 +4854,18 @@
   // larghezza di testo = larghezza del contenitore. Deve corrispondere
   // esattamente alla colonna di testo del sito.
   function syncSiteWidths() {
-    // Simula le larghezze esatte del sito (che usa il viewport completo)
+    // Simula le larghezze esatte del sito.
+    // Il sito usa 100vw (viewport del browser). Su macOS con overlay scrollbar,
+    // il viewport === screen.width. Sottraiamo 0px (overlay) o ~15px (scrollbar visibile).
     const screenW = screen.width || window.innerWidth;
     const ml = parseFloat(state.aspetto?.marginLaterale || 8);
     const gc = parseFloat(state.aspetto?.gapColonne || 4);
     const siteContent = screenW * (1 - 2 * ml / 100);
     const siteGap = siteContent * (gc / 100);
+
+    // Leggi font-size da aspetto (il sito usa text-base = fontSizeBase px)
+    const baseFontSize = parseFloat(state.aspetto?.fontSizeBase || 16);
+    const baseLineHeight = parseFloat(state.aspetto?.lineHeight || 1.625);
 
     // Progetto: colonna testo = siteContent - 180px (sidebar tecnica) - gap
     const projectDescW = siteContent - 180 - siteGap;
@@ -4867,47 +4873,49 @@
     // About: colonne flex-1 uguali (50/50 meno il gap)
     const aboutColW = (siteContent - siteGap) / 2;
 
-    // Compenso padding (12px) + border (1px) per lato del wrapper
+    // La textarea site-preview ha padding:0 e border:none.
+    // Il wrapper .site-preview-wrap ha padding:12px + border:1px per lato = 26px totali.
     const wrapOffset = 26;
-    const maxW = document.getElementById("content")?.clientWidth - 40 || 900;
+    // Non limitiamo la larghezza — lasciamo overflow-x:auto sul contenitore
+    // così la textarea ha ESATTAMENTE la larghezza del sito
+    const contentEl = document.getElementById("content");
+    const maxW = contentEl ? contentEl.clientWidth - 40 : 900;
 
-    const baseFontSize = 16; // text-base = 16px
     document.querySelectorAll(".site-col-text").forEach(el => {
       const targetW = Math.round(projectDescW + wrapOffset);
-      const usedW = Math.min(targetW, maxW);
-      el.style.width = usedW + "px";
+      el.style.width = targetW + "px";
+      el.style.maxWidth = "none";
+      el.style.flexShrink = "0";
       const ta = el.querySelector("textarea");
-      if (ta && usedW < targetW) {
-        ta.style.fontSize = Math.max(12, Math.round(baseFontSize * (usedW - wrapOffset) / projectDescW)) + "px";
-      } else if (ta) {
+      if (ta) {
         ta.style.fontSize = baseFontSize + "px";
+        ta.style.lineHeight = String(baseLineHeight);
       }
     });
     document.querySelectorAll(".site-col-half").forEach(el => {
       const targetW = Math.round(aboutColW + wrapOffset);
-      const usedW = Math.min(targetW, maxW);
-      el.style.width = usedW + "px";
+      el.style.width = targetW + "px";
+      el.style.maxWidth = "none";
+      el.style.flexShrink = "0";
       const ta = el.querySelector("textarea");
-      if (ta && usedW < targetW) {
-        ta.style.fontSize = Math.max(12, Math.round(baseFontSize * (usedW - wrapOffset) / aboutColW)) + "px";
-      } else if (ta) {
+      if (ta) {
         ta.style.fontSize = baseFontSize + "px";
+        ta.style.lineHeight = String(baseLineHeight);
       }
     });
-    // Sezione evidenziata: usa tutta la larghezza disponibile nel Manager,
-    // scala il font proporzionalmente così il testo va a capo negli stessi punti del sito
+    // Sezione evidenziata: scala il font proporzionalmente
     const siteFontSize = 60; // lg:text-6xl = 3.75rem = 60px
     document.querySelectorAll(".site-col-trovabene").forEach(el => {
       const availW = maxW;
       el.style.width = availW + "px";
       const ta = el.querySelector("textarea");
       if (ta) {
-        // Il testo nel sito ha larghezza siteContent. Nel Manager abbiamo availW - wrapOffset.
-        // Scaliamo il font: fontSize = siteFontSize * (availW - wrapOffset) / siteContent
         const scale = (availW - wrapOffset) / siteContent;
         ta.style.fontSize = Math.round(siteFontSize * scale) + "px";
       }
     });
+    // Permetti scroll orizzontale se la textarea è più larga del pannello
+    if (contentEl) contentEl.style.overflowX = "auto";
   }
   window.addEventListener("resize", syncSiteWidths);
 
