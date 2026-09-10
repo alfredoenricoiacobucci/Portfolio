@@ -614,6 +614,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   // ===== TOGGLE BLOCCO TESTO SOTTO BANNER =====
   const [textOpen, setTextOpen] = useState(false);
 
+  // Larghezza minima della riga testo basata sulla risoluzione dello schermo,
+  // così il testo non cambia i punti di wrap quando la finestra si riduce.
+  const [textRowMinW, setTextRowMinW] = useState(0);
+  useEffect(() => {
+    const sw = window.screen.width;
+    const ml = parseFloat(ASP.marginLaterale) || 8;
+    setTextRowMinW(Math.round(sw * (1 - 2 * ml / 100)));
+  }, [ASP.marginLaterale]);
+
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
@@ -923,10 +932,10 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         <div key={`project-${currentSlug}`} className="w-full" style={{ backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
-            <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+            <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflowX: 'auto' }}>
               {/* Contenuto testo — si rivela al click */}
               <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
-                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%" }}>
+                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
                     <div className="flex-1 min-w-0">
@@ -1057,8 +1066,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
-            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem' }}>
-              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
+            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflowX: 'auto' }}>
+              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%', minWidth: textRowMinW ? textRowMinW + 'px' : undefined }} lang="it">
                 {/* Colonna sinistra — testo */}
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
