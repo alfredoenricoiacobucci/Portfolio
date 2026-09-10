@@ -7506,12 +7506,16 @@
         fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify({message: "editor: aggiorna contenuti.json"}) })
           .then(()=> {
-            toast("Salvato e pubblicato!", "ok");
-            // Track deploy via GitHub API
+            // Track deploy via GitHub API — NON dire "pubblicato" finché Vercel non finisce
             if (getToken()) {
+              toast("Push completato, deploy in corso…", "ok");
               fetch(`https://api.github.com/repos/${getRepo()}/commits/${getBranch()}`, {
                 headers: { Authorization: `token ${getToken()}`, Accept: "application/vnd.github.v3+json" }
-              }).then(r=>r.json()).then(d=>{ if(d.sha) trackDeploy(d.sha); }).catch(()=>{});
+              }).then(r=>r.json()).then(d=>{ if(d.sha) trackDeploy(d.sha); }).catch(()=>{
+                toast("Push completato! Impossibile tracciare il deploy.", "ok");
+              });
+            } else {
+              toast("Push completato! (nessun token per tracciare il deploy)", "ok");
             }
           })
           .catch(()=> toast("Salvato localmente, push fallito.", "err"));
