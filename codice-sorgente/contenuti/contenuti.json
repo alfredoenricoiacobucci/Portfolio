@@ -53,7 +53,7 @@
       "esposizioni": [],
       "anteprimaPosizione": {
         "x": 50,
-        "y": 33
+        "y": 31
       }
     },
     {
@@ -99,8 +99,12 @@
           "h": 1000
         }
       },
-      "anteprima": "gemelli-2.jpg",
-      "esposizioni": []
+      "anteprima": "gemelli-6.jpg",
+      "esposizioni": [],
+      "anteprimaPosizione": {
+        "x": 55,
+        "y": 30
+      }
     },
     {
       "section": "art",
