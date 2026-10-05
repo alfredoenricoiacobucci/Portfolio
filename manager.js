@@ -6,7 +6,11 @@ sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
 var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading
-os.chdir('/Users/enricoiacobucci/Desktop/Portfolio AEI')
+_ROOTS=['/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI','/Users/enricoiacobucci/Desktop/Portfolio AEI']
+_root=next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
+if not _root:
+ sys.stderr.write('Cartella progetto non trovata. Collega l SSD "Alfredo Enrico Iacobucci".\\n');sys.exit(1)
+os.chdir(_root)
 def git_sync(msg="auto: media update"):
  def run():
   try:

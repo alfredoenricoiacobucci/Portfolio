@@ -12,14 +12,13 @@ const nextConfig = {
   // e servite direttamente dalla CDN come file statici.
   // Qui escludiamo esplicitamente le cartelle immagini da OGNI funzione serverless
   // per evitare che il file tracer le includa (causando funzioni da 440MB+).
+  // Le immagini vengono preparate in public/projects/ dalla pipeline e servite
+  // come file statici dalla CDN: nessuna funzione serverless deve includerle.
+  // Un unico glob applicato a tutte le route, invece di sette liste identiche
+  // da tenere allineate a mano (l'elenco era già fuori sincrono: citava
+  // /api/contact, route rimossa, e non copriva /sitemap.xml).
   outputFileTracingExcludes: {
-    "/": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/artwork": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/professional": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/api/analytics": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/api/contact": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/api/track": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
-    "/api/revalidate": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
+    "*": ["./contenuti/art/**/*", "./contenuti/pro/**/*", "./contenuti/about/**/*"],
   },
 };
 

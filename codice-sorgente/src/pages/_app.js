@@ -2,7 +2,31 @@
 import "@/styles/globals.css";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/router";
+import { Archivo, Inter } from "next/font/google";
 import { useTrackPageView } from "@/lib/useAnalytics";
+
+/* Font self-hosted da next/font: zero richieste a fonts.googleapis.com, zero
+ * render-blocking, zero CLS. Prima arrivavano da un <link> in _document.js,
+ * che scaricava 6 pesi di Inter per intero.
+ *
+ * Archivo regge il display — marquee a 7rem, titoli dei banner, citazioni —
+ * dove Inter risultava anonimo. Inter resta per corpo e UI, dove ai corpi
+ * piccoli e' piu' leggibile. Per tornare a Inter su tutto, basta puntare
+ * --font-display sul font body in tailwind.config.js.
+ */
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 /*
  * Transizione Art ↔ Pro — taglio netto:
@@ -385,7 +409,7 @@ export default function App({ Component, pageProps }) {
     <>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
-      <div ref={wrapRef} style={{ opacity: 1 }}>
+      <div ref={wrapRef} className={`${archivo.variable} ${inter.variable}`} style={{ opacity: 1 }}>
         <Component {...pageProps} />
       </div>
     </>
