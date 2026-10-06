@@ -963,7 +963,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 </h2>
               ))}
               {selectedProject.datePlace && (
-                <p className="banner-title font-display text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
+                <p className="banner-title font-display text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "var(--accent)" }}>
                   {selectedProject.datePlace}
                 </p>
               )}
@@ -1006,8 +1006,10 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflowX: 'auto' }}>
-              {/* Contenuto testo — si rivela al click */}
-              <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
+              {/* Wrapper grid: anima l'altezza 0fr→1fr senza magic number */}
+              <div className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
+              {/* Contenuto testo — opacity controllata dal wrapper */}
+              <div className={`project-text-reveal__content ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
                 <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
@@ -1086,6 +1088,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   </div>
                 </div>
               </div>
+              </div>{/* chiude project-text-reveal__wrapper */}
             </div>
           )}
           {/* Gallery — margini simmetrici sopra e sotto */}
@@ -1127,7 +1130,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 </span>
               )}
             </div>
-            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
+            {/* Gradiente allineato a quello dei banner progetti: leggero al centro,
+                concentrato in basso per leggibilità del titolo. */}
+            <div
+              className="pointer-events-none absolute inset-0 z-30"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 72%, rgba(0,0,0,0.92) 90%, #000 100%)",
+              }}
+            />
             <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
               <div className="mb-8 space-y-0 leading-tight">
                 <h2 className="banner-title font-display text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
@@ -1153,15 +1164,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
               <div className={`flex items-center text-sm ${mode === "professional" ? "text-white/50" : "text-black/40"}`} style={{ marginTop: "4rem", justifyContent: "space-between" }}>
-                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {S.TELEFONO}
                 </a>
-                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   {S.EMAIL_DESTINATARIO}
                 </a>
-                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
@@ -1216,7 +1227,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   href={hrefProject(project.slug)}
                   shallow
                   aria-label={`Apri il progetto ${project.name}`}
-                  className={`marquee-row block w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
+                  className={`marquee-row marquee-row-stagger block w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                   onMouseEnter={() => onRowHover(project)}
                   onMouseLeave={onRowLeave}
                   onFocus={() => preloadAndScroll(project)}
@@ -1355,7 +1367,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
                   style={{
                     opacity: isCurrent ? 1 : 0,
-                    transition: "opacity 120ms ease",
+                    transition: "opacity 150ms cubic-bezier(0.23, 1, 0.32, 1)",
                     position: "absolute",
                     pointerEvents: isCurrent ? "auto" : "none",
                   }}
@@ -1436,7 +1448,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           inset: 0;
           z-index: 1;
           opacity: 0;
-          transition: opacity 400ms ease;
+          transition: opacity 400ms var(--ease-smooth);
         }
         @media (hover: hover) and (pointer: fine) {
           .marquee-row:hover .marquee-row__banner { opacity: 1; }

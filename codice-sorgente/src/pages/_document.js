@@ -4,10 +4,10 @@ export default function Document() {
   return (
     <Html lang="it">
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         {/* I font arrivano da next/font (self-hosted, vedi _app.js): niente più
             <link> a fonts.googleapis.com, che bloccava il primo render e
             scaricava 6 pesi di Inter di cui ne servono 4. */}
+        {/* viewport sta in _app.js via next/head per evitare il warning Next.js */}
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#f8f4ed" media="(prefers-color-scheme: light)" />

@@ -87,7 +87,7 @@ export default function Modal({ open, onClose, title, children, mode = "artwork"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`${bg} ${text} max-w-md w-full border ${border}`}
+        className={`${bg} ${text} max-w-md w-full border ${border} modal-panel`}
       >
         {/* Header minimale */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4">

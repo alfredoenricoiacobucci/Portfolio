@@ -1,6 +1,7 @@
 // pages/_app.js
 import "@/styles/globals.css";
 import { useEffect, useRef, useCallback, useState } from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { Archivo, Inter } from "next/font/google";
 import { useTrackPageView } from "@/lib/useAnalytics";
@@ -369,9 +370,9 @@ export default function App({ Component, pageProps }) {
           100% { transform: rotate(0deg); }
         }
         @keyframes phoneColor {
-          0%, 20% { stroke: #c8102e; }
+          0%, 20% { stroke: var(--accent, #c8102e); }
           50%, 70% { stroke: #22c55e; }
-          100% { stroke: #c8102e; }
+          100% { stroke: var(--accent, #c8102e); }
         }
         @keyframes warningPulse {
           0%, 100% { stroke: #facc15; opacity: 0.5; }
@@ -407,6 +408,9 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </Head>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
       <div ref={wrapRef} className={`${archivo.variable} ${inter.variable}`} style={{ opacity: 1 }}>

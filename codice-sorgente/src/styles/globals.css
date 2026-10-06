@@ -28,6 +28,12 @@
      "attivo", "hover" ed "errore" insieme non significa niente. */
   --error: #b00020;
 
+  /* Curve easing — le built-in CSS sono troppo deboli per dare
+     intenzione alle animazioni. Queste hanno più "punch". */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-smooth: cubic-bezier(0.2, 0.9, 0.2, 1);
+
   /* Scala tipografica — prima convivevano 9/11/12/13/14/15/20px sparsi tra
      Tailwind, stili inline e CSS. Il 9px delle label era illeggibile. */
   --text-2xs: 0.6875rem; /* 11px — label micro uppercase, con tracking */
@@ -102,6 +108,16 @@ body {
 .fade-in { animation: fadeIn 400ms ease-out both; }
 .fade-out { animation: fadeOut 400ms ease-out both; }
 
+/* Pannello modale: entra con leggero scale per dare profondità.
+   Niente in natura appare dal nulla — anche un piccolo 0.95 basta. */
+@keyframes modalPanelIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.modal-panel {
+  animation: modalPanelIn 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
 /* utility per applicare il colore del bordo dinamico (--border sta nei token sopra) */
 .site-border {
   border-color: var(--border) !important;
@@ -114,7 +130,7 @@ body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(.2,.9,.2,1);
+  transition: opacity 400ms var(--ease-smooth);
   z-index: 0;
   will-change: opacity;
 }
@@ -142,9 +158,9 @@ body {
   background: linear-gradient(180deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.78) 40%, rgba(0,0,0,0.70) 100%);
 }
 
-/* smoother crossfade: allow slight overlap and smoother timing */
-.landing-bg--artwork { z-index: 0; transition: opacity 400ms ease; contain: paint; }
-.landing-bg--professional { z-index: 1; transition: opacity 400ms ease; contain: paint; }
+/* smoother crossfade: curva custom per un cambio di atmosfera più morbido */
+.landing-bg--artwork { z-index: 0; transition: opacity 400ms var(--ease-smooth); contain: paint; }
+.landing-bg--professional { z-index: 1; transition: opacity 400ms var(--ease-smooth); contain: paint; }
 
 /* Landing dark modifier: force text bianco caldo in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
@@ -177,13 +193,22 @@ h1 { line-height: 1.05; }
 /* Hover rosso su tutti gli elementi interattivi */
 .hover-red:hover { color: var(--accent) !important; }
 
+/* Press feedback: tutti i bottoni e link interattivi rispondono al click.
+   Senza questo, l'interfaccia sembra inerte al tocco. */
+:where(button, a, [role="button"]):active {
+  transform: scale(0.97);
+}
+
 /* Pallino nav: rosso su hover con ingrandimento */
 .dot-nav {
-  transition: background-color 300ms ease, transform 300ms ease;
+  transition: background-color 200ms ease-out, transform 200ms ease-out;
 }
 .dot-nav:hover {
   background-color: var(--accent) !important;
-  transform: translate(-50%, -50%) scale(1.5);
+  transform: translate(-50%, -50%) scale(1.3);
+}
+.dot-nav:active {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* Triangolo back: rubber-band squeeze */
@@ -222,8 +247,9 @@ h1 { line-height: 1.05; }
 
 /* Chevron toggle per blocco testo sotto banner */
 /* L'intero wrap (label + freccia) rimbalza insieme */
+/* 3 rimbalzi, pausa 5 s, poi ricomincia — richiama l'attenzione senza stancare. */
 .project-chevron-wrap {
-  animation: chevronBounce 2s ease-in-out infinite;
+  animation: chevronBounce 11s ease-in-out infinite;
 }
 .project-chevron-wrap:has(.project-chevron--open) {
   animation: none;
@@ -235,10 +261,24 @@ h1 { line-height: 1.05; }
   transform: rotate(180deg);
 }
 @keyframes chevronBounce {
-  0%, 100% { opacity: 0.55; transform: translateY(0); }
-  40% { opacity: 1; transform: translateY(8px); }
-  60% { opacity: 1; transform: translateY(8px); }
-  80% { opacity: 0.75; transform: translateY(-2px); }
+  /* Bounce 1 (0 – 18%) */
+  0%   { opacity: 0.55; transform: translateY(0); }
+  7%   { opacity: 1;    transform: translateY(8px); }
+  11%  { opacity: 1;    transform: translateY(8px); }
+  15%  { opacity: 0.75; transform: translateY(-2px); }
+  18%  { opacity: 0.55; transform: translateY(0); }
+  /* Bounce 2 (18 – 36%) */
+  25%  { opacity: 1;    transform: translateY(8px); }
+  29%  { opacity: 1;    transform: translateY(8px); }
+  33%  { opacity: 0.75; transform: translateY(-2px); }
+  36%  { opacity: 0.55; transform: translateY(0); }
+  /* Bounce 3 (36 – 55%) */
+  43%  { opacity: 1;    transform: translateY(8px); }
+  47%  { opacity: 1;    transform: translateY(8px); }
+  51%  { opacity: 0.75; transform: translateY(-2px); }
+  55%  { opacity: 0.55; transform: translateY(0); }
+  /* Pausa 5 s */
+  100% { opacity: 0.55; transform: translateY(0); }
 }
 /* Hover desktop: chevron e label diventano rossi */
 .project-chevron__stroke {
@@ -280,14 +320,25 @@ h1 { line-height: 1.05; }
     opacity: 1;
   }
 }
+/* Text reveal: CSS Grid 0fr→1fr al posto di max-height.
+   max-height animata aveva due problemi: il magic number 1200px (se il testo
+   è più corto, la transizione "finisce prima" visivamente) e il layout
+   thrashing (il browser ricalcola l'altezza a ogni frame).
+   grid-template-rows: 0fr→1fr anima l'altezza reale senza magic number. */
+.project-text-reveal__wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 500ms var(--ease-in-out);
+}
+.project-text-reveal__wrapper--open {
+  grid-template-rows: 1fr;
+}
 .project-text-reveal__content {
-  max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 400ms ease;
+  transition: opacity 400ms var(--ease-smooth);
 }
-.project-text-reveal__content--open {
-  max-height: 1200px;
+.project-text-reveal__wrapper--open .project-text-reveal__content {
   opacity: 1;
 }
 
@@ -393,6 +444,22 @@ body {
    la lista a ogni frame. `contain` limita il ricalcolo alla singola riga. */
 .marquee-row {
   contain: layout paint;
+  transition: opacity 150ms ease-out;
+}
+/* Press feedback su touch: la riga si attenua leggermente confermando il tap.
+   opacity non trigghera layout (a differenza di transform che combatte con contain). */
+.marquee-row:active {
+  opacity: 0.85;
+}
+/* Stagger: ogni riga entra con un leggero ritardo dalla precedente.
+   Guida l'occhio verso il basso e dà ritmo alla pagina. */
+.marquee-row-stagger {
+  opacity: 0;
+  animation: marqueeStaggerIn 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+@keyframes marqueeStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Footer: allineato a sinistra come il resto dell'impostazione editoriale,
