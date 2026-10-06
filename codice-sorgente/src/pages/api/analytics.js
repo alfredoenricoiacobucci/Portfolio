@@ -1,7 +1,7 @@
 // pages/api/analytics.js
 // GET: legge analytics dal branch "data" via GitHub API.
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.GH_PAT || process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPO || "alfredoenricoiacobucci/Portfolio";
 const DATA_BRANCH = "data";
 const FILE_PATH = "analytics.json";
