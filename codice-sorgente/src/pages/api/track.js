@@ -1,7 +1,7 @@
 // pages/api/track.js
 // Analytics tracking: salva i dati su un branch separato "data" per non interferire con main.
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.GH_PAT || process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPO || "alfredoenricoiacobucci/Portfolio";
 const DATA_BRANCH = "data";
 const FILE_PATH = "analytics.json";
