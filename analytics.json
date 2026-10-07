@@ -1,32 +1,33 @@
 {
   "views": {
-    "total": 5,
+    "total": 6,
     "art": 2,
     "pro": 1,
     "landing": 2,
-    "about": 0
+    "about": 1
   },
   "projects": {},
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 5,
+      "total": 6,
       "art": 2,
       "pro": 1
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 5
+    "IT": 6
   },
   "referrers": {
     "test-verification": 1,
     "google.com": 1,
-    "instagram.com": 1
+    "instagram.com": 1,
+    "direct": 1
   },
   "devices": {
     "desktop": 4,
     "mobile": 1,
-    "tablet": 0
+    "tablet": 1
   }
 }
