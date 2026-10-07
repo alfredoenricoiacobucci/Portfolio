@@ -1068,6 +1068,63 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* ===== Analytics: struttura pagina ===== */
+  #analyticsContent { --an-gap: 16px; }
+  .an-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .an-head h2 { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; margin: 0 0 4px; }
+  .an-head p { font-size: 12px; color: var(--text3); margin: 0; }
+  .an-refresh { display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 12px; font-weight: 500; color: var(--text2); background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; cursor: pointer; transition: color 0.12s ease, border-color 0.12s ease; }
+  .an-refresh:hover { color: var(--text); border-color: var(--border-hi); }
+  .an-refresh.busy svg { animation: anSpin 0.8s linear infinite; }
+  @keyframes anSpin { to { transform: rotate(360deg); } }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--an-gap); margin-bottom: var(--an-gap); }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 15px; min-width: 0; }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; }
+  .kpi-value { font-size: 30px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.15; margin: 8px 0 6px; font-variant-numeric: tabular-nums; }
+  .kpi-sub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11px; color: var(--text3); min-height: 18px; }
+  .an-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 10px; font-variant-numeric: tabular-nums; }
+  .an-trend.up { color: #4ade80; background: rgba(74,222,128,0.10); }
+  .an-trend.down { color: #f87171; background: rgba(248,113,113,0.10); }
+  .an-trend.flat { color: var(--text2); background: rgba(255,255,255,0.06); }
+  .an-row-chart { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: var(--an-gap); margin-bottom: var(--an-gap); }
+  .an-stack { display: grid; grid-template-rows: auto auto; gap: var(--an-gap); align-content: start; }
+  .ch-wrap { padding: 6px 18px 14px 18px; }
+  .ch-plot { position: relative; height: 230px; margin-left: 30px; }
+  .ch-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ch-grid div { position: absolute; left: 0; right: 0; border-top: 1px solid rgba(255,255,255,0.05); }
+  .ch-grid span { position: absolute; right: calc(100% + 8px); top: -7px; font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .ch-x { position: relative; height: 18px; margin: 8px 0 0 30px; }
+  .ch-x span { position: absolute; transform: translateX(-50%); font-size: 10px; color: var(--text3); white-space: nowrap; }
+  .ch-x span:first-child { transform: none; }
+  .ch-hit { position: absolute; inset: 0; cursor: crosshair; }
+  .ch-guide { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.14); opacity: 0; pointer-events: none; }
+  .ch-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #e0314f; border: 2px solid var(--panel); transform: translate(-50%, -50%); opacity: 0; pointer-events: none; }
+  .ch-tip { position: absolute; transform: translate(-50%, calc(-100% - 14px)); background: rgba(12,12,12,0.95); border: 1px solid var(--border-hi); border-radius: 7px; padding: 7px 10px; font-size: 11px; color: var(--text2); white-space: nowrap; opacity: 0; pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 3; line-height: 1.5; }
+  .ch-tip.left { transform: translate(calc(-100% - 12px), -50%); }
+  .ch-tip.right { transform: translate(12px, -50%); }
+  .ch-tip b { color: var(--text3); font-weight: 500; font-size: 10.5px; }
+  .ch-tip strong { color: #fff; font-size: 13px; font-weight: 600; }
+  .ch-tip-sub { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text3); }
+  .ch-tip-sub i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-left: 4px; }
+  .ch-guide.on, .ch-dot.on, .ch-tip.on { opacity: 1; }
+  .cp-body { padding: 2px 16px 14px; }
+  .cp-bar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+  .cp-bar i { display: block; min-width: 3px; }
+  .cp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+  .cp-list li { display: grid; grid-template-columns: 8px 1fr auto 38px; align-items: center; gap: 9px; font-size: 12.5px; }
+  .cp-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .cp-label { color: var(--text2); }
+  .cp-val { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .cp-pct { color: var(--text3); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+  .an-foot { font-size: 11px; color: var(--text3); line-height: 1.6; padding: 4px 2px 8px; }
+  .an-foot code { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--text2); background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 4px; }
+  @media (max-width: 1200px) {
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .bot-grid > .an-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .an-row-chart { grid-template-columns: 1fr; }
+    .an-stack { grid-template-columns: 1fr 1fr; grid-template-rows: none; }
+  }
   /* ===== Analytics: card, liste classificate, mappa ===== */
   .an-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
   .an-card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 10px; }
@@ -1085,8 +1142,8 @@
   .rk-avatar { background: rgba(255,255,255,0.06); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; }
   .rk-main { flex: 1; min-width: 0; }
   .rk-top { display: flex; align-items: baseline; gap: 7px; min-width: 0; margin-bottom: 6px; }
-  .rk-label { font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .rk-sub { font-size: 10.5px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+  .rk-label { font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+  .rk-sub { font-size: 10.5px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1000 auto; min-width: 0; }
   .rk-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
   .rk-bar i { display: block; height: 100%; border-radius: 2px; }
   .rk-val { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; min-width: 40px; line-height: 1.25; }
@@ -1106,6 +1163,7 @@
   .seg-full { display: flex; width: 100%; }
   .seg-full button { flex: 1; }
   .geo-card { margin-bottom: 16px; }
+  .bot-grid { margin-bottom: 16px !important; }
   .geo-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
   .geo-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
   .geo-map { position: relative; height: 560px; background: #0e0e0e; }
@@ -1132,9 +1190,15 @@
   .bot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
   .bot-grid .an-card-b { max-height: 360px; }
   @media (max-width: 1100px) {
+    .geo-wrap { grid-template-columns: minmax(0, 1fr) 280px; }
+  }
+  @media (max-width: 860px) {
     .geo-wrap { grid-template-columns: 1fr; }
     .geo-side { border-left: 0; border-top: 1px solid var(--border); height: auto; max-height: 380px; }
-    .bot-grid { grid-template-columns: 1fr; }
+    .bot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px) {
+    .bot-grid, .kpi-grid, .an-stack { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -6365,6 +6429,195 @@
     }, 0);
   }
 
+  // ========== ANALYTICS: intestazione, KPI, andamento, composizione ==========
+  const anFmt = (n, d) => new Intl.NumberFormat("it-IT", { maximumFractionDigits: d || 0, minimumFractionDigits: d || 0 }).format(n || 0);
+  const AN_MONTHS = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"];
+  const AN_WEEKDAYS = ["dom", "lun", "mar", "mer", "gio", "ven", "sab"];
+  function anDayLabel(key, withWeekday) {
+    const [y, m, d] = key.split("-").map(Number);
+    const wd = AN_WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+    return `${withWeekday ? wd + " " : ""}${d} ${AN_MONTHS[m - 1]}`;
+  }
+  function anSeries(daily, n) {
+    const t = new Date();
+    const base = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate());
+    const out = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const key = new Date(base - i * 86400000).toISOString().slice(0, 10);
+      const d = daily[key] || {};
+      out.push({ key, total: d.total || 0, art: d.art || 0, pro: d.pro || 0 });
+    }
+    return out;
+  }
+  function anIcon(name, size) {
+    const P = {
+      refresh: '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>',
+      up: '<path d="m18 15-6-6-6 6"/>',
+      down: '<path d="m6 9 6 6 6-6"/>',
+    };
+    return `<svg width="${size || 12}" height="${size || 12}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${P[name]}</svg>`;
+  }
+  function anTrend(cur, prev) {
+    if (!prev && !cur) return `<span class="an-trend flat">nessuna visita</span>`;
+    if (!prev) return `<span class="an-trend up">${anIcon("up", 10)} nuove</span>`;
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    if (pct === 0) return `<span class="an-trend flat">stabile</span>`;
+    return `<span class="an-trend ${pct > 0 ? "up" : "down"}">${anIcon(pct > 0 ? "up" : "down", 10)} ${Math.abs(pct)}%</span>`;
+  }
+
+  function anCompositionHtml(title, parts) {
+    const total = parts.reduce((s, p) => s + p.value, 0);
+    const bar = total
+      ? parts.filter(p => p.value > 0).map(p => `<i style="flex:${p.value};background:${p.color}" title="${p.label}: ${p.value}"></i>`).join("")
+      : `<i style="flex:1;background:rgba(255,255,255,0.06)"></i>`;
+    const rows = parts.map(p => `
+      <li>
+        <span class="cp-dot" style="background:${p.color}"></span>
+        <span class="cp-label">${p.label}</span>
+        <span class="cp-val">${anFmt(p.value)}</span>
+        <span class="cp-pct">${total ? Math.round(p.value / total * 100) : 0}%</span>
+      </li>`).join("");
+    return `<section class="an-card">
+      <header class="an-card-h"><h3>${title}</h3><span class="an-card-meta">${anFmt(total)} visite</span></header>
+      <div class="cp-body"><div class="cp-bar">${bar}</div><ul class="cp-list">${rows}</ul></div>
+    </section>`;
+  }
+
+  function buildAnalyticsTop(data, ctx) {
+    const daily = data.daily || {};
+    const s30 = anSeries(daily, 30);
+    const s14 = anSeries(daily, 14);
+    const last7 = s14.slice(7).reduce((s, d) => s + d.total, 0);
+    const prev7 = s14.slice(0, 7).reduce((s, d) => s + d.total, 0);
+    const today = s14[s14.length - 1].total;
+    const avg30 = s30.reduce((s, d) => s + d.total, 0) / 30;
+    const conv = ctx.totalViews ? (ctx.contacts / ctx.totalViews) * 100 : 0;
+    const now = new Date();
+    const hhmm = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+
+    const kpi = (label, value, sub, accent) => `
+      <div class="kpi">
+        <div class="kpi-label">${label}</div>
+        <div class="kpi-value"${accent ? ` style="color:${accent}"` : ""}>${value}</div>
+        <div class="kpi-sub">${sub}</div>
+      </div>`;
+
+    return `
+      <header class="an-head">
+        <div>
+          <h2>Analytics</h2>
+          <p>Visite al portfolio · dati aggiornati alle ${hhmm}</p>
+        </div>
+        <button type="button" class="an-refresh" id="btnRefreshAnalytics">${anIcon("refresh", 13)}<span>Aggiorna</span></button>
+      </header>
+
+      <div class="kpi-grid">
+        ${kpi("Visite totali", anFmt(ctx.totalViews), `<span>oggi ${anFmt(today)}</span>`)}
+        ${kpi("Ultimi 7 giorni", anFmt(last7), `${anTrend(last7, prev7)}<span>rispetto ai 7 precedenti</span>`)}
+        ${kpi("Media giornaliera", anFmt(avg30, avg30 < 10 ? 1 : 0), `<span>negli ultimi 30 giorni</span>`)}
+        ${kpi("Contatti ricevuti", anFmt(ctx.contacts), `<span>${ctx.contacts ? anFmt(conv, 1) + "% delle visite" : "dal modulo contatti"}</span>`, ctx.contacts ? "#fbbf24" : "")}
+      </div>
+
+      <div class="an-row-chart">
+        <section class="an-card">
+          <header class="an-card-h">
+            <div><h3>Andamento visite</h3><div class="geo-meta" id="anChartMeta"></div></div>
+            <div class="seg" id="anRangeSeg">
+              <button type="button" data-days="7">7 giorni</button>
+              <button type="button" class="on" data-days="30">30 giorni</button>
+              <button type="button" data-days="90">90 giorni</button>
+            </div>
+          </header>
+          <div class="ch-wrap" id="anChart"></div>
+        </section>
+        <div class="an-stack">
+          ${anCompositionHtml("Sezioni visitate", [
+            { label: "Artwork", value: ctx.artViews, color: "#a78bfa" },
+            { label: "Professional", value: ctx.proViews, color: "#60a5fa" },
+            { label: "Home", value: ctx.landingViews, color: "#fbbf24" },
+            { label: "About", value: ctx.aboutViews, color: "#4ade80" },
+          ])}
+          ${anCompositionHtml("Dispositivi", [
+            { label: "Desktop", value: ctx.deskViews, color: "#60a5fa" },
+            { label: "Smartphone", value: ctx.mobViews, color: "#f472b6" },
+            { label: "Tablet", value: ctx.tabViews, color: "#fbbf24" },
+          ])}
+        </div>
+      </div>`;
+  }
+
+  function anRenderChart(data, days) {
+    const el = document.getElementById("anChart");
+    if (!el) return;
+    const series = anSeries(data.daily || {}, days);
+    const n = series.length;
+    const max = Math.max(...series.map(d => d.total), 0);
+    const niceStep = (m) => { const raw = Math.max(1, m) / 4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
+    const step = niceStep(max);
+    const top = Math.max(step * 4, step * Math.ceil(max / step));
+    const W = 1000, H = 240;
+    const x = (i) => n === 1 ? W / 2 : (i / (n - 1)) * W;
+    const y = (v) => H - (v / top) * H;
+    const pts = series.map((d, i) => `${x(i).toFixed(1)},${y(d.total).toFixed(1)}`);
+    const line = "M" + pts.join("L");
+    const area = `${line}L${W},${H}L0,${H}Z`;
+    const ticks = [];
+    for (let v = 0; v <= top; v += step) ticks.push(v);
+    const labelEvery = days <= 7 ? 1 : days <= 30 ? 5 : 15;
+    const xLabels = series.map((d, i) => ((n - 1 - i) % labelEvery === 0)
+      ? `<span style="left:${(x(i) / W * 100).toFixed(2)}%">${anDayLabel(d.key, days <= 7)}</span>` : "").join("");
+    const sum = series.reduce((s, d) => s + d.total, 0);
+    const meta = document.getElementById("anChartMeta");
+    if (meta) meta.textContent = `${anFmt(sum)} visite · media ${anFmt(sum / n, sum / n < 10 ? 1 : 0)} al giorno`;
+
+    el.innerHTML = `
+      <div class="ch-plot">
+        <div class="ch-grid">${ticks.map(v => `<div style="bottom:${(v / top * 100).toFixed(2)}%"><span>${anFmt(v)}</span></div>`).join("")}</div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="ch-svg" aria-hidden="true">
+          <defs><linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8102e" stop-opacity="0.32"/><stop offset="1" stop-color="#c8102e" stop-opacity="0"/></linearGradient></defs>
+          <path d="${area}" fill="url(#anGrad)"/>
+          <path d="${line}" fill="none" stroke="#e0314f" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+        <div class="ch-guide" id="anGuide"></div>
+        <div class="ch-dot" id="anDot"></div>
+        <div class="ch-tip" id="anTip"></div>
+        <div class="ch-hit" id="anHit"></div>
+      </div>
+      <div class="ch-x">${xLabels}</div>`;
+
+    const hit = document.getElementById("anHit");
+    const guide = document.getElementById("anGuide"), dot = document.getElementById("anDot"), tip = document.getElementById("anTip");
+    const show = (clientX) => {
+      const r = hit.getBoundingClientRect();
+      const i = Math.max(0, Math.min(n - 1, Math.round(((clientX - r.left) / r.width) * (n - 1))));
+      const d = series[i];
+      const px = (x(i) / W) * 100, py = (y(d.total) / H) * 100;
+      guide.style.left = dot.style.left = tip.style.left = px + "%";
+      dot.style.top = py + "%";
+      tip.style.top = py + "%";
+      tip.classList.toggle("left", px > 80);
+      tip.classList.toggle("right", px < 20);
+      tip.innerHTML = `<b>${anDayLabel(d.key, true)}</b><div><strong>${anFmt(d.total)}</strong> ${d.total === 1 ? "visita" : "visite"}</div>${(d.art || d.pro) ? `<div class="ch-tip-sub"><i style="background:#a78bfa"></i>Artwork ${d.art}<i style="background:#60a5fa"></i>Professional ${d.pro}</div>` : ""}`;
+      [guide, dot, tip].forEach(e => e.classList.add("on"));
+    };
+    hit.addEventListener("mousemove", (e) => show(e.clientX));
+    hit.addEventListener("mouseleave", () => [guide, dot, tip].forEach(e => e.classList.remove("on")));
+  }
+
+  function initAnalyticsTop(data) {
+    let days = 30;
+    anRenderChart(data, days);
+    document.querySelectorAll("#anRangeSeg button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        days = parseInt(btn.dataset.days, 10);
+        document.querySelectorAll("#anRangeSeg button").forEach(b => b.classList.toggle("on", b === btn));
+        anRenderChart(data, days);
+      });
+    });
+    const refreshBtn = document.getElementById("btnRefreshAnalytics");
+    if (refreshBtn) refreshBtn.onclick = () => { refreshBtn.classList.add("busy"); loadAndRenderAnalytics(true); };
+  }
+
   // ========== ANALYTICS: MAPPA GEOGRAFICA (MapLibre) + LISTE ==========
   let analyticsMap = null;
   let geoCountriesCache = null;
@@ -6949,100 +7202,7 @@
     const geoParts = buildAnalyticsGeoAndLists(data);
 
     container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
-        <div>
-          <h2 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Analytics</h2>
-          <p style="font-size: 12px; color: var(--text3);">Statistiche di navigazione del portfolio</p>
-        </div>
-        <button class="ghost" id="btnRefreshAnalytics" style="font-size: 11px;">Aggiorna dati</button>
-      </div>
-
-      <!-- KPI CARDS -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: var(--text);">${totalViews}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Visite totali</div>
-          ${trendPct !== 0 ? `<div style="font-size: 10px; margin-top: 6px; color: ${trendUp ? "#4ade80" : "#f87171"};">${trendUp ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="m18 15-6-6-6 6"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="m6 9 6 6 6-6"/></svg>'} ${Math.abs(trendPct)}% vs sett. prec.</div>` : ""}
-        </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: var(--text);">${uniqueSessions || totalViews}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Sessioni uniche</div>
-        </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: #fbbf24;">${contacts}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Contatti ricevuti</div>
-        </div>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px; text-align: center;">
-          <div style="font-size: 26px; font-weight: 700; color: var(--text);">${avgTime > 0 ? avgMin + ":" + String(avgSec).padStart(2, "0") : "—"}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Tempo medio sessione</div>
-        </div>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px; text-align: center;">
-          <div style="font-size: 26px; font-weight: 700; color: ${bounceRate > 60 ? "#f87171" : "var(--text)"};">${bounceRate > 0 ? bounceRate + "%" : "—"}</div>
-          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Bounce rate</div>
-        </div>
-      </div>
-
-      <!-- AREA CHART: visite giornaliere -->
-      ${days.length > 0 ? `
-      <div style="margin-bottom: 28px;">
-        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
-          Visite — ultimi 30 giorni
-        </h3>
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 12px 8px;">
-          <canvas id="chartDaily" width="1120" height="160" style="width: 100%; height: 160px;"></canvas>
-          <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); padding: 4px 2px 0;">
-            <span>${days[0] || ""}</span>
-            <span>${days[Math.floor(days.length / 2)] || ""}</span>
-            <span>${days[days.length - 1] || ""}</span>
-          </div>
-        </div>
-      </div>
-      ` : ""}
-
-      <!-- DONUT + DISPOSITIVI -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px;">
-        <!-- Donut Art vs Pro -->
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px;">
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 16px;">Sezioni</h3>
-          <div style="display: flex; align-items: center; gap: 24px;">
-            <div style="position:relative;flex-shrink:0;">
-              <canvas id="donutArtPro" width="180" height="180" style="width:180px;height:180px;"></canvas>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
-                <div style="font-size:22px;font-weight:700;color:var(--text);">${totalViews}</div>
-                <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">totali</div>
-              </div>
-            </div>
-            <div style="font-size: 13px; line-height: 2.2; flex:1;">
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#a78bfa;margin-right:8px;vertical-align:middle;"></span>Artwork <strong>${artViews}</strong> <span style="color:var(--text3);">(${Math.round(artViews / (totalViews || 1) * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#60a5fa;margin-right:8px;vertical-align:middle;"></span>Professional <strong>${proViews}</strong> <span style="color:var(--text3);">(${Math.round(proViews / (totalViews || 1) * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fbbf24;margin-right:8px;vertical-align:middle;"></span>Landing <strong>${landingViews}</strong> <span style="color:var(--text3);">(${Math.round(landingViews / (totalViews || 1) * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#4ade80;margin-right:8px;vertical-align:middle;"></span>About <strong>${aboutViews}</strong> <span style="color:var(--text3);">(${Math.round(aboutViews / (totalViews || 1) * 100)}%)</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Donut Dispositivi -->
-        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px;">
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 16px;">Dispositivi</h3>
-          <div style="display: flex; align-items: center; gap: 24px;">
-            <div style="position:relative;flex-shrink:0;">
-              <canvas id="donutDevices" width="180" height="180" style="width:180px;height:180px;"></canvas>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
-                <div style="font-size:22px;font-weight:700;color:var(--text);">${devTotal}</div>
-                <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">totali</div>
-              </div>
-            </div>
-            <div style="font-size: 13px; line-height: 2.2; flex:1;">
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#60a5fa;margin-right:8px;vertical-align:middle;"></span>Desktop <strong>${deskViews}</strong> <span style="color:var(--text3);">(${Math.round(deskViews / devTotal * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f472b6;margin-right:8px;vertical-align:middle;"></span>Mobile <strong>${mobViews}</strong> <span style="color:var(--text3);">(${Math.round(mobViews / devTotal * 100)}%)</span></div>
-              <div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fbbf24;margin-right:8px;vertical-align:middle;"></span>Tablet <strong>${tabViews}</strong> <span style="color:var(--text3);">(${Math.round(tabViews / devTotal * 100)}%)</span></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      ${buildAnalyticsTop(data, { totalViews, contacts, artViews, proViews, landingViews, aboutViews, deskViews, mobViews, tabViews })}
 
       <!-- PROVENIENZA VISITE: MAPPA + PAESI/COMUNI -->
       ${geoParts.geo}
@@ -7050,32 +7210,12 @@
       <!-- SITI, PROGETTI, FOTO -->
       ${geoParts.bottom}
 
-      <!-- INFO -->
-      <div style="padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
-        <p style="font-size: 11px; color: var(--text3); line-height: 1.6; margin: 0;">
-          Le statistiche vengono registrate automaticamente con le visite al sito e salvate in <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">analytics.json</code> nel branch <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">data</code>.
-          La variabile <code style="background:var(--bg); padding: 2px 6px; border-radius: 3px;">GITHUB_TOKEN</code> deve essere configurata su Vercel.
-        </p>
-      </div>
+      <p class="an-foot">Le visite vengono registrate dal sito e salvate in <code>analytics.json</code> nel branch <code>data</code> del repository. Città e paesi sono ricavati in modo approssimativo dalla connessione del visitatore; l'indirizzo IP non viene salvato.</p>
     `;
 
-    // Disegna grafici
-    drawAreaChart("chartDaily", dailyTotals, "#c8102e", 1120, 160);
-    drawDonut("donutArtPro", [
-      { value: artViews, color: "#a78bfa" },
-      { value: proViews, color: "#60a5fa" },
-      { value: landingViews, color: "#fbbf24" },
-      { value: aboutViews, color: "#4ade80" },
-    ], 180);
-    drawDonut("donutDevices", [
-      { value: deskViews, color: "#60a5fa" },
-      { value: mobViews, color: "#f472b6" },
-      { value: tabViews, color: "#fbbf24" },
-    ], 180);
+    initAnalyticsTop(data);
     initAnalyticsGeo(data);
 
-    const refreshBtn = document.getElementById("btnRefreshAnalytics");
-    if (refreshBtn) refreshBtn.onclick = () => { loadAndRenderAnalytics(true); };
   }
 
   // ========== IMPOSTAZIONI ==========
