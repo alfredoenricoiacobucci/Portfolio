@@ -1068,6 +1068,69 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* ===== Analytics: card, liste classificate, mappa ===== */
+  .an-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  .an-card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 10px; }
+  .an-card-h h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin: 0; }
+  .an-card-meta, .geo-meta { font-size: 11px; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .geo-meta { margin-top: 3px; }
+  .an-card-b { padding: 0 6px 8px; overflow-y: auto; min-height: 0; }
+  .rk-list { list-style: none; margin: 0; padding: 0; }
+  .rk-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; outline: none; }
+  .rk-click .rk-row { cursor: pointer; transition: background 0.12s ease; }
+  .rk-click .rk-row:hover, .rk-click .rk-row:focus-visible { background: rgba(255,255,255,0.04); }
+  .rk-row.is-active { background: rgba(200,16,46,0.10); }
+  .rk-n { width: 16px; text-align: right; font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .rk-ic { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; flex-shrink: 0; border-radius: 6px; }
+  .rk-avatar { background: rgba(255,255,255,0.06); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .rk-main { flex: 1; min-width: 0; }
+  .rk-top { display: flex; align-items: baseline; gap: 7px; min-width: 0; margin-bottom: 6px; }
+  .rk-label { font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .rk-sub { font-size: 10.5px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+  .rk-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+  .rk-bar i { display: block; height: 100%; border-radius: 2px; }
+  .rk-val { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; min-width: 40px; line-height: 1.25; }
+  .rk-val b { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rk-val span { font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .rk-empty { padding: 32px 18px; font-size: 12px; color: var(--text3); line-height: 1.7; text-align: center; }
+  .seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; flex-shrink: 0; }
+  .seg button { font: inherit; font-size: 11.5px; font-weight: 500; color: var(--text2); background: transparent; border: 0; border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease; }
+  .seg button:hover { color: var(--text); }
+  .seg button.on { background: rgba(255,255,255,0.09); color: var(--text); }
+  .seg button span { color: var(--text3); margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .seg-full { display: flex; width: 100%; }
+  .seg-full button { flex: 1; }
+  .geo-card { margin-bottom: 16px; }
+  .geo-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
+  .geo-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
+  .geo-map { position: relative; height: 560px; background: #0e0e0e; }
+  .geo-side { border-left: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; height: 560px; }
+  .geo-side-h { padding: 12px 12px 8px; }
+  .geo-side-b { flex: 1; overflow-y: auto; padding: 0 6px 8px; min-height: 0; }
+  .geo-side-b[hidden] { display: none; }
+  .geo-hint { font-size: 10.5px; color: var(--text3); padding: 10px 18px; border-top: 1px solid var(--border); }
+  .geo-tip { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 5; background: rgba(12,12,12,0.95); border: 1px solid var(--border-hi); border-radius: 7px; padding: 8px 11px; font-size: 11.5px; line-height: 1.5; color: var(--text); white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity 0.12s ease; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+  .geo-tip b { color: #fff; font-weight: 600; }
+  .geo-tip span { color: var(--text2); }
+  .geo-legend { position: absolute; left: 12px; bottom: 12px; z-index: 4; background: rgba(12,12,12,0.88); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; pointer-events: none; }
+  .geo-legend .ramp { width: 130px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #4a0f19, #c8102e); margin: 6px 0 3px; }
+  .geo-pin { display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(200,16,46,0.92); box-shadow: 0 0 0 4px rgba(200,16,46,0.22), 0 2px 10px rgba(0,0,0,0.55); color: #fff; font: 600 10.5px/1 Inter, -apple-system, sans-serif; font-variant-numeric: tabular-nums; cursor: pointer; transition: transform 0.15s ease; }
+  .geo-pin:hover { transform: scale(1.12); }
+  .geo-pin.cluster { background: rgba(200,16,46,0.78); box-shadow: 0 0 0 6px rgba(200,16,46,0.18), 0 2px 10px rgba(0,0,0,0.55); }
+  .geo-map .maplibregl-ctrl-group { background: rgba(12,12,12,0.9); border: 1px solid var(--border-hi); box-shadow: none; border-radius: 7px; }
+  .geo-map .maplibregl-ctrl-group button + button { border-top: 1px solid var(--border-hi); }
+  .geo-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) opacity(0.75); }
+  .geo-map .maplibregl-ctrl-attrib, .geo-map .maplibregl-ctrl-attrib.maplibregl-compact { background: rgba(12,12,12,0.75) !important; color: var(--text3); font-size: 9.5px; border-radius: 5px 0 0 0; }
+  .geo-map .maplibregl-ctrl-attrib a { color: var(--text2); }
+  .geo-map .maplibregl-ctrl-attrib-button { filter: invert(1); }
+  .geo-map .maplibregl-ctrl-scale { background: rgba(12,12,12,0.6); border-color: var(--text3); color: var(--text3); font-size: 9.5px; }
+  .bot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .bot-grid .an-card-b { max-height: 360px; }
+  @media (max-width: 1100px) {
+    .geo-wrap { grid-template-columns: 1fr; }
+    .geo-side { border-left: 0; border-top: 1px solid var(--border); height: auto; max-height: 380px; }
+    .bot-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -6297,270 +6360,399 @@
     }, 0);
   }
 
-  // Stato mappa interattiva (zoom/pan/tooltip)
-  let mapCountryPositions = [];
-  let mapLastData = {};
-  const mapZoomState = { scale: 1, tx: 0, ty: 0, w: 800, h: 400 };
-  const MAP_MIN_SCALE = 1, MAP_MAX_SCALE = 8;
-  const countryNames = {
-    IT:"Italia",US:"Stati Uniti",GB:"Regno Unito",DE:"Germania",FR:"Francia",ES:"Spagna",
-    PT:"Portogallo",NL:"Paesi Bassi",BE:"Belgio",CH:"Svizzera",AT:"Austria",
-    SE:"Svezia",NO:"Norvegia",DK:"Danimarca",FI:"Finlandia",PL:"Polonia",
-    CZ:"Repubblica Ceca",RO:"Romania",GR:"Grecia",TR:"Turchia",RU:"Russia",
-    UA:"Ucraina",BR:"Brasile",AR:"Argentina",MX:"Messico",
-    CA:"Canada",JP:"Giappone",CN:"Cina",KR:"Corea del Sud",
-    IN:"India",AU:"Australia",ZA:"Sudafrica",EG:"Egitto",
-    MA:"Marocco",NG:"Nigeria",KE:"Kenya",IL:"Israele",AE:"Emirati Arabi Uniti",
-    SA:"Arabia Saudita",TH:"Thailandia",SG:"Singapore",ID:"Indonesia",PH:"Filippine",
-    VN:"Vietnam",NZ:"Nuova Zelanda",CL:"Cile",CO:"Colombia",
-    PE:"Perù",IE:"Irlanda",HR:"Croazia",HU:"Ungheria",BG:"Bulgaria",
-    SK:"Slovacchia",SI:"Slovenia",LT:"Lituania",LV:"Lettonia",EE:"Estonia",
+  // ========== ANALYTICS: MAPPA GEOGRAFICA (MapLibre) + LISTE ==========
+  let analyticsMap = null;
+  let geoCountriesCache = null;
+  let geoMarkers = {};
+  let geoMarkersOnScreen = {};
+  const GEO_ASSETS = "manager-assets/";
+  const GEO_VIEWS = {
+    europa: [[-24, 34], [45, 71]],
+    mondo: [[-165, -56], [180, 78]],
   };
-
-  // Helper: Mappa del mondo semplificata (proiezione Mercator su canvas)
-  // countryData = { "IT": 42, "US": 10, ... }
-  function drawWorldMap(canvasId, countryData, w, h) {
-    setTimeout(() => {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, w, h);
-      const isMain = canvasId === "mapWorld";
-      const Z = isMain ? mapZoomState : { scale: 1, tx: 0, ty: 0 };
-      if (isMain) { mapCountryPositions = []; mapLastData = countryData; mapZoomState.w = w; mapZoomState.h = h; }
-
-      // Coordinate centrali dei paesi principali (lon, lat) → proiezione Mercator
-      const CC = {
-        IT:[12.5,42.8],US:[-98,39],GB:[-1.5,53],DE:[10.4,51.2],FR:[2.2,46.6],ES:[-3.7,40.4],
-        PT:[-8.2,39.4],NL:[5.3,52.1],BE:[4.5,50.8],CH:[8.2,46.8],AT:[14.6,47.7],
-        SE:[18.6,60.1],NO:[8.5,60.5],DK:[9.5,56],FI:[25.7,61.9],PL:[19.1,51.9],
-        CZ:[15.5,49.8],RO:[24.9,45.9],GR:[21.8,39.1],TR:[35.2,39],RU:[105,61],
-        UA:[31.2,48.4],BR:[-51.9,-14.2],AR:[-63.6,-38.4],MX:[-102.6,23.6],
-        CA:[-106.3,56.1],JP:[138.3,36.2],CN:[104.2,35.9],KR:[127.8,35.9],
-        IN:[78.9,20.6],AU:[133.8,-25.3],ZA:[22.9,-30.6],EG:[30.8,26.8],
-        MA:[-7.1,31.8],NG:[8.7,9.1],KE:[37.9,-0.02],IL:[35.2,31.8],AE:[54,23.4],
-        SA:[45,23.9],TH:[100.5,15.9],SG:[103.8,1.4],ID:[113.9,-0.8],PH:[121.8,12.9],
-        VN:[108.3,14.1],NZ:[174.9,-40.9],CL:[-71.5,-35.7],CO:[-74.3,4.6],
-        PE:[-75,-9.2],IE:[-8.2,53.4],HR:[15.2,45.1],HU:[19.5,47.2],BG:[25.5,42.7],
-        SK:[19.7,48.7],SI:[14.6,46.2],LT:[23.9,55.2],LV:[24.1,56.9],EE:[25.0,58.6],
-      };
-
-      // Proiezione Mercator semplificata
-      const lonToX = (lon) => (((lon + 180) / 360) * w) * Z.scale + Z.tx;
-      const latToY = (lat) => {
-        const latRad = lat * Math.PI / 180;
-        const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-        return (h / 2 - (mercN / Math.PI) * (h / 2) * 0.82) * Z.scale + Z.ty;
-      };
-
-      // Sfondo continenti (forme semplificate con path)
-      ctx.fillStyle = "#1a1a1a";
-      ctx.fillRect(0, 0, w, h);
-
-      // Griglia
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 0.5;
-      for (let lon = -180; lon <= 180; lon += 30) {
-        const x = lonToX(lon);
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-      }
-      for (let lat = -60; lat <= 80; lat += 20) {
-        const y = latToY(lat);
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      }
-
-      // Contorni continenti semplificati (puntini di terra)
-      const landDots = [
-        // Europa
-        [-10,36],[0,43],[3,43],[7,44],[10,46],[13,47],[15,47],[18,45],[20,42],[25,38],[28,41],[30,45],
-        [25,48],[20,50],[15,52],[10,54],[5,52],[0,49],[-5,43],[-9,39],
-        // Nord America
-        [-130,50],[-120,48],[-110,45],[-100,40],[-90,30],[-85,25],[-100,20],[-105,25],[-115,32],
-        [-125,40],[-130,45],[-140,60],[-150,65],[-165,60],[-60,45],[-65,48],[-70,43],[-75,40],[-80,35],
-        // Sud America
-        [-80,10],[-75,5],[-70,0],[-65,-5],[-55,-10],[-45,-15],[-40,-20],[-50,-25],[-55,-30],[-65,-35],[-70,-40],[-75,-45],[-70,-50],
-        // Africa
-        [-15,15],[0,5],[10,5],[20,0],[30,0],[35,5],[40,10],[45,12],[35,20],[30,30],[10,35],[0,30],[-10,25],[-17,15],
-        [25,-5],[30,-15],[35,-20],[30,-30],[25,-33],[28,-34],
-        // Asia
-        [40,40],[50,40],[60,35],[70,30],[75,35],[80,30],[85,28],[90,25],[95,20],[100,15],[105,22],[110,30],
-        [115,35],[120,40],[125,38],[130,35],[140,38],[145,43],[80,40],[70,45],[60,50],[50,55],[70,60],[90,55],[100,50],[110,45],[120,50],[130,50],[140,50],
-        // Australia
-        [115,-25],[120,-18],[130,-15],[140,-18],[145,-20],[150,-25],[150,-30],[145,-35],[140,-38],[135,-35],[130,-30],[120,-30],[115,-28],
-      ];
-      ctx.fillStyle = "#2a2a2a";
-      landDots.forEach(([lon, lat]) => {
-        const x = lonToX(lon);
-        const y = latToY(lat);
-        ctx.beginPath(); ctx.arc(x, y, 2.5 * Math.sqrt(Z.scale), 0, Math.PI * 2); ctx.fill();
-      });
-
-      // Punti dati
-      const entries = Object.entries(countryData).filter(([k]) => CC[k]);
-      if (entries.length === 0) {
-        ctx.fillStyle = "#333";
-        ctx.font = "12px Inter, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("Nessun dato geografico disponibile", w / 2, h / 2);
-        return;
-      }
-      const maxVal = Math.max(1, ...entries.map(([, v]) => v));
-
-      entries.forEach(([code, count]) => {
-        const [lon, lat] = CC[code];
-        const x = lonToX(lon);
-        const y = latToY(lat);
-        const ratio = count / maxVal;
-        const r = 4 + ratio * 16;
-
-        // Glow
-        const grad = ctx.createRadialGradient(x, y, 0, x, y, r * 2);
-        grad.addColorStop(0, `rgba(200, 16, 46, ${0.3 + ratio * 0.4})`);
-        grad.addColorStop(1, "rgba(200, 16, 46, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(x, y, r * 2, 0, Math.PI * 2); ctx.fill();
-
-        // Cerchio
-        ctx.fillStyle = `rgba(200, 16, 46, ${0.5 + ratio * 0.5})`;
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        if (isMain) mapCountryPositions.push({ code, count, x, y, r });
-
-        // Etichetta per paesi con visite significative (tutte quando si zooma)
-        if (ratio > 0.15 || entries.length <= 5 || Z.scale >= 2) {
-          ctx.fillStyle = "rgba(255,255,255,0.7)";
-          ctx.font = "bold 9px Inter, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(code, x, y - r - 3);
-          ctx.font = "9px Inter, sans-serif";
-          ctx.fillText(String(count), x, y - r - 12);
-        }
-      });
-    }, 0);
+  const geoRegionNames = (() => { try { return new Intl.DisplayNames(["it"], { type: "region" }); } catch (e) { return null; } })();
+  function geoCountryName(cc) {
+    try { return (geoRegionNames && geoRegionNames.of(cc)) || cc; } catch (e) { return cc; }
+  }
+  function geoFlag(cc) {
+    if (!/^[A-Z]{2}$/.test(cc || "")) return "";
+    return String.fromCodePoint(...[...cc].map(c => 127397 + c.charCodeAt(0)));
   }
 
-  // ---- Mappa interattiva: zoom, pan, tooltip ----
-  function applyMapTransform() {
-    const s = mapZoomState;
-    s.scale = Math.min(MAP_MAX_SCALE, Math.max(MAP_MIN_SCALE, s.scale));
-    s.tx = Math.min(0, Math.max(s.w - s.w * s.scale, s.tx));
-    s.ty = Math.min(0, Math.max(s.h - s.h * s.scale, s.ty));
-    const lbl = document.getElementById("mapZoomLevel");
-    if (lbl) lbl.textContent = Math.round(s.scale * 100) + "%";
-    const canvas = document.getElementById("mapWorld");
-    if (canvas) canvas.style.cursor = s.scale > 1 ? "grab" : "default";
-    if (!applyMapTransform._raf) {
-      applyMapTransform._raf = requestAnimationFrame(() => {
-        applyMapTransform._raf = null;
-        drawWorldMap("mapWorld", mapLastData, s.w, s.h);
-      });
-    }
+  function rankListHtml(items, opts) {
+    if (!items.length) return `<div class="rk-empty">${opts.empty}</div>`;
+    const total = opts.total || items.reduce((s, i) => s + i.value, 0) || 1;
+    const max = Math.max(1, ...items.map(i => i.value));
+    return `<ol class="rk-list${opts.clickable ? " rk-click" : ""}">` + items.map((it, i) => `
+      <li class="rk-row" ${it.attrs || ""}${opts.clickable ? ' tabindex="0" role="button"' : ""}>
+        <span class="rk-n">${i + 1}</span>
+        ${it.icon ? `<span class="rk-ic${it.iconClass ? " " + it.iconClass : ""}">${it.icon}</span>` : ""}
+        <div class="rk-main">
+          <div class="rk-top"><span class="rk-label">${it.label}</span>${it.sub ? `<span class="rk-sub">${it.sub}</span>` : ""}</div>
+          <div class="rk-bar"><i style="width:${(it.value / max * 100).toFixed(1)}%;background:${opts.color}"></i></div>
+        </div>
+        <div class="rk-val"><b>${it.value}</b><span>${Math.round(it.value / total * 100)}%</span></div>
+      </li>`).join("") + `</ol>`;
   }
-  function mapZoomAt(factor, cx, cy) {
-    const s = mapZoomState;
-    const ns = Math.min(MAP_MAX_SCALE, Math.max(MAP_MIN_SCALE, s.scale * factor));
-    const k = ns / s.scale;
-    s.tx = cx - (cx - s.tx) * k;
-    s.ty = cy - (cy - s.ty) * k;
-    s.scale = ns;
-    applyMapTransform();
+
+  function anCard(title, meta, body, extraClass) {
+    return `<section class="an-card${extraClass ? " " + extraClass : ""}">
+      <header class="an-card-h"><h3>${title}</h3>${meta ? `<span class="an-card-meta">${meta}</span>` : ""}</header>
+      <div class="an-card-b">${body}</div>
+    </section>`;
   }
-  function mapZoomIn() { mapZoomAt(1.5, mapZoomState.w / 2, mapZoomState.h / 2); }
-  function mapZoomOut() { mapZoomAt(1 / 1.5, mapZoomState.w / 2, mapZoomState.h / 2); }
-  function mapZoomReset() { Object.assign(mapZoomState, { scale: 1, tx: 0, ty: 0 }); applyMapTransform(); }
 
-  function initMapInteraction(countryData, names) {
-    const canvas = document.getElementById("mapWorld");
-    const wrap = document.getElementById("mapWrap");
-    const tip = document.getElementById("mapTooltip");
-    if (!canvas || !wrap || !tip) return;
-    Object.assign(mapZoomState, { scale: 1, tx: 0, ty: 0 });
-    const total = Object.values(countryData || {}).reduce((a, b) => a + b, 0) || 1;
+  function geoCitiesList(data) {
+    const cities = data.cities || {};
+    return Object.entries(cities)
+      .filter(([, c]) => c && typeof c.lat === "number" && typeof c.lon === "number")
+      .map(([key, c]) => ({ key, ...c, n: c.n || 0 }))
+      .sort((a, b) => b.n - a.n);
+  }
 
-    // Coordinate mouse → coordinate canvas (il canvas è scalato via CSS)
-    const toCanvas = (e) => {
-      const rect = canvas.getBoundingClientRect();
+  function buildAnalyticsGeoAndLists(data) {
+    const countries = data.countries || {};
+    const cEntries = Object.entries(countries).filter(([k]) => /^[A-Z]{2}$/.test(k)).sort((a, b) => b[1] - a[1]);
+    const geoTotal = cEntries.reduce((s, [, v]) => s + v, 0);
+    const cities = geoCitiesList(data);
+    const cityTotal = cities.reduce((s, c) => s + c.n, 0);
+
+    const countryItems = cEntries.map(([cc, n]) => ({
+      label: escapeHtml(geoCountryName(cc)), value: n, icon: geoFlag(cc),
+      attrs: `data-geo-country="${cc}"`,
+    }));
+    const cityItems = cities.slice(0, 200).map(c => ({
+      label: escapeHtml(c.city || "—"),
+      sub: escapeHtml([c.region, geoCountryName(c.cc)].filter(Boolean).join(" · ")),
+      value: c.n, icon: geoFlag(c.cc),
+      attrs: `data-geo-lon="${c.lon}" data-geo-lat="${c.lat}"`,
+    }));
+
+    const metaParts = [`${geoTotal} visite`, `${cEntries.length} ${cEntries.length === 1 ? "paese" : "paesi"}`];
+    if (cities.length) metaParts.push(`${cities.length} città`);
+
+    const geo = `
+      <section class="an-card geo-card">
+        <header class="an-card-h geo-head">
+          <div>
+            <h3>Provenienza visite</h3>
+            <div class="geo-meta">${metaParts.join(" · ")}</div>
+          </div>
+          <div class="seg" id="geoViewSeg" role="tablist" aria-label="Vista mappa">
+            <button type="button" class="on" data-view="europa">Europa</button>
+            <button type="button" data-view="mondo">Mondo</button>
+          </div>
+        </header>
+        <div class="geo-wrap">
+          <div class="geo-map" id="geoMap">
+            <div class="geo-tip" id="geoTip"></div>
+            <div class="geo-legend" id="geoLegend">
+              <div>Visite per paese</div>
+              <div class="ramp"></div>
+              <div style="display:flex;justify-content:space-between;"><span>1</span><span>${cEntries.length ? cEntries[0][1] : 0}</span></div>
+            </div>
+          </div>
+          <aside class="geo-side">
+            <div class="geo-side-h">
+              <div class="seg seg-full" id="geoListSeg" role="tablist">
+                <button type="button" class="on" data-list="paesi">Paesi <span>${cEntries.length}</span></button>
+                <button type="button" data-list="citta">Città <span>${cities.length}</span></button>
+              </div>
+            </div>
+            <div class="geo-side-b" id="geoListPaesi">
+              ${rankListHtml(countryItems, { total: geoTotal, color: "var(--red)", clickable: true, empty: "I paesi appariranno con le prossime visite al sito." })}
+            </div>
+            <div class="geo-side-b" id="geoListCitta" hidden>
+              ${rankListHtml(cityItems, { total: cityTotal, color: "var(--red)", clickable: true, empty: "Il tracciamento per città è appena stato attivato.<br>Città e comuni compariranno qui e sulla mappa con le prossime visite." })}
+            </div>
+          </aside>
+        </div>
+        <div class="geo-hint">Trascina per spostarti · rotella o +/− per lo zoom · clicca un paese o una città per avvicinarti · zoomando compaiono strade e nomi dei comuni</div>
+      </section>`;
+
+    // --- Liste sotto: siti, progetti, foto ---
+    const refEntries = Object.entries(data.referrers || {}).sort((a, b) => b[1] - a[1]);
+    const refTotal = refEntries.reduce((s, [, v]) => s + v, 0);
+    const refItems = refEntries.slice(0, 15).map(([src, n]) => {
+      const direct = src === "direct" || src === "(direct)";
+      const name = direct ? "Accesso diretto" : src;
       return {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height),
-        px: e.clientX - rect.left,
-        py: e.clientY - rect.top,
-        k: canvas.width / rect.width,
+        label: escapeHtml(name), sub: direct ? "link digitato o salvato" : "",
+        value: n, icon: direct ? "↗" : escapeHtml(src.replace(/^www\./, "").charAt(0)), iconClass: "rk-avatar",
       };
-    };
-    const hitTest = (p) => {
-      let best = null, bestD = Infinity;
-      for (const c of mapCountryPositions) {
-        const d = Math.hypot(c.x - p.x, c.y - p.y);
-        if (d <= Math.max(c.r, 8 * p.k) && d < bestD) { best = c; bestD = d; }
-      }
-      return best;
-    };
-    const hideTip = () => { tip.style.opacity = "0"; };
-
-    let drag = null;
-    canvas.addEventListener("mousemove", (e) => {
-      if (drag) return;
-      const p = toCanvas(e);
-      const hit = hitTest(p);
-      if (hit) {
-        const name = (names && names[hit.code]) || hit.code;
-        const pct = Math.round((hit.count / total) * 1000) / 10;
-        tip.innerHTML = `<strong style="color:#fff">${name}</strong><br><span style="color:var(--text2)">${hit.count} visite · ${pct}%</span>`;
-        tip.style.left = (hit.x / p.k) + "px";
-        tip.style.top = ((hit.y - hit.r) / p.k) + "px";
-        tip.style.opacity = "1";
-        canvas.style.cursor = "pointer";
-      } else {
-        hideTip();
-        canvas.style.cursor = mapZoomState.scale > 1 ? "grab" : "default";
-      }
     });
-    canvas.addEventListener("mouseleave", hideTip);
 
-    canvas.addEventListener("wheel", (e) => {
-      e.preventDefault();
-      const p = toCanvas(e);
-      mapZoomAt(Math.exp(-e.deltaY * 0.0015), p.x, p.y);
-      hideTip();
-    }, { passive: false });
-
-    canvas.addEventListener("mousedown", (e) => {
-      if (e.button !== 0 || mapZoomState.scale <= 1) return;
-      const p = toCanvas(e);
-      drag = { x: e.clientX, y: e.clientY, tx: mapZoomState.tx, ty: mapZoomState.ty, k: p.k };
-      canvas.style.cursor = "grabbing";
-      hideTip();
-      e.preventDefault();
+    const projEntries = Object.entries(data.projects || {}).sort((a, b) => b[1] - a[1]);
+    const projTotal = projEntries.reduce((s, [, v]) => s + v, 0);
+    const projItems = projEntries.slice(0, 15).map(([name, n]) => {
+      const m = name.match(/^(art|pro)\/(.*)$/);
+      const section = m ? (m[1] === "art" ? "Artwork" : "Professional") : "";
+      return { label: escapeHtml(m ? m[2] : name), sub: section, value: n };
     });
-    const onMove = (e) => {
-      if (!drag) return;
-      mapZoomState.tx = drag.tx + (e.clientX - drag.x) * drag.k;
-      mapZoomState.ty = drag.ty + (e.clientY - drag.y) * drag.k;
-      applyMapTransform();
-    };
-    const onUp = () => {
-      if (!drag) return;
-      drag = null;
-      canvas.style.cursor = mapZoomState.scale > 1 ? "grab" : "default";
-    };
-    // Listener globali: rimossi quando il canvas viene ricreato
-    if (initMapInteraction._cleanup) initMapInteraction._cleanup();
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    initMapInteraction._cleanup = () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
 
-    canvas.addEventListener("dblclick", (e) => { e.preventDefault(); mapZoomReset(); });
+    const photoEntries = Object.entries(data.photos || {}).sort((a, b) => b[1] - a[1]);
+    const photoTotal = photoEntries.reduce((s, [, v]) => s + v, 0);
+    const photoItems = photoEntries.slice(0, 15).map(([path, n]) => {
+      const parts = path.split("/");
+      const file = parts.pop();
+      const proj = parts.filter(p => p !== "art" && p !== "pro").join(" / ");
+      return { label: escapeHtml(file), sub: escapeHtml(proj), value: n };
+    });
 
-    const bIn = document.getElementById("mapZoomInBtn");
-    const bOut = document.getElementById("mapZoomOutBtn");
-    const bReset = document.getElementById("mapZoomResetBtn");
-    if (bIn) bIn.addEventListener("click", mapZoomIn);
-    if (bOut) bOut.addEventListener("click", mapZoomOut);
-    if (bReset) bReset.addEventListener("click", mapZoomReset);
-    applyMapTransform();
+    const bottom = `
+      <div class="bot-grid">
+        ${anCard("Siti di provenienza", refTotal ? `${refTotal} visite` : "", rankListHtml(refItems, { total: refTotal, color: "#60a5fa", empty: "Nessun dato sui siti di provenienza." }))}
+        ${anCard("Progetti più visti", projTotal ? `${projTotal} visite` : "", rankListHtml(projItems, { total: projTotal, color: "var(--red)", empty: "Nessun progetto visitato ancora." }))}
+        ${anCard("Foto più viste", photoTotal ? `${photoTotal} aperture` : "", rankListHtml(photoItems, { total: photoTotal, color: "#a78bfa", empty: "Nessuna foto aperta ancora." }))}
+      </div>`;
+
+    return { geo, bottom };
+  }
+
+  function geoLoadMapLibre() {
+    if (window.maplibregl) return Promise.resolve(window.maplibregl);
+    if (geoLoadMapLibre._p) return geoLoadMapLibre._p;
+    geoLoadMapLibre._p = new Promise((resolve, reject) => {
+      const css = document.createElement("link");
+      css.rel = "stylesheet"; css.href = GEO_ASSETS + "maplibre-gl.css";
+      document.head.appendChild(css);
+      const s = document.createElement("script");
+      s.src = GEO_ASSETS + "maplibre-gl.js";
+      s.onload = () => window.maplibregl ? resolve(window.maplibregl) : reject(new Error("MapLibre non caricato"));
+      s.onerror = () => { geoLoadMapLibre._p = null; reject(new Error("File mappa mancante")); };
+      document.head.appendChild(s);
+    });
+    return geoLoadMapLibre._p;
+  }
+
+  async function geoLoadCountries() {
+    if (geoCountriesCache) return geoCountriesCache;
+    const res = await fetch(GEO_ASSETS + "countries.geojson");
+    if (!res.ok) throw new Error("Confini non disponibili");
+    geoCountriesCache = await res.json();
+    return geoCountriesCache;
+  }
+
+  function geoBBox(geometry) {
+    let a = [180, 90, -180, -90], b = [360, 90, 0, -90];
+    const walk = (c) => {
+      if (typeof c[0] === "number") {
+        const [x, y] = c, x2 = x < 0 ? x + 360 : x;
+        a = [Math.min(a[0], x), Math.min(a[1], y), Math.max(a[2], x), Math.max(a[3], y)];
+        b = [Math.min(b[0], x2), b[1], Math.max(b[2], x2), b[3]];
+      } else c.forEach(walk);
+    };
+    walk(geometry.coordinates);
+    if ((a[2] - a[0]) > 300 && (b[2] - b[0]) < (a[2] - a[0])) {
+      let w = b[0], e = b[2];
+      if (w > 180) w -= 360; if (e > 180) e -= 360;
+      return [[w, a[1]], [e < w ? e + 360 : e, a[3]]];
+    }
+    return [[a[0], a[1]], [a[2], a[3]]];
+  }
+
+  function geoShowTip(html, x, y) {
+    const tip = document.getElementById("geoTip");
+    if (!tip) return;
+    tip.innerHTML = html;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+    tip.style.opacity = "1";
+  }
+  function geoHideTip() {
+    const tip = document.getElementById("geoTip");
+    if (tip) tip.style.opacity = "0";
+  }
+
+  function geoUpdateMarkers() {
+    const map = analyticsMap;
+    if (!map || !map.getLayer("cities-hit")) return;
+    const total = geoUpdateMarkers.total || 1;
+    const feats = map.queryRenderedFeatures({ layers: ["cities-hit"] });
+    const next = {};
+    for (const f of feats) {
+      const p = f.properties;
+      const isCluster = !!p.cluster;
+      const id = isCluster ? "c" + p.cluster_id : "p" + p.key;
+      if (next[id]) continue;
+      let m = geoMarkers[id];
+      if (!m) {
+        const n = p.n || 0;
+        const el = document.createElement("div");
+        el.className = "geo-pin" + (isCluster ? " cluster" : "");
+        const size = Math.round(20 + Math.min(28, Math.sqrt(n) * 4.5));
+        el.style.width = el.style.height = size + "px";
+        el.textContent = n;
+        const coords = f.geometry.coordinates.slice();
+        const tipHtml = isCluster
+          ? `<b>${p.point_count} città</b><br><span>${n} visite · clic per espandere</span>`
+          : `<b>${escapeHtml(p.city || "")}</b> <span>${escapeHtml(p.region || "")}</span><br><span>${geoFlag(p.cc)} ${escapeHtml(geoCountryName(p.cc))} · ${n} visite · ${Math.round(n / total * 100)}%</span>`;
+        el.addEventListener("mouseenter", () => {
+          const pt = map.project(coords);
+          geoShowTip(tipHtml, pt.x, pt.y - size / 2);
+        });
+        el.addEventListener("mouseleave", geoHideTip);
+        el.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          geoHideTip();
+          if (isCluster) {
+            const r = map.getSource("cities").getClusterExpansionZoom(p.cluster_id);
+            Promise.resolve(r).then(z => map.easeTo({ center: coords, zoom: Math.min(z + 0.5, 16) })).catch(() => {});
+          } else {
+            map.flyTo({ center: coords, zoom: Math.max(map.getZoom(), 11), speed: 1.4 });
+          }
+        });
+        m = geoMarkers[id] = new maplibregl.Marker({ element: el }).setLngLat(coords);
+      }
+      next[id] = m;
+      if (!geoMarkersOnScreen[id]) m.addTo(map);
+    }
+    for (const id in geoMarkersOnScreen) if (!next[id]) geoMarkersOnScreen[id].remove();
+    geoMarkersOnScreen = next;
+  }
+
+  function geoFitView(view, animate) {
+    if (!analyticsMap) return;
+    analyticsMap.fitBounds(GEO_VIEWS[view] || GEO_VIEWS.europa, { padding: 20, animate: animate !== false, duration: 900 });
+    document.querySelectorAll("#geoViewSeg button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  }
+
+  async function initAnalyticsGeo(data) {
+    // Tab Paesi / Comuni
+    document.querySelectorAll("#geoListSeg button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const which = btn.dataset.list;
+        document.querySelectorAll("#geoListSeg button").forEach(b => b.classList.toggle("on", b === btn));
+        document.getElementById("geoListPaesi").hidden = which !== "paesi";
+        document.getElementById("geoListCitta").hidden = which !== "citta";
+      });
+    });
+
+    const mapEl = document.getElementById("geoMap");
+    if (!mapEl) return;
+    if (analyticsMap) { try { analyticsMap.remove(); } catch (e) {} analyticsMap = null; }
+    geoMarkers = {}; geoMarkersOnScreen = {};
+
+    let geo;
+    try {
+      await geoLoadMapLibre();
+      geo = await geoLoadCountries();
+    } catch (e) {
+      mapEl.innerHTML = `<div class="rk-empty" style="padding-top:200px;">Mappa non disponibile (${escapeHtml(e.message)}).<br>Controlla che la cartella <code>manager-assets</code> sia presente.</div>`;
+      return;
+    }
+    if (!document.body.contains(mapEl)) return;
+
+    const countries = data.countries || {};
+    const maxC = Math.max(1, ...Object.values(countries));
+    const features = geo.features.map(f => ({ ...f, properties: { ...f.properties, v: countries[f.properties.iso] || 0 } }));
+    const cities = geoCitiesList(data);
+    geoUpdateMarkers.total = cities.reduce((s, c) => s + c.n, 0) || 1;
+    const cityFC = {
+      type: "FeatureCollection",
+      features: cities.map(c => ({
+        type: "Feature",
+        properties: { key: c.key, city: c.city || "", region: c.region || "", cc: c.cc || "", n: c.n },
+        geometry: { type: "Point", coordinates: [c.lon, c.lat] },
+      })),
+    };
+    const tiles = (layer) => ["a", "b", "c", "d"].map(s => `https://${s}.basemaps.cartocdn.com/${layer}/{z}/{x}/{y}@2x.png`);
+
+    const map = new maplibregl.Map({
+      container: mapEl,
+      bounds: GEO_VIEWS.europa,
+      fitBoundsOptions: { padding: 20 },
+      minZoom: 1,
+      maxZoom: 17,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
+      renderWorldCopies: false,
+      attributionControl: false,
+      style: {
+        version: 8,
+        sources: {
+          land: { type: "geojson", data: { type: "FeatureCollection", features }, promoteId: "iso" },
+          base: { type: "raster", tiles: tiles("dark_nolabels"), tileSize: 256, maxzoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>' },
+          labels: { type: "raster", tiles: tiles("dark_only_labels"), tileSize: 256, maxzoom: 19 },
+          cities: { type: "geojson", data: cityFC, cluster: true, clusterRadius: 44, clusterMaxZoom: 9,
+            clusterProperties: { n: ["+", ["get", "n"]] } },
+        },
+        layers: [
+          { id: "bg", type: "background", paint: { "background-color": "#0e0e0e" } },
+          { id: "land-base", type: "fill", source: "land", paint: { "fill-color": "#1c1c1c" } },
+          { id: "base", type: "raster", source: "base", paint: { "raster-fade-duration": 150 } },
+          { id: "choro", type: "fill", source: "land", filter: [">", ["get", "v"], 0],
+            paint: {
+              "fill-color": ["interpolate", ["linear"], ["/", ["get", "v"], maxC], 0, "#4a0f19", 1, "#c8102e"],
+              "fill-opacity": ["interpolate", ["linear"], ["zoom"], 2, ["case", ["boolean", ["feature-state", "hover"], false], 0.75, 0.55], 6, 0.3, 9, 0.08, 11, 0],
+            } },
+          { id: "borders", type: "line", source: "land",
+            paint: { "line-color": "#3a3a3a", "line-width": ["interpolate", ["linear"], ["zoom"], 2, 0.4, 6, 1], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 8, 0] } },
+          { id: "choro-line", type: "line", source: "land", filter: [">", ["get", "v"], 0],
+            paint: { "line-color": "#e0314f", "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0.8],
+              "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 9, 0.25] } },
+          { id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.95 } },
+          { id: "cities-hit", type: "circle", source: "cities", paint: { "circle-radius": 2, "circle-opacity": 0.01, "circle-color": "#000" } },
+        ],
+      },
+    });
+    analyticsMap = map;
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
+    map.on("error", () => {}); // tile mancanti (offline): si vede comunque la mappa base dei confini
+
+    let hoverIso = null;
+    const setHover = (iso) => {
+      if (hoverIso === iso) return;
+      if (hoverIso) map.setFeatureState({ source: "land", id: hoverIso }, { hover: false });
+      hoverIso = iso;
+      if (iso) map.setFeatureState({ source: "land", id: iso }, { hover: true });
+    };
+    const geoTotal = Object.values(countries).reduce((s, v) => s + v, 0) || 1;
+    map.on("mousemove", "choro", (e) => {
+      const f = e.features && e.features[0];
+      if (!f) return;
+      map.getCanvas().style.cursor = "pointer";
+      setHover(f.properties.iso);
+      const v = f.properties.v;
+      geoShowTip(`<b>${geoFlag(f.properties.iso)} ${escapeHtml(geoCountryName(f.properties.iso))}</b><br><span>${v} visite · ${Math.round(v / geoTotal * 100)}% del totale</span>`, e.point.x, e.point.y - 6);
+    });
+    map.on("mouseleave", "choro", () => { map.getCanvas().style.cursor = ""; setHover(null); geoHideTip(); });
+    map.on("click", "choro", (e) => {
+      const f = e.features && e.features[0];
+      if (f && map.getZoom() < 5) map.fitBounds(geoBBox(f.geometry), { padding: 50, maxZoom: 6.5, duration: 900 });
+    });
+    map.on("movestart", geoHideTip);
+    map.on("data", (e) => { if (e.sourceId === "cities" && e.isSourceLoaded) geoUpdateMarkers(); });
+    map.on("move", geoUpdateMarkers);
+    map.on("moveend", geoUpdateMarkers);
+
+    // Vista Europa / Mondo
+    document.querySelectorAll("#geoViewSeg button").forEach(btn => {
+      btn.addEventListener("click", () => geoFitView(btn.dataset.view));
+    });
+
+    // Clic sulle liste → vola sulla mappa
+    const fByIso = {};
+    features.forEach(f => { if (f.properties.iso) fByIso[f.properties.iso] = f; });
+    const activate = (row) => {
+      document.querySelectorAll(".geo-side .rk-row.is-active").forEach(r => r.classList.remove("is-active"));
+      row.classList.add("is-active");
+      if (row.dataset.geoCountry) {
+        const f = fByIso[row.dataset.geoCountry];
+        if (f) map.fitBounds(geoBBox(f.geometry), { padding: 50, maxZoom: 6.5, duration: 1000 });
+      } else if (row.dataset.geoLon) {
+        map.flyTo({ center: [parseFloat(row.dataset.geoLon), parseFloat(row.dataset.geoLat)], zoom: 11, speed: 1.4 });
+      }
+      document.querySelectorAll("#geoViewSeg button").forEach(b => b.classList.remove("on"));
+    };
+    document.querySelectorAll(".geo-side .rk-row").forEach(row => {
+      row.addEventListener("click", () => activate(row));
+      row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(row); } });
+    });
   }
 
   async function loadAndRenderAnalytics(forceRefresh) {
@@ -6681,6 +6873,8 @@
     const trendPct = prev7 > 0 ? Math.round(((last7 - prev7) / prev7) * 100) : 0;
     const trendUp = trendPct >= 0;
 
+    const geoParts = buildAnalyticsGeoAndLists(data);
+
     container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
         <div>
@@ -6777,113 +6971,11 @@
 
       </div>
 
-      <!-- PROVENIENZA VISITE: MAPPA + REFERRER -->
-      <div style="margin-bottom: 28px;">
-        <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
-          Provenienza visite
-        </h3>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 18px;">
-          <!-- Mappa -->
-          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px; overflow: hidden;">
-            <div id="mapWrap" style="position: relative; border-radius: 4px; overflow: hidden; user-select: none;">
-              <canvas id="mapWorld" width="800" height="400" style="width: 100%; height: auto; display: block; border-radius: 4px; touch-action: none;"></canvas>
-              <div id="mapTooltip" style="position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.12s ease; background: rgba(10,10,10,0.92); border: 1px solid var(--border); border-radius: 4px; padding: 6px 9px; font-size: 11px; line-height: 1.45; color: var(--text); white-space: nowrap; transform: translate(-50%, calc(-100% - 8px)); z-index: 2;"></div>
-              <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; align-items: center; z-index: 3;">
-                <span id="mapZoomLevel" style="font-size: 10px; color: var(--text2); margin-right: 2px; padding: 0 6px; height: 26px; display: flex; align-items: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; font-variant-numeric: tabular-nums;">100%</span>
-                <button type="button" id="mapZoomInBtn" title="Zoom avanti" aria-label="Zoom avanti" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">+</button>
-                <button type="button" id="mapZoomOutBtn" title="Zoom indietro" aria-label="Zoom indietro" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">&minus;</button>
-                <button type="button" id="mapZoomResetBtn" title="Ripristina vista" aria-label="Ripristina vista" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">&#10226;</button>
-              </div>
-            </div>
-            <p style="font-size: 10px; color: var(--text3); margin: 8px 0 0;">Rotella o +/&minus; per lo zoom &middot; trascina per spostarti &middot; doppio clic per ripristinare &middot; passa sui punti per i dettagli</p>
-          </div>
-          <!-- Lista paesi + Referrer -->
-          <div style="display: flex; flex-direction: column; gap: 14px;">
-            <!-- Paesi -->
-            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; flex: 1; overflow-y: auto; max-height: 220px;">
-              <h4 style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">Paesi</h4>
-              ${topCountries.length > 0 ?
-                topCountries.map(([code, cnt], i) => {
-                  const name = countryNames[code] || code;
-                  const pct = topCountries[0][1] > 0 ? (cnt / topCountries[0][1]) * 100 : 0;
-                  return `<div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
-                      <span style="color:var(--text2);">${escapeHtml(name)}</span>
-                      <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
-                    </div>
-                    <div style="height:3px; background:var(--border); border-radius:2px; overflow:hidden;">
-                      <div style="height:100%; width:${pct}%; background:var(--red); border-radius:2px;"></div>
-                    </div>
-                  </div>`;
-                }).join("")
-              : '<p style="color:var(--text3); font-size:10px;">I dati geografici appariranno con le prossime visite al sito.</p>'}
-            </div>
-            <!-- Referrer -->
-            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; flex: 1; overflow-y: auto; max-height: 220px;">
-              <h4 style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">Siti di provenienza</h4>
-              ${topReferrers.length > 0 ?
-                topReferrers.map(([src, cnt]) => {
-                  const pct = (cnt / refMax) * 100;
-                  return `<div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
-                      <span style="color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${escapeHtml(src)}</span>
-                      <span style="color:var(--text3); font-variant-numeric:tabular-nums;">${cnt}</span>
-                    </div>
-                    <div style="height:3px; background:var(--border); border-radius:2px; overflow:hidden;">
-                      <div style="height:100%; width:${pct}%; background:#60a5fa; border-radius:2px;"></div>
-                    </div>
-                  </div>`;
-                }).join("")
-              : '<p style="color:var(--text3); font-size:10px;">I dati sui referrer appariranno con le prossime visite.</p>'}
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- PROVENIENZA VISITE: MAPPA + PAESI/COMUNI -->
+      ${geoParts.geo}
 
-      <!-- CLASSIFICA PROGETTI + FOTO -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
-        <div>
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
-            Classifica progetti
-          </h3>
-          ${topProjects.length > 0 ? `
-          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
-            ${topProjects.map(([name, count], i) => {
-              const pct = topProjects[0][1] > 0 ? (count / topProjects[0][1]) * 100 : 0;
-              const label = name.replace(/^(art|pro)\//, (m) => `<span class="badge ${m.replace("/", "")}" style="font-size:8px; padding:1px 5px; margin-right:6px;">${m.replace("/", "")}</span>`);
-              return `<div style="padding: 9px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""} position: relative;">
-                <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background: var(--red); opacity: 0.06;"></div>
-                <span style="font-size: 11px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
-                <span style="font-size: 12px; color: var(--text); flex: 1; position: relative;">${label}</span>
-                <span style="font-size: 11px; color: var(--text2); font-variant-numeric: tabular-nums; position: relative;">${count}</span>
-              </div>`;
-            }).join("")}
-          </div>
-          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
-        </div>
-
-        <div>
-          <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); font-weight: 600; margin-bottom: 10px;">
-            Foto più viste
-          </h3>
-          ${topPhotos.length > 0 ? `
-          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
-            ${topPhotos.map(([path, count], i) => {
-              const filename = path.split("/").pop();
-              const project = path.split("/").slice(1, -1).join("/");
-              return `<div style="padding: 9px 14px; display: flex; align-items: center; gap: 10px; ${i > 0 ? "border-top: 1px solid var(--border);" : ""}">
-                <span style="font-size: 11px; color: var(--text3); min-width: 18px; text-align: right;">${i + 1}.</span>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(filename)}</div>
-                  <div style="font-size: 10px; color: var(--text3);">${escapeHtml(project)}</div>
-                </div>
-                <span style="font-size: 11px; color: var(--text2); font-variant-numeric: tabular-nums;">${count}</span>
-              </div>`;
-            }).join("")}
-          </div>
-          ` : '<p style="color: var(--text3); font-size: 12px;">Nessun dato disponibile.</p>'}
-        </div>
-      </div>
+      <!-- SITI, PROGETTI, FOTO -->
+      ${geoParts.bottom}
 
       <!-- INFO -->
       <div style="padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;">
@@ -6907,8 +6999,7 @@
       { value: mobViews, color: "#f472b6" },
       { value: tabViews, color: "#fbbf24" },
     ], 180);
-    drawWorldMap("mapWorld", countries, 800, 400);
-    initMapInteraction(countries, countryNames);
+    initAnalyticsGeo(data);
 
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
     if (refreshBtn) refreshBtn.onclick = () => { loadAndRenderAnalytics(true); };

@@ -85,6 +85,7 @@ function emptyAnalytics() {
     daily: {},
     contacts: 0,
     countries: {},
+    cities: {},
     referrers: {},
     devices: { desktop: 0, mobile: 0, tablet: 0 },
   };
@@ -106,6 +107,14 @@ export default async function handler(req, res) {
   const isContact = type === "contact";
 
   const country = (req.headers["x-vercel-ip-country"] || "").toUpperCase() || null;
+
+  // Comune (geolocalizzazione approssimativa di Vercel dall'IP; l'IP non viene salvato)
+  let city = null;
+  try { city = decodeURIComponent(req.headers["x-vercel-ip-city"] || "").trim() || null; }
+  catch { city = (req.headers["x-vercel-ip-city"] || "").trim() || null; }
+  const region = String(req.headers["x-vercel-ip-country-region"] || "").slice(0, 8) || null;
+  const lat = parseFloat(req.headers["x-vercel-ip-latitude"]);
+  const lon = parseFloat(req.headers["x-vercel-ip-longitude"]);
 
   try {
     await ensureDataBranch();
@@ -129,6 +138,7 @@ export default async function handler(req, res) {
     if (!analytics.daily) analytics.daily = {};
     if (typeof analytics.contacts !== "number") analytics.contacts = 0;
     if (!analytics.countries) analytics.countries = {};
+    if (!analytics.cities) analytics.cities = {};
     if (!analytics.referrers) analytics.referrers = {};
     if (!analytics.devices) analytics.devices = { desktop: 0, mobile: 0, tablet: 0 };
 
@@ -149,6 +159,15 @@ export default async function handler(req, res) {
 
       if (country && country.length === 2) {
         analytics.countries[country] = (analytics.countries[country] || 0) + 1;
+        if (city && Number.isFinite(lat) && Number.isFinite(lon)) {
+          const key = `${country}|${city}`.slice(0, 80);
+          const c = analytics.cities[key] || {
+            n: 0, city: city.slice(0, 60), region, cc: country,
+            lat: Math.round(lat * 100) / 100, lon: Math.round(lon * 100) / 100,
+          };
+          c.n++;
+          analytics.cities[key] = c;
+        }
       }
       if (referrer && typeof referrer === "string" && referrer.length < 200) {
         const ref = referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");

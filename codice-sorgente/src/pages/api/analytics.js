@@ -16,6 +16,7 @@ function emptyAnalytics() {
     daily: {},
     contacts: 0,
     countries: {},
+    cities: {},
     referrers: {},
     devices: { desktop: 0, mobile: 0, tablet: 0 },
   };
