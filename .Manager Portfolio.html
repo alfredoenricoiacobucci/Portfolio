@@ -1125,6 +1125,19 @@
     .an-row-chart { grid-template-columns: 1fr; }
     .an-stack { grid-template-columns: 1fr 1fr; grid-template-rows: none; }
   }
+  /* ===== Analytics: mappa a tutta finestra, strumenti ===== */
+  .geo-tools { display: flex; align-items: center; gap: 8px; }
+  .geo-card.is-full { position: fixed; inset: 14px; z-index: 10000; display: flex; flex-direction: column; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.65), 0 20px 60px rgba(0,0,0,0.6); }
+  .geo-card.is-full .geo-wrap { flex: 1; min-height: 0; }
+  .geo-card.is-full .geo-map, .geo-card.is-full .geo-side { height: auto; min-height: 0; }
+  body.geo-full-open { overflow: hidden; }
+  .geo-offline { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 4; background: rgba(12,12,12,0.9); border: 1px solid var(--border-hi); border-radius: 7px; padding: 6px 10px; font-size: 11px; color: var(--text2); }
+  .geo-pin.country { background: rgba(200,16,46,0.55); border: 1.5px dashed rgba(255,255,255,0.55); box-shadow: 0 0 0 5px rgba(200,16,46,0.15), 0 2px 10px rgba(0,0,0,0.55); }
+  .an-foot-row { display: flex; justify-content: flex-end; margin: 4px 0 6px; }
+  .an-danger { color: #f87171; }
+  .an-danger:hover { color: #fca5a5; border-color: rgba(248,113,113,0.4); }
+  .an-refresh:disabled { opacity: 0.6; cursor: default; }
+  #anRangeSeg button { padding: 5px 10px; }
   /* ===== Analytics: card, liste classificate, mappa ===== */
   .an-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
   .an-card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 10px; }
@@ -1166,8 +1179,8 @@
   .bot-grid { margin-bottom: 16px !important; }
   .geo-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
   .geo-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
-  .geo-map { position: relative; height: 560px; background: #0e0e0e; }
-  .geo-side { border-left: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; height: 560px; }
+  .geo-map { position: relative; height: 600px; background: #0e0e0e; }
+  .geo-side { border-left: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; height: 600px; }
   .geo-side-h { padding: 12px 12px 8px; }
   .geo-side-b { flex: 1; overflow-y: auto; padding: 0 6px 8px; min-height: 0; }
   .geo-side-b[hidden] { display: none; }
@@ -6445,7 +6458,7 @@
     for (let i = n - 1; i >= 0; i--) {
       const key = new Date(base - i * 86400000).toISOString().slice(0, 10);
       const d = daily[key] || {};
-      out.push({ key, total: d.total || 0, art: d.art || 0, pro: d.pro || 0 });
+      out.push({ key, total: d.total || 0, sessions: d.sessions || 0, art: d.art || 0, pro: d.pro || 0 });
     }
     return out;
   }
@@ -6465,7 +6478,7 @@
     return `<span class="an-trend ${pct > 0 ? "up" : "down"}">${anIcon(pct > 0 ? "up" : "down", 10)} ${Math.abs(pct)}%</span>`;
   }
 
-  function anCompositionHtml(title, parts) {
+  function anCompositionHtml(title, parts, unit) {
     const total = parts.reduce((s, p) => s + p.value, 0);
     const bar = total
       ? parts.filter(p => p.value > 0).map(p => `<i style="flex:${p.value};background:${p.color}" title="${p.label}: ${p.value}"></i>`).join("")
@@ -6478,22 +6491,27 @@
         <span class="cp-pct">${total ? Math.round(p.value / total * 100) : 0}%</span>
       </li>`).join("");
     return `<section class="an-card">
-      <header class="an-card-h"><h3>${title}</h3><span class="an-card-meta">${anFmt(total)} visite</span></header>
+      <header class="an-card-h"><h3>${title}</h3><span class="an-card-meta">${anFmt(total)} ${unit || "visite"}</span></header>
       <div class="cp-body"><div class="cp-bar">${bar}</div><ul class="cp-list">${rows}</ul></div>
     </section>`;
   }
 
+  function anMetric(data) {
+    return (data.sessions || 0) > 0
+      ? { key: "sessions", one: "visita", many: "visite" }
+      : { key: "total", one: "pagina vista", many: "pagine viste" };
+  }
+
   function buildAnalyticsTop(data, ctx) {
-    const daily = data.daily || {};
-    const s30 = anSeries(daily, 30);
-    const s14 = anSeries(daily, 14);
-    const last7 = s14.slice(7).reduce((s, d) => s + d.total, 0);
-    const prev7 = s14.slice(0, 7).reduce((s, d) => s + d.total, 0);
-    const today = s14[s14.length - 1].total;
-    const avg30 = s30.reduce((s, d) => s + d.total, 0) / 30;
-    const conv = ctx.totalViews ? (ctx.contacts / ctx.totalViews) * 100 : 0;
-    const now = new Date();
-    const hhmm = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+    const M = anMetric(data);
+    const s14 = anSeries(data.daily || {}, 14);
+    const val = (d) => d[M.key];
+    const last7 = s14.slice(7).reduce((s, d) => s + val(d), 0);
+    const prev7 = s14.slice(0, 7).reduce((s, d) => s + val(d), 0);
+    const sessions = data.sessions || 0;
+    const base = sessions || ctx.totalViews;
+    const conv = base ? (ctx.contacts / base) * 100 : 0;
+    const hhmm = new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 
     const kpi = (label, value, sub, accent) => `
       <div class="kpi">
@@ -6512,20 +6530,21 @@
       </header>
 
       <div class="kpi-grid">
-        ${kpi("Visite totali", anFmt(ctx.totalViews), `<span>oggi ${anFmt(today)}</span>`)}
-        ${kpi("Ultimi 7 giorni", anFmt(last7), `${anTrend(last7, prev7)}<span>rispetto ai 7 precedenti</span>`)}
-        ${kpi("Media giornaliera", anFmt(avg30, avg30 < 10 ? 1 : 0), `<span>negli ultimi 30 giorni</span>`)}
-        ${kpi("Contatti ricevuti", anFmt(ctx.contacts), `<span>${ctx.contacts ? anFmt(conv, 1) + "% delle visite" : "dal modulo contatti"}</span>`, ctx.contacts ? "#fbbf24" : "")}
+        ${kpi("Visite", sessions ? anFmt(sessions) : "—", sessions ? `<span>oggi ${anFmt(s14[13].sessions)}</span>` : `<span>contate dalle prossime visite</span>`)}
+        ${kpi("Pagine viste", anFmt(ctx.totalViews), sessions ? `<span>${anFmt(ctx.totalViews / sessions, 1)} per visita</span>` : `<span>oggi ${anFmt(s14[13].total)}</span>`)}
+        ${kpi("Ultimi 7 giorni", anFmt(last7), `${anTrend(last7, prev7)}<span>${M.many}, rispetto ai 7 precedenti</span>`)}
+        ${kpi("Contatti ricevuti", anFmt(ctx.contacts), `<span>${ctx.contacts ? anFmt(conv, 1) + "% delle " + (sessions ? "visite" : "pagine viste") : "dal modulo contatti"}</span>`, ctx.contacts ? "#fbbf24" : "")}
       </div>
 
       <div class="an-row-chart">
         <section class="an-card">
           <header class="an-card-h">
-            <div><h3>Andamento visite</h3><div class="geo-meta" id="anChartMeta"></div></div>
+            <div><h3>Andamento ${M.many}</h3><div class="geo-meta" id="anChartMeta"></div></div>
             <div class="seg" id="anRangeSeg">
               <button type="button" data-days="7">7 giorni</button>
               <button type="button" class="on" data-days="30">30 giorni</button>
               <button type="button" data-days="90">90 giorni</button>
+              <button type="button" data-days="365">1 anno</button>
             </div>
           </header>
           <div class="ch-wrap" id="anChart"></div>
@@ -6536,12 +6555,12 @@
             { label: "Professional", value: ctx.proViews, color: "#60a5fa" },
             { label: "Home", value: ctx.landingViews, color: "#fbbf24" },
             { label: "About", value: ctx.aboutViews, color: "#4ade80" },
-          ])}
+          ], "pagine viste")}
           ${anCompositionHtml("Dispositivi", [
             { label: "Desktop", value: ctx.deskViews, color: "#60a5fa" },
             { label: "Smartphone", value: ctx.mobViews, color: "#f472b6" },
             { label: "Tablet", value: ctx.tabViews, color: "#fbbf24" },
-          ])}
+          ], sessions ? "visite" : "pagine viste")}
         </div>
       </div>`;
   }
@@ -6549,26 +6568,38 @@
   function anRenderChart(data, days) {
     const el = document.getElementById("anChart");
     if (!el) return;
-    const series = anSeries(data.daily || {}, days);
+    const M = anMetric(data);
+    const daily = anSeries(data.daily || {}, days === 365 ? 364 : days);
+    const weekly = days === 365;
+    let series = daily.map(d => ({ key: d.key, end: d.key, v: d[M.key], art: d.art, pro: d.pro }));
+    if (weekly) {
+      const w = [];
+      for (let i = 0; i < daily.length; i += 7) {
+        const chunk = daily.slice(i, i + 7);
+        w.push({ key: chunk[0].key, end: chunk[chunk.length - 1].key,
+          v: chunk.reduce((s, d) => s + d[M.key], 0), art: chunk.reduce((s, d) => s + d.art, 0), pro: chunk.reduce((s, d) => s + d.pro, 0) });
+      }
+      series = w;
+    }
     const n = series.length;
-    const max = Math.max(...series.map(d => d.total), 0);
+    const max = Math.max(...series.map(d => d.v), 0);
     const niceStep = (m) => { const raw = Math.max(1, m) / 4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
     const step = niceStep(max);
     const top = Math.max(step * 4, step * Math.ceil(max / step));
     const W = 1000, H = 240;
     const x = (i) => n === 1 ? W / 2 : (i / (n - 1)) * W;
     const y = (v) => H - (v / top) * H;
-    const pts = series.map((d, i) => `${x(i).toFixed(1)},${y(d.total).toFixed(1)}`);
-    const line = "M" + pts.join("L");
+    const line = "M" + series.map((d, i) => `${x(i).toFixed(1)},${y(d.v).toFixed(1)}`).join("L");
     const area = `${line}L${W},${H}L0,${H}Z`;
     const ticks = [];
     for (let v = 0; v <= top; v += step) ticks.push(v);
-    const labelEvery = days <= 7 ? 1 : days <= 30 ? 5 : 15;
+    const labelEvery = weekly ? 9 : days <= 7 ? 1 : days <= 30 ? 5 : 15;
     const xLabels = series.map((d, i) => ((n - 1 - i) % labelEvery === 0)
       ? `<span style="left:${(x(i) / W * 100).toFixed(2)}%">${anDayLabel(d.key, days <= 7)}</span>` : "").join("");
-    const sum = series.reduce((s, d) => s + d.total, 0);
+    const sum = series.reduce((s, d) => s + d.v, 0);
+    const perDay = sum / (weekly ? 364 : days);
     const meta = document.getElementById("anChartMeta");
-    if (meta) meta.textContent = `${anFmt(sum)} visite · media ${anFmt(sum / n, sum / n < 10 ? 1 : 0)} al giorno`;
+    if (meta) meta.textContent = `${anFmt(sum)} ${sum === 1 ? M.one : M.many} · media ${anFmt(perDay, perDay < 10 ? 1 : 0)} al giorno${weekly ? " · per settimana" : ""}`;
 
     el.innerHTML = `
       <div class="ch-plot">
@@ -6591,17 +6622,43 @@
       const r = hit.getBoundingClientRect();
       const i = Math.max(0, Math.min(n - 1, Math.round(((clientX - r.left) / r.width) * (n - 1))));
       const d = series[i];
-      const px = (x(i) / W) * 100, py = (y(d.total) / H) * 100;
+      const px = (x(i) / W) * 100, py = (y(d.v) / H) * 100;
       guide.style.left = dot.style.left = tip.style.left = px + "%";
       dot.style.top = py + "%";
       tip.style.top = py + "%";
       tip.classList.toggle("left", px > 80);
       tip.classList.toggle("right", px < 20);
-      tip.innerHTML = `<b>${anDayLabel(d.key, true)}</b><div><strong>${anFmt(d.total)}</strong> ${d.total === 1 ? "visita" : "visite"}</div>${(d.art || d.pro) ? `<div class="ch-tip-sub"><i style="background:#a78bfa"></i>Artwork ${d.art}<i style="background:#60a5fa"></i>Professional ${d.pro}</div>` : ""}`;
+      const when = weekly ? `settimana ${anDayLabel(d.key)} – ${anDayLabel(d.end)}` : anDayLabel(d.key, true);
+      tip.innerHTML = `<b>${when}</b><div><strong>${anFmt(d.v)}</strong> ${d.v === 1 ? M.one : M.many}</div>${(d.art || d.pro) ? `<div class="ch-tip-sub">${M.key === "sessions" ? "pagine viste:" : ""}<i style="background:#a78bfa"></i>Artwork ${d.art}<i style="background:#60a5fa"></i>Professional ${d.pro}</div>` : ""}`;
       [guide, dot, tip].forEach(e => e.classList.add("on"));
     };
     hit.addEventListener("mousemove", (e) => show(e.clientX));
     hit.addEventListener("mouseleave", () => [guide, dot, tip].forEach(e => e.classList.remove("on")));
+  }
+
+  async function anResetData() {
+    const ok = await Promise.resolve(confirm("Azzerare tutte le statistiche?\n\nI dati attuali sono quelli di prova: dopo l'azzeramento verranno conteggiate solo le visite reali al sito."));
+    if (!ok) return;
+    const btn = document.getElementById("btnResetAnalytics");
+    if (btn) { btn.disabled = true; btn.textContent = "Azzeramento…"; }
+    try {
+      const url = `https://api.github.com/repos/${getRepo()}/contents/analytics.json`;
+      const h = { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" };
+      const cur = await fetch(url + "?ref=data", { headers: h }).then(r => r.ok ? r.json() : null);
+      const empty = { views: { total: 0, art: 0, pro: 0, landing: 0, about: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0,
+        countries: {}, cities: {}, referrers: {}, devices: { desktop: 0, mobile: 0, tablet: 0 }, sessions: 0 };
+      const body = { message: "analytics: azzeramento dati di prova", branch: "data",
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(empty, null, 2) + "\n"))) };
+      if (cur && cur.sha) body.sha = cur.sha;
+      const r = await fetch(url, { method: "PUT", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error("GitHub " + r.status);
+      analyticsCache = null;
+      toast("Statistiche azzerate.");
+      loadAndRenderAnalytics(true);
+    } catch (e) {
+      toast("Azzeramento non riuscito: " + e.message, "err");
+      if (btn) { btn.disabled = false; btn.textContent = "Azzera statistiche"; }
+    }
   }
 
   function initAnalyticsTop(data) {
@@ -6616,6 +6673,8 @@
     });
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
     if (refreshBtn) refreshBtn.onclick = () => { refreshBtn.classList.add("busy"); loadAndRenderAnalytics(true); };
+    const resetBtn = document.getElementById("btnResetAnalytics");
+    if (resetBtn) resetBtn.onclick = anResetData;
   }
 
   // ========== ANALYTICS: MAPPA GEOGRAFICA (MapLibre) + LISTE ==========
@@ -6625,6 +6684,7 @@
   let geoMarkersOnScreen = {};
   const GEO_ASSETS = "manager-assets/";
   const GEO_VIEWS = {
+    italia: [[6.4, 36.5], [18.8, 47.2]],
     europa: [[-24, 34], [45, 71]],
     mondo: [[-165, -56], [180, 78]],
   };
@@ -6650,6 +6710,27 @@
         </div>
         <div class="rk-val"><b>${it.value}</b><span>${Math.round(it.value / total * 100)}%</span></div>
       </li>`).join("") + `</ol>`;
+  }
+
+  // Nome leggibile della sorgente di una visita (null = voce di prova da nascondere)
+  function anSourceInfo(host) {
+    const h = String(host || "").toLowerCase().replace(/^www\./, "");
+    if (!h || h === "test-verification" || h === "localhost" || /^127\./.test(h)) return null;
+    if (h === "direct" || h === "(direct)") return { name: "Accesso diretto", kind: "", direct: true };
+    const rules = [
+      [/(^|\.)google\./, "Google", "motore di ricerca"], [/(^|\.)bing\.com$/, "Bing", "motore di ricerca"],
+      [/duckduckgo\.com$/, "DuckDuckGo", "motore di ricerca"], [/(^|\.)ecosia\.org$/, "Ecosia", "motore di ricerca"],
+      [/(^|\.)yahoo\./, "Yahoo", "motore di ricerca"],
+      [/instagram\.com$/, "Instagram", "social"], [/(facebook\.com|fb\.me)$/, "Facebook", "social"],
+      [/(^|\.)(t\.co|twitter\.com|x\.com)$/, "X (Twitter)", "social"], [/(linkedin\.com|lnkd\.in)$/, "LinkedIn", "social"],
+      [/pinterest\./, "Pinterest", "social"], [/threads\.net$/, "Threads", "social"], [/tiktok\.com$/, "TikTok", "social"],
+      [/(youtube\.com|youtu\.be)$/, "YouTube", "video"], [/vimeo\.com$/, "Vimeo", "video"],
+      [/(whatsapp\.com|wa\.me)$/, "WhatsApp", "messaggi"], [/(t\.me|telegram\.org)$/, "Telegram", "messaggi"],
+      [/behance\.net$/, "Behance", "portfolio"], [/(chatgpt\.com|openai\.com)$/, "ChatGPT", "assistente IA"],
+      [/(mail\.google\.com|outlook\.|mail\.)/, "Email", "posta"],
+    ];
+    for (const [re, name, kind] of rules) if (re.test(h)) return { name, kind };
+    return { name: h, kind: "sito web" };
   }
 
   function anCard(title, meta, body, extraClass) {
@@ -6699,7 +6780,7 @@
       attrs: `data-geo-lon="${c.lon}" data-geo-lat="${c.lat}"`,
     }));
 
-    const metaParts = [`${geoTotal} visite`, `${cEntries.length} ${cEntries.length === 1 ? "paese" : "paesi"}`];
+    const metaParts = [`${geoTotal} ${data.sessions ? "visite" : "pagine viste"}`, `${cEntries.length} ${cEntries.length === 1 ? "paese" : "paesi"}`];
     if (cities.length) metaParts.push(`${cities.length} città`);
 
     const geo = `
@@ -6709,19 +6790,18 @@
             <h3>Provenienza visite</h3>
             <div class="geo-meta">${metaParts.join(" · ")}</div>
           </div>
-          <div class="seg" id="geoViewSeg" role="tablist" aria-label="Vista mappa">
-            <button type="button" class="on" data-view="europa">Europa</button>
-            <button type="button" data-view="mondo">Mondo</button>
+          <div class="geo-tools">
+            <div class="seg" id="geoViewSeg" role="tablist" aria-label="Vista mappa">
+              <button type="button" data-view="italia">Italia</button>
+              <button type="button" class="on" data-view="europa">Europa</button>
+              <button type="button" data-view="mondo">Mondo</button>
+            </div>
+            <button type="button" class="an-refresh" id="geoFullBtn">${geoIcon("expand")}<span>Ingrandisci</span></button>
           </div>
         </header>
         <div class="geo-wrap">
           <div class="geo-map" id="geoMap">
             <div class="geo-tip" id="geoTip"></div>
-            <div class="geo-legend" id="geoLegend">
-              <div>Visite per paese</div>
-              <div class="ramp"></div>
-              <div style="display:flex;justify-content:space-between;"><span>1</span><span>${cEntries.length ? cEntries[0][1] : 0}</span></div>
-            </div>
           </div>
           <aside class="geo-side">
             <div class="geo-side-h">
@@ -6738,20 +6818,29 @@
             </div>
           </aside>
         </div>
-        <div class="geo-hint">Trascina per spostarti · rotella o +/− per lo zoom · clicca un paese o una città per avvicinarti · zoomando compaiono strade e nomi dei comuni</div>
+        <div class="geo-hint">Due dita sul trackpad o trascina per spostarti · pizzica, rotella o +/− per lo zoom · clicca un pallino o una riga dell'elenco per avvicinarti · da vicino compaiono strade e confini dei comuni</div>
       </section>`;
 
     // --- Liste sotto: siti, progetti, foto ---
-    const refEntries = Object.entries(data.referrers || {}).sort((a, b) => b[1] - a[1]);
-    const refTotal = refEntries.reduce((s, [, v]) => s + v, 0);
-    const refItems = refEntries.slice(0, 15).map(([src, n]) => {
-      const direct = src === "direct" || src === "(direct)";
-      const name = direct ? "Accesso diretto" : src;
-      return {
-        label: escapeHtml(name), sub: direct ? "link digitato o salvato" : "",
-        value: n, icon: direct ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M7 17 17 7M8 7h9v9"/></svg>' : escapeHtml(src.replace(/^www\./, "").charAt(0)), iconClass: "rk-avatar",
-      };
+    const refGroups = {};
+    let refTest = 0;
+    Object.entries(data.referrers || {}).forEach(([host, n]) => {
+      const src = anSourceInfo(host);
+      if (!src) { refTest += n; return; }
+      const g = refGroups[src.name] || (refGroups[src.name] = { ...src, n: 0, hosts: new Set() });
+      g.n += n;
+      if (!src.direct) g.hosts.add(host);
     });
+    const refEntries = Object.values(refGroups).sort((a, b) => b.n - a.n);
+    const refTotal = refEntries.reduce((s, g) => s + g.n, 0);
+    const refItems = refEntries.slice(0, 15).map(g => ({
+      label: escapeHtml(g.name),
+      sub: escapeHtml(g.direct ? "link digitato, salvato o da app" : g.kind + (g.hosts.size === 1 && [...g.hosts][0] !== g.name.toLowerCase() ? " · " + [...g.hosts][0] : "")),
+      value: g.n,
+      icon: g.direct ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M7 17 17 7M8 7h9v9"/></svg>' : escapeHtml(g.name.charAt(0)),
+      iconClass: "rk-avatar",
+    }));
+    const refNote = refTest ? `<div class="rk-foot">${refTest} ${refTest === 1 ? "voce" : "voci"} di prova non ${refTest === 1 ? "mostrata" : "mostrate"}</div>` : "";
 
     const pIndex = anProjectIndex();
     const thumb = (info, file) => info && file
@@ -6790,7 +6879,7 @@
 
     const bottom = `
       <div class="bot-grid">
-        ${anCard("Siti di provenienza", refTotal ? `${refTotal} visite` : "", rankListHtml(refItems, { total: refTotal, color: "#60a5fa", empty: "Nessun dato sui siti di provenienza." }))}
+        ${anCard("Da dove arrivano", refTotal ? `${refTotal} visite` : "", rankListHtml(refItems, { total: refTotal, color: "#60a5fa", empty: "Nessun dato sui siti di provenienza." }) + refNote)}
         ${anCard("Progetti più visti", projTotal ? `${projTotal} visite` : "", rankListHtml(projItems, { total: projTotal, color: "var(--red)", empty: "Nessun progetto visitato ancora." }) + hiddenNote(projHidden))}
         ${anCard("Foto più viste", photoTotal ? `${photoTotal} aperture` : "", rankListHtml(photoItems, { total: photoTotal, color: "#a78bfa", empty: "Nessuna foto aperta ancora." }) + hiddenNote(photoHidden))}
       </div>`;
@@ -6886,9 +6975,13 @@
         el.style.width = el.style.height = size + "px";
         el.textContent = n;
         const coords = f.geometry.coordinates.slice();
+        const isCountry = !isCluster && p.kind === "country";
+        if (isCountry) el.classList.add("country");
         const tipHtml = isCluster
-          ? `<b>${p.point_count} città</b><br><span>${n} visite · clic per espandere</span>`
-          : `<b>${escapeHtml(p.city || "")}</b> <span>${escapeHtml(p.region || "")}</span><br><span>${geoFlag(p.cc)} ${escapeHtml(geoCountryName(p.cc))} · ${n} visite · ${Math.round(n / total * 100)}%</span>`;
+          ? `<b>${p.point_count} luoghi vicini</b><br><span>${n} visite · clic per separarli</span>`
+          : isCountry
+            ? `<b>${geoFlag(p.cc)}${escapeHtml(p.city || "")}</b><br><span>${n} visite senza città registrata · ${Math.round(n / total * 100)}%</span>`
+            : `<b>${escapeHtml(p.city || "")}</b> <span>${escapeHtml(p.region || "")}</span><br><span>${geoFlag(p.cc)}${escapeHtml(geoCountryName(p.cc))} · ${n} visite · ${Math.round(n / total * 100)}%</span>`;
         el.addEventListener("mouseenter", () => {
           const pt = map.project(coords);
           geoShowTip(tipHtml, pt.x, pt.y - size / 2);
@@ -6900,8 +6993,11 @@
           if (isCluster) {
             const r = map.getSource("cities").getClusterExpansionZoom(p.cluster_id);
             Promise.resolve(r).then(z => map.easeTo({ center: coords, zoom: Math.min(z + 0.5, 16) })).catch(() => {});
+          } else if (isCountry) {
+            const sh = (geoUpdateMarkers.shapes || {})[p.cc];
+            if (sh) map.fitBounds(sh.bbox, { padding: 50, maxZoom: 7, duration: 1000 });
           } else {
-            map.flyTo({ center: coords, zoom: Math.max(map.getZoom(), 11), speed: 1.4 });
+            map.flyTo({ center: coords, zoom: Math.max(map.getZoom(), 11.5), speed: 1.4 });
           }
         });
         m = geoMarkers[id] = new maplibregl.Marker({ element: el }).setLngLat(coords);
@@ -6919,8 +7015,81 @@
     document.querySelectorAll("#geoViewSeg button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   }
 
+  // Poligono principale di un paese: centro (baricentro) e riquadro, ignorando isole e territori lontani
+  function geoMainShape(geometry) {
+    const polys = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+    let best = null, bestA = -1;
+    polys.forEach(poly => {
+      const ring = poly[0];
+      let a = 0, cx = 0, cy = 0;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const f = ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+        a += f; cx += (ring[j][0] + ring[i][0]) * f; cy += (ring[j][1] + ring[i][1]) * f;
+      }
+      if (Math.abs(a) > bestA) { bestA = Math.abs(a); best = { ring, a, cx, cy }; }
+    });
+    const xs = best.ring.map(p => p[0]), ys = best.ring.map(p => p[1]);
+    const center = best.a ? [best.cx / (3 * best.a), best.cy / (3 * best.a)] : [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+    if (center[0] > 180) center[0] -= 360;
+    return { center, bbox: [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]] };
+  }
+
+  function geoIcon(name) {
+    const P = {
+      expand: '<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',
+      shrink: '<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>',
+    };
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${P[name]}</svg>`;
+  }
+
+  // Rende leggibile lo stile "dark" di OpenFreeMap: in origine testo grigio su nero e strade quasi invisibili
+  function geoTuneStyle(style) {
+    const P = {
+      background: { "background-color": "#1c1c1c" },
+      water: { "fill-color": "#0b0e12" },
+      waterway: { "line-color": "#0b0e12" },
+      landuse_residential: { "fill-color": "#232323", "fill-opacity": 0.8 },
+      landuse_park: { "fill-color": "#1d211d" },
+      landcover_wood: { "fill-color": "#1d211d" },
+      building: { "fill-color": "#272727", "fill-outline-color": "#303030" },
+      highway_path: { "line-color": "#363636" },
+      highway_minor: { "line-color": "#333", "line-opacity": 1 },
+      highway_major_casing: { "line-color": "#404040" },
+      highway_major_inner: { "line-color": "#3c3c3c" },
+      highway_major_subtle: { "line-color": "#383838" },
+      highway_motorway_casing: { "line-color": "#4c4c4c" },
+      highway_motorway_inner: { "line-color": "#555" },
+      highway_motorway_subtle: { "line-color": "#3c3c3c" },
+      railway: { "line-color": "#363636" },
+      boundary_state: { "line-color": "#4d4d4d" },
+      "boundary_country_z0-4": { "line-color": "#6e6e6e" },
+      "boundary_country_z5-": { "line-color": "#6e6e6e" },
+      highway_name_other: { "text-color": "#8c8c8c", "text-halo-color": "#151515" },
+      highway_name_motorway: { "text-color": "#9a9a9a" },
+      water_name: { "text-color": "#5b7186", "text-halo-color": "#0b0e12" },
+    };
+    const label = { place_city_large: "#ececec", place_city: "#e2e2e2", place_town: "#d0d0d0", place_village: "#b8b8b8",
+      place_suburb: "#9c9c9c", place_other: "#929292", place_state: "#7c7c7c",
+      place_country_major: "#d6d6d6", place_country_minor: "#c6c6c6", place_country_other: "#b6b6b6" };
+    const nameIt = ["coalesce", ["get", "name:it"], ["get", "name:latin"], ["get", "name"]];
+    (style.layers || []).forEach(l => {
+      if (P[l.id]) l.paint = Object.assign({}, l.paint, P[l.id]);
+      if (label[l.id]) {
+        l.paint = Object.assign({}, l.paint, { "text-color": label[l.id], "text-halo-color": "rgba(14,14,14,0.92)", "text-halo-width": 1.5, "text-halo-blur": 0.5 });
+        l.layout = Object.assign({}, l.layout);
+        if (typeof l.layout["text-size"] === "number") l.layout["text-size"] = Math.round(l.layout["text-size"] * 1.25);
+        l.layout["text-field"] = nameIt;
+        if (/^place_(city|town|village|suburb|other)/.test(l.id)) l.layout["text-transform"] = "none";
+      }
+      if (l.id === "place_state") l.minzoom = Math.max(l.minzoom || 0, 5.5);
+      if (l.id === "water_name") l.layout = Object.assign({}, l.layout, { "text-field": nameIt });
+      if (l.id === "highway_name_other") l.layout = Object.assign({}, l.layout, { "text-transform": "none" });
+    });
+    return style;
+  }
+
   async function initAnalyticsGeo(data) {
-    // Tab Paesi / Comuni
+    // Tab Paesi / Città
     document.querySelectorAll("#geoListSeg button").forEach(btn => {
       btn.addEventListener("click", () => {
         const which = btn.dataset.list;
@@ -6945,133 +7114,153 @@
     }
     if (!document.body.contains(mapEl)) return;
 
+    // Paesi: poligono principale (per centrare e inquadrare senza territori d'oltremare)
+    const countryShape = {};
+    geo.features.forEach(f => { if (f.properties.iso) countryShape[f.properties.iso] = geoMainShape(f.geometry); });
+
+    // Pallini: città registrate + visite del paese senza città (posizionate al centro del paese)
     const countries = data.countries || {};
-    const maxC = Math.max(1, ...Object.values(countries));
-    const features = geo.features.map(f => ({ ...f, properties: { ...f.properties, v: countries[f.properties.iso] || 0 } }));
     const cities = geoCitiesList(data);
-    geoUpdateMarkers.total = cities.reduce((s, c) => s + c.n, 0) || 1;
-    const cityFC = {
-      type: "FeatureCollection",
-      features: cities.map(c => ({
+    const inCities = {};
+    cities.forEach(c => { inCities[c.cc] = (inCities[c.cc] || 0) + c.n; });
+    const points = cities.map(c => ({
+      type: "Feature",
+      properties: { key: c.key, kind: "city", city: c.city || "", region: c.region || "", cc: c.cc || "", n: c.n },
+      geometry: { type: "Point", coordinates: [c.lon, c.lat] },
+    }));
+    Object.entries(countries).forEach(([cc, n]) => {
+      const rest = n - (inCities[cc] || 0);
+      const shape = countryShape[cc];
+      if (rest > 0 && shape) points.push({
         type: "Feature",
-        properties: { key: c.key, city: c.city || "", region: c.region || "", cc: c.cc || "", n: c.n },
-        geometry: { type: "Point", coordinates: [c.lon, c.lat] },
-      })),
-    };
+        properties: { key: "paese-" + cc, kind: "country", city: geoCountryName(cc), region: "", cc, n: rest },
+        geometry: { type: "Point", coordinates: shape.center },
+      });
+    });
+    geoUpdateMarkers.total = points.reduce((s, p) => s + p.properties.n, 0) || 1;
+    geoUpdateMarkers.shapes = countryShape;
+
     const baseStyle = await geoLoadBaseStyle();
     if (!document.body.contains(mapEl)) return;
-    const landSrc = { type: "geojson", data: { type: "FeatureCollection", features }, promoteId: "iso" };
-    const citySrc = { type: "geojson", data: cityFC, cluster: true, clusterRadius: 44, clusterMaxZoom: 9,
+    const citySrc = { type: "geojson", data: { type: "FeatureCollection", features: points }, cluster: true, clusterRadius: 46, clusterMaxZoom: 9,
       clusterProperties: { n: ["+", ["get", "n"]] } };
-    const choroLayers = [
-      { id: "choro", type: "fill", source: "land", filter: [">", ["get", "v"], 0],
-        paint: {
-          "fill-color": ["interpolate", ["linear"], ["/", ["get", "v"], maxC], 0, "#4a0f19", 1, "#c8102e"],
-          "fill-opacity": ["interpolate", ["linear"], ["zoom"], 2, ["case", ["boolean", ["feature-state", "hover"], false], 0.7, 0.5], 6, 0.28, 9, 0.08, 11, 0],
-        } },
-      { id: "choro-line", type: "line", source: "land", filter: [">", ["get", "v"], 0],
-        paint: { "line-color": "#e0314f", "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0.8],
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 9, 0.2, 11, 0] } },
-    ];
     const hitLayer = { id: "cities-hit", type: "circle", source: "cities", paint: { "circle-radius": 2, "circle-opacity": 0.01, "circle-color": "#000" } };
     let style;
     if (baseStyle) {
-      style = baseStyle;
-      style.sources.land = landSrc;
+      style = geoTuneStyle(baseStyle);
       style.sources.cities = citySrc;
       const vec = Object.keys(style.sources).find(k => style.sources[k].type === "vector");
-      const extra = choroLayers.slice();
+      const extra = [];
       if (vec) {
-        // Confini amministrativi: province (livello 6) e comuni (livello 8, in Italia)
-        extra.push({ id: "admin-province", type: "line", source: vec, "source-layer": "boundary", minzoom: 6,
+        // Confini amministrativi: province (livello 6) e comuni (livello 8)
+        extra.push({ id: "admin-province", type: "line", source: vec, "source-layer": "boundary", minzoom: 7,
           filter: ["all", ["==", ["get", "admin_level"], 6], ["!=", ["get", "maritime"], 1]],
-          paint: { "line-color": "#9a9a9a", "line-opacity": 0.45, "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.3] } });
+          paint: { "line-color": "#8a8a8a", "line-opacity": 0.45, "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.6, 12, 1.3] } });
         extra.push({ id: "admin-comuni", type: "line", source: vec, "source-layer": "boundary", minzoom: 9,
           filter: ["all", ["==", ["get", "admin_level"], 8], ["!=", ["get", "maritime"], 1]],
           paint: { "line-color": "#b0b0b0", "line-dasharray": [3, 2],
-            "line-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.25, 12, 0.55],
-            "line-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 14, 1.2] } });
+            "line-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.3, 12, 0.6],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 9, 0.6, 14, 1.2] } });
       }
       let at = style.layers.findIndex(l => l.type === "symbol");
       if (at < 0) at = style.layers.length;
       style.layers.splice(at, 0, ...extra);
       style.layers.push(hitLayer);
     } else {
-      // Offline: solo i confini dei paesi salvati in locale
+      // Senza connessione: solo i confini dei paesi salvati in locale
       style = {
         version: 8,
-        sources: { land: landSrc, cities: citySrc },
+        sources: { land: { type: "geojson", data: geo }, cities: citySrc },
         layers: [
-          { id: "bg", type: "background", paint: { "background-color": "#0e0e0e" } },
+          { id: "bg", type: "background", paint: { "background-color": "#0b0e12" } },
           { id: "land-base", type: "fill", source: "land", paint: { "fill-color": "#1c1c1c" } },
-          ...choroLayers,
           { id: "borders", type: "line", source: "land", paint: { "line-color": "#3a3a3a", "line-width": 0.6 } },
           hitLayer,
         ],
       };
+      const note = document.createElement("div");
+      note.className = "geo-offline";
+      note.textContent = "Mappa dettagliata non raggiungibile: controlla la connessione.";
+      mapEl.appendChild(note);
     }
 
     const map = new maplibregl.Map({
       container: mapEl,
       bounds: GEO_VIEWS.europa,
-      fitBoundsOptions: { padding: 20 },
-      minZoom: 1,
+      fitBoundsOptions: { padding: 24 },
+      minZoom: 1.2,
       maxZoom: 17,
       dragRotate: false,
       pitchWithRotate: false,
       touchPitch: false,
       renderWorldCopies: false,
       attributionControl: false,
+      scrollZoom: false,
       style,
     });
     analyticsMap = map;
+    map.touchZoomRotate.disableRotation();
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
-    map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
-    map.on("error", () => {}); // tile mancanti: la mappa resta usabile con i confini locali
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-left");
+    map.on("error", () => {});
 
-    let hoverIso = null;
-    const setHover = (iso) => {
-      if (hoverIso === iso) return;
-      if (hoverIso) map.setFeatureState({ source: "land", id: hoverIso }, { hover: false });
-      hoverIso = iso;
-      if (iso) map.setFeatureState({ source: "land", id: iso }, { hover: true });
-    };
-    const geoTotal = Object.values(countries).reduce((s, v) => s + v, 0) || 1;
-    map.on("mousemove", "choro", (e) => {
-      const f = e.features && e.features[0];
-      if (!f) return;
-      map.getCanvas().style.cursor = "pointer";
-      setHover(f.properties.iso);
-      const v = f.properties.v;
-      geoShowTip(`<b>${geoFlag(f.properties.iso)} ${escapeHtml(geoCountryName(f.properties.iso))}</b><br><span>${v} visite · ${Math.round(v / geoTotal * 100)}% del totale</span>`, e.point.x, e.point.y - 6);
+    // Navigazione come in Mappe: due dita = sposta, pizzico = zoom, rotella del mouse = zoom
+    const box = map.getCanvasContainer();
+    const around = (e) => { const r = box.getBoundingClientRect(); return map.unproject([e.clientX - r.left, e.clientY - r.top]); };
+    box.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      geoHideTip();
+      if (e.ctrlKey) {
+        map.zoomTo(map.getZoom() - e.deltaY * 0.012, { around: around(e), duration: 0 });
+      } else if (e.deltaMode === 1 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY))) {
+        map.zoomTo(map.getZoom() + (e.deltaY < 0 ? 0.75 : -0.75), { around: around(e), duration: 220 });
+      } else {
+        map.panBy([e.deltaX, e.deltaY], { duration: 0 });
+      }
+    }, { passive: false });
+    let gStart = null;
+    box.addEventListener("gesturestart", (e) => { e.preventDefault(); gStart = map.getZoom(); });
+    box.addEventListener("gesturechange", (e) => {
+      e.preventDefault();
+      if (gStart === null) return;
+      map.zoomTo(gStart + Math.log2(e.scale || 1), { around: around(e), duration: 0 });
     });
-    map.on("mouseleave", "choro", () => { map.getCanvas().style.cursor = ""; setHover(null); geoHideTip(); });
-    map.on("click", "choro", (e) => {
-      const f = e.features && e.features[0];
-      if (f && map.getZoom() < 5) map.fitBounds(geoBBox(f.geometry), { padding: 50, maxZoom: 6.5, duration: 900 });
-    });
+    box.addEventListener("gestureend", (e) => { e.preventDefault(); gStart = null; });
+
     map.on("movestart", geoHideTip);
     map.on("data", (e) => { if (e.sourceId === "cities" && e.isSourceLoaded) geoUpdateMarkers(); });
     map.on("move", geoUpdateMarkers);
     map.on("moveend", geoUpdateMarkers);
 
-    // Vista Europa / Mondo
+    // Viste rapide
     document.querySelectorAll("#geoViewSeg button").forEach(btn => {
       btn.addEventListener("click", () => geoFitView(btn.dataset.view));
     });
 
-    // Clic sulle liste → vola sulla mappa
-    const fByIso = {};
-    features.forEach(f => { if (f.properties.iso) fByIso[f.properties.iso] = f; });
+    // Ingrandisci a tutta finestra
+    const card = mapEl.closest(".geo-card");
+    const fsBtn = document.getElementById("geoFullBtn");
+    const setFull = (on) => {
+      card.classList.toggle("is-full", on);
+      document.body.classList.toggle("geo-full-open", on);
+      if (fsBtn) fsBtn.innerHTML = on ? `${geoIcon("shrink")}<span>Riduci</span>` : `${geoIcon("expand")}<span>Ingrandisci</span>`;
+      setTimeout(() => map.resize(), 30);
+    };
+    if (fsBtn) fsBtn.addEventListener("click", () => setFull(!card.classList.contains("is-full")));
+    if (geoUpdateMarkers.escHandler) document.removeEventListener("keydown", geoUpdateMarkers.escHandler);
+    geoUpdateMarkers.escHandler = (e) => { if (e.key === "Escape" && card.classList.contains("is-full")) setFull(false); };
+    document.addEventListener("keydown", geoUpdateMarkers.escHandler);
+
+    // Clic sulle liste: vola sulla mappa
     const activate = (row) => {
       document.querySelectorAll(".geo-side .rk-row.is-active").forEach(r => r.classList.remove("is-active"));
       row.classList.add("is-active");
       if (row.dataset.geoCountry) {
-        const f = fByIso[row.dataset.geoCountry];
-        if (f) map.fitBounds(geoBBox(f.geometry), { padding: 50, maxZoom: 6.5, duration: 1000 });
+        const s = countryShape[row.dataset.geoCountry];
+        if (s) map.fitBounds(s.bbox, { padding: 50, maxZoom: 7, duration: 1000 });
       } else if (row.dataset.geoLon) {
-        map.flyTo({ center: [parseFloat(row.dataset.geoLon), parseFloat(row.dataset.geoLat)], zoom: 11, speed: 1.4 });
+        map.flyTo({ center: [parseFloat(row.dataset.geoLon), parseFloat(row.dataset.geoLat)], zoom: 11.5, speed: 1.4 });
       }
       document.querySelectorAll("#geoViewSeg button").forEach(b => b.classList.remove("on"));
     };
@@ -7210,6 +7399,7 @@
       <!-- SITI, PROGETTI, FOTO -->
       ${geoParts.bottom}
 
+      <div class="an-foot-row"><button type="button" class="an-refresh an-danger" id="btnResetAnalytics">Azzera statistiche</button></div>
       <p class="an-foot">Le visite vengono registrate dal sito e salvate in <code>analytics.json</code> nel branch <code>data</code> del repository. Città e paesi sono ricavati in modo approssimativo dalla connessione del visitatore; l'indirizzo IP non viene salvato.</p>
     `;
 

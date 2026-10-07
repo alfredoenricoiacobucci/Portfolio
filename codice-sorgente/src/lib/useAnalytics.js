@@ -38,12 +38,30 @@ function detectDevice() {
   return "desktop";
 }
 
-function sendTrack(payload) {
+const ENTRY_KEY = "aei-entry";
+
+/** true solo per il primo evento della sessione (ingresso nel sito). */
+function isEntry() {
   try {
-    // Arricchisci con referrer e device
+    if (sessionStorage.getItem(ENTRY_KEY)) return false;
+    sessionStorage.setItem(ENTRY_KEY, String(Date.now()));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sendTrack(payload, { canBeEntry = true } = {}) {
+  try {
+    // Provenienza, dispositivo e luogo si contano una volta per sessione:
+    // con la navigazione interna di Next document.referrer resta quello iniziale
+    // e verrebbe contato a ogni pagina.
     const enriched = { ...payload };
-    if (typeof document !== "undefined" && document.referrer) {
-      enriched.referrer = document.referrer;
+    if (canBeEntry && isEntry()) {
+      enriched.entry = true;
+      if (typeof document !== "undefined" && document.referrer) {
+        enriched.referrer = document.referrer;
+      }
     }
     enriched.device = detectDevice();
 
@@ -93,5 +111,5 @@ export function useTrackPhoto() {
  * Track a contact form submission (call from the contact form handler).
  */
 export function trackContact() {
-  sendTrack({ type: "contact" });
+  sendTrack({ type: "contact" }, { canBeEntry: false });
 }

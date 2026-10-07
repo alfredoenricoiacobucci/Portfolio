@@ -88,6 +88,7 @@ function emptyAnalytics() {
     cities: {},
     referrers: {},
     devices: { desktop: 0, mobile: 0, tablet: 0 },
+    sessions: 0,
   };
 }
 
@@ -103,7 +104,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "GITHUB_TOKEN not configured" });
   }
 
-  const { page, project, photo, type, referrer, device } = req.body || {};
+  const { page, project, photo, type, referrer, device, entry } = req.body || {};
   const isContact = type === "contact";
 
   const country = (req.headers["x-vercel-ip-country"] || "").toUpperCase() || null;
@@ -141,6 +142,7 @@ export default async function handler(req, res) {
     if (!analytics.cities) analytics.cities = {};
     if (!analytics.referrers) analytics.referrers = {};
     if (!analytics.devices) analytics.devices = { desktop: 0, mobile: 0, tablet: 0 };
+    if (typeof analytics.sessions !== "number") analytics.sessions = 0;
 
     const today = new Date().toISOString().slice(0, 10);
     if (!analytics.daily[today]) analytics.daily[today] = { total: 0, art: 0, pro: 0 };
@@ -157,32 +159,40 @@ export default async function handler(req, res) {
       if (project) analytics.projects[project] = (analytics.projects[project] || 0) + 1;
       if (photo) analytics.photos[photo] = (analytics.photos[photo] || 0) + 1;
 
-      if (country && country.length === 2) {
-        analytics.countries[country] = (analytics.countries[country] || 0) + 1;
-        if (city && Number.isFinite(lat) && Number.isFinite(lon)) {
-          const key = `${country}|${city}`.slice(0, 80);
-          const c = analytics.cities[key] || {
-            n: 0, city: city.slice(0, 60), region, cc: country,
-            lat: Math.round(lat * 100) / 100, lon: Math.round(lon * 100) / 100,
-          };
-          c.n++;
-          analytics.cities[key] = c;
+      // Una volta per sessione: provenienza, dispositivo, paese e città
+      if (entry) {
+        analytics.sessions++;
+        analytics.daily[today].sessions = (analytics.daily[today].sessions || 0) + 1;
+
+        let ref = "direct";
+        if (referrer && typeof referrer === "string" && referrer.length < 300) {
+          const host = referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "").toLowerCase();
+          if (host && !host.endsWith("alfredoenricoiacobucci.art") && !host.endsWith("vercel.app")) ref = host;
+        }
+        analytics.referrers[ref] = (analytics.referrers[ref] || 0) + 1;
+
+        if (device === "mobile") analytics.devices.mobile++;
+        else if (device === "tablet") analytics.devices.tablet++;
+        else analytics.devices.desktop++;
+
+        if (country && country.length === 2) {
+          analytics.countries[country] = (analytics.countries[country] || 0) + 1;
+          if (city && Number.isFinite(lat) && Number.isFinite(lon)) {
+            const key = `${country}|${city}`.slice(0, 80);
+            const c = analytics.cities[key] || {
+              n: 0, city: city.slice(0, 60), region, cc: country,
+              lat: Math.round(lat * 100) / 100, lon: Math.round(lon * 100) / 100,
+            };
+            c.n++;
+            analytics.cities[key] = c;
+          }
         }
       }
-      if (referrer && typeof referrer === "string" && referrer.length < 200) {
-        const ref = referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
-        if (ref && ref !== "alfredoenricoiacobucci.art") {
-          analytics.referrers[ref] = (analytics.referrers[ref] || 0) + 1;
-        }
-      }
-      if (device === "mobile") analytics.devices.mobile++;
-      else if (device === "tablet") analytics.devices.tablet++;
-      else analytics.devices.desktop++;
     }
 
-    // Prune daily > 90 days
+    // Conserva i dati giornalieri di oltre un anno (per il grafico "1 anno")
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 90);
+    cutoff.setDate(cutoff.getDate() - 400);
     const cutoffStr = cutoff.toISOString().slice(0, 10);
     for (const d of Object.keys(analytics.daily)) {
       if (d < cutoffStr) delete analytics.daily[d];
