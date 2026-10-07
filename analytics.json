@@ -1,36 +1,36 @@
 {
   "views": {
-    "total": 10,
+    "total": 11,
     "art": 3,
     "pro": 2,
     "landing": 4,
-    "about": 1
+    "about": 2
   },
   "projects": {},
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 10,
+      "total": 11,
       "art": 3,
       "pro": 2
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 10
+    "IT": 11
   },
   "referrers": {
     "test-verification": 1,
     "google.com": 1,
     "instagram.com": 1,
-    "direct": 1,
+    "direct": 2,
     "twitter.com": 1,
     "pinterest.com": 1,
     "linkedin.com": 1,
     "facebook.com": 1
   },
   "devices": {
-    "desktop": 5,
+    "desktop": 6,
     "mobile": 3,
     "tablet": 2
   }
