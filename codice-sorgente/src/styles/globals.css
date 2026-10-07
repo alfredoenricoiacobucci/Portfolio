@@ -193,11 +193,12 @@ h1 { line-height: 1.05; }
 /* Hover rosso su tutti gli elementi interattivi */
 .hover-red:hover { color: var(--accent) !important; }
 
-/* Press feedback: tutti i bottoni e link interattivi rispondono al click.
-   Senza questo, l'interfaccia sembra inerte al tocco. */
-:where(button, a, [role="button"]):active {
+/* Press feedback solo sui bottoni: sulle righe dei progetti (che sono link a
+   tutta larghezza) lo scale al click sdoppiava i bordi. */
+:where(button, [role="button"]):active {
   transform: scale(0.97);
 }
+.marquee-row:active { transform: none; }
 
 /* Pallino nav: rosso su hover con ingrandimento */
 .dot-nav {
