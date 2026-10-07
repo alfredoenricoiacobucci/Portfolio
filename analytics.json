@@ -1,24 +1,25 @@
 {
   "views": {
-    "total": 3,
+    "total": 4,
     "art": 0,
     "pro": 0,
-    "landing": 3,
+    "landing": 4,
     "about": 0
   },
   "projects": {},
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 3,
+      "total": 4,
       "art": 0,
       "pro": 0,
-      "sessions": 3
+      "sessions": 4
     }
   },
   "contacts": 0,
   "countries": {
-    "DE": 3
+    "DE": 3,
+    "US": 1
   },
   "cities": {
     "DE|Falkenstein": {
@@ -28,15 +29,23 @@
       "cc": "DE",
       "lat": 50.48,
       "lon": 12.37
+    },
+    "US|San Jose": {
+      "n": 1,
+      "city": "San Jose",
+      "region": "CA",
+      "cc": "US",
+      "lat": 37.34,
+      "lon": -121.89
     }
   },
   "referrers": {
-    "direct": 3
+    "direct": 4
   },
   "devices": {
-    "desktop": 3,
+    "desktop": 4,
     "mobile": 0,
     "tablet": 0
   },
-  "sessions": 3
+  "sessions": 4
 }
