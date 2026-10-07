@@ -930,7 +930,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100svh - var(--header-h, 80px))', background: 'black', marginBottom: '-1px' }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100svh - var(--header-h, 80px))', background: 'black', marginBottom: '-1px', borderTop: mode === "professional" ? `2.5px solid ${ASP.colorTextProfessional}` : `4px solid ${ASP.colorTextArtwork}` }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -1115,7 +1115,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       ) : selectedProject && selectedProject.name === "About" ? (
         <>
           {/* VIDEO — letto da content/about/ */}
-          <section key="about-video" className="w-full relative about-video-section" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
+          <section key="about-video" className="w-full relative about-video-section" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)', borderTop: mode === "professional" ? `2.5px solid ${ASP.colorTextProfessional}` : `4px solid ${ASP.colorTextArtwork}` }}>
             <div className="relative w-full h-full overflow-hidden flex items-center justify-center" style={{ background: ASP.colorBgProfessional }}>
               {selectedProject.video ? (
                 <video

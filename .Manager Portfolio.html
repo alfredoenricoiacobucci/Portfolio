@@ -6526,10 +6526,7 @@
           <h2>Analytics</h2>
           <p>Visite al portfolio · dati aggiornati alle ${hhmm}</p>
         </div>
-        <div style="display:flex;gap:8px;">
-          <a class="an-refresh" style="text-decoration:none" href="https://alfredoenricoiacobucci.art/?notrack=1" target="_blank" title="Apre il sito nel browser e smette di contare le tue visite da quel browser">Escludi le mie visite</a>
-          <button type="button" class="an-refresh" id="btnRefreshAnalytics">${anIcon("refresh", 13)}<span>Aggiorna</span></button>
-        </div>
+        <button type="button" class="an-refresh" id="btnRefreshAnalytics">${anIcon("refresh", 13)}<span>Aggiorna</span></button>
       </header>
 
       <div class="kpi-grid">
@@ -7404,7 +7401,6 @@
       ${geoParts.bottom}
 
       <div class="an-foot-row"><button type="button" class="an-refresh an-danger" id="btnResetAnalytics">Azzera statistiche</button></div>
-      <p class="an-foot"><strong style="color:var(--text2)">Le tue visite non vengono contate</strong> sui dispositivi dove hai aperto una volta <code>alfredoenricoiacobucci.art/?notrack=1</code> (sul computer basta il pulsante "Escludi le mie visite"; sul telefono apri quell'indirizzo in Safari). Per tornare a contarle: <code>?notrack=0</code>. Programmi automatici e motori di ricerca sono esclusi in automatico.</p>
       <p class="an-foot">Le visite vengono registrate dal sito e salvate in <code>analytics.json</code> nel branch <code>data</code> del repository. Città e paesi sono ricavati in modo approssimativo dalla connessione del visitatore; l'indirizzo IP non viene salvato.</p>
     `;
 
