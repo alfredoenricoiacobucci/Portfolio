@@ -17,17 +17,14 @@ const headers = () => ({
 });
 
 async function ensureDataBranch() {
-  // Check if data branch exists
   const check = await fetch(`${GH_API}/git/ref/heads/${DATA_BRANCH}`, { headers: headers() });
   if (check.ok) return true;
 
-  // Create orphan branch: get latest main SHA, create a tree with empty analytics, create commit, create ref
   const mainRef = await fetch(`${GH_API}/git/ref/heads/main`, { headers: headers() });
   if (!mainRef.ok) return false;
   const mainData = await mainRef.json();
   const mainSha = mainData.object.sha;
 
-  // Create blob with empty analytics
   const emptyData = JSON.stringify(emptyAnalytics(), null, 2) + "\n";
   const blobRes = await fetch(`${GH_API}/git/blobs`, {
     method: "POST", headers: headers(),
@@ -36,7 +33,6 @@ async function ensureDataBranch() {
   if (!blobRes.ok) return false;
   const blob = await blobRes.json();
 
-  // Create tree with just analytics.json
   const treeRes = await fetch(`${GH_API}/git/trees`, {
     method: "POST", headers: headers(),
     body: JSON.stringify({ tree: [{ path: FILE_PATH, mode: "100644", type: "blob", sha: blob.sha }] }),
@@ -44,7 +40,6 @@ async function ensureDataBranch() {
   if (!treeRes.ok) return false;
   const tree = await treeRes.json();
 
-  // Create orphan commit (no parents)
   const commitRes = await fetch(`${GH_API}/git/commits`, {
     method: "POST", headers: headers(),
     body: JSON.stringify({ message: "analytics: init", tree: tree.sha }),
@@ -52,7 +47,6 @@ async function ensureDataBranch() {
   if (!commitRes.ok) return false;
   const commit = await commitRes.json();
 
-  // Create ref
   const refRes = await fetch(`${GH_API}/git/refs`, {
     method: "POST", headers: headers(),
     body: JSON.stringify({ ref: `refs/heads/${DATA_BRANCH}`, sha: commit.sha }),
@@ -62,7 +56,11 @@ async function ensureDataBranch() {
 
 async function ghGet() {
   const res = await fetch(`${GH_API}/contents/${FILE_PATH}?ref=${DATA_BRANCH}`, { headers: headers() });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[track] ghGet error:", res.status, errText.slice(0, 200));
+    return null;
+  }
   return res.json();
 }
 
@@ -72,6 +70,10 @@ async function ghPut(content, sha, message) {
   const res = await fetch(`${GH_API}/contents/${FILE_PATH}`, {
     method: "PUT", headers: headers(), body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[track] ghPut error:", res.status, errText.slice(0, 200));
+  }
   return res.ok;
 }
 
@@ -95,19 +97,19 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-  if (!GITHUB_TOKEN) return res.status(500).json({ error: "GITHUB_TOKEN not configured" });
+  if (!GITHUB_TOKEN) {
+    console.error("[track] GITHUB_TOKEN not configured. GH_PAT:", !!process.env.GH_PAT, "GITHUB_TOKEN:", !!process.env.GITHUB_TOKEN);
+    return res.status(500).json({ error: "GITHUB_TOKEN not configured" });
+  }
 
   const { page, project, photo, type, referrer, device } = req.body || {};
   const isContact = type === "contact";
 
-  // Geo: Vercel inietta automaticamente l'header x-vercel-ip-country (ISO 3166-1 alpha-2)
   const country = (req.headers["x-vercel-ip-country"] || "").toUpperCase() || null;
 
   try {
-    // Ensure data branch exists
     await ensureDataBranch();
 
-    // Read current analytics
     const remote = await ghGet();
     let analytics = emptyAnalytics();
     let sha = null;
@@ -116,6 +118,8 @@ export default async function handler(req, res) {
       sha = remote.sha;
       try { analytics = JSON.parse(b64decode(remote.content.replace(/\n/g, ""))); }
       catch { analytics = emptyAnalytics(); }
+    } else {
+      console.error("[track] ghGet returned null or no content, sha will be null");
     }
 
     // Ensure fields
@@ -143,18 +147,15 @@ export default async function handler(req, res) {
       if (project) analytics.projects[project] = (analytics.projects[project] || 0) + 1;
       if (photo) analytics.photos[photo] = (analytics.photos[photo] || 0) + 1;
 
-      // Geo
       if (country && country.length === 2) {
         analytics.countries[country] = (analytics.countries[country] || 0) + 1;
       }
-      // Referrer
       if (referrer && typeof referrer === "string" && referrer.length < 200) {
         const ref = referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
         if (ref && ref !== "alfredoenricoiacobucci.art") {
           analytics.referrers[ref] = (analytics.referrers[ref] || 0) + 1;
         }
       }
-      // Device
       if (device === "mobile") analytics.devices.mobile++;
       else if (device === "tablet") analytics.devices.tablet++;
       else analytics.devices.desktop++;
@@ -169,11 +170,15 @@ export default async function handler(req, res) {
     }
 
     const msg = isContact ? "analytics: contatto" : `analytics: ${page || "view"}`;
-    await ghPut(JSON.stringify(analytics, null, 2) + "\n", sha, msg);
+    const writeOk = await ghPut(JSON.stringify(analytics, null, 2) + "\n", sha, msg);
+
+    if (!writeOk) {
+      return res.status(500).json({ error: "Failed to write analytics" });
+    }
 
     res.status(200).json({ ok: true });
   } catch (e) {
-    console.error("Track error:", e);
+    console.error("[track] Exception:", e.message);
     res.status(500).json({ error: e.message });
   }
 }
