@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 16,
+    "total": 17,
     "art": 7,
-    "pro": 3,
+    "pro": 4,
     "landing": 4,
     "about": 2
   },
@@ -13,18 +13,19 @@
   },
   "photos": {
     "foto-001": 1,
-    "foto-002": 1
+    "foto-002": 1,
+    "foto-003": 1
   },
   "daily": {
     "2026-10-07": {
-      "total": 16,
+      "total": 17,
       "art": 7,
-      "pro": 3
+      "pro": 4
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 16
+    "IT": 17
   },
   "referrers": {
     "test-verification": 1,
@@ -34,11 +35,11 @@
     "twitter.com": 1,
     "pinterest.com": 2,
     "linkedin.com": 1,
-    "facebook.com": 1
+    "facebook.com": 2
   },
   "devices": {
     "desktop": 9,
     "mobile": 5,
-    "tablet": 2
+    "tablet": 3
   }
 }
