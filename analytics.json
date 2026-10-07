@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 14,
+    "total": 15,
     "art": 6,
     "pro": 2,
-    "landing": 6,
+    "landing": 7,
     "about": 0
   },
   "projects": {
@@ -16,17 +16,17 @@
   },
   "daily": {
     "2026-10-07": {
-      "total": 14,
+      "total": 15,
       "art": 6,
       "pro": 2,
-      "sessions": 7
+      "sessions": 8
     }
   },
   "contacts": 0,
   "countries": {
     "DE": 3,
     "US": 1,
-    "IT": 3
+    "IT": 4
   },
   "cities": {
     "DE|Falkenstein": {
@@ -46,7 +46,7 @@
       "lon": -121.89
     },
     "IT|Ancona": {
-      "n": 3,
+      "n": 4,
       "city": "Ancona",
       "region": "57",
       "cc": "IT",
@@ -55,12 +55,12 @@
     }
   },
   "referrers": {
-    "direct": 7
+    "direct": 8
   },
   "devices": {
-    "desktop": 7,
+    "desktop": 8,
     "mobile": 0,
     "tablet": 0
   },
-  "sessions": 7
+  "sessions": 8
 }
