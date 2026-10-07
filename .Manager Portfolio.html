@@ -1092,6 +1092,11 @@
   .rk-val { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; min-width: 40px; line-height: 1.25; }
   .rk-val b { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
   .rk-val span { font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .rk-cc { background: rgba(255,255,255,0.06); color: var(--text2); font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; }
+  .rk-thumb { width: 36px; height: 36px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.04); }
+  .rk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rk-foot { padding: 8px 12px 4px; font-size: 10.5px; color: var(--text3); }
+  .cc-tag { display: inline-block; font-size: 9px; font-weight: 600; letter-spacing: 0.06em; color: var(--text2); background: rgba(255,255,255,0.08); border-radius: 3px; padding: 1px 4px; margin-right: 4px; vertical-align: 1px; }
   .rk-empty { padding: 32px 18px; font-size: 12px; color: var(--text3); line-height: 1.7; text-align: center; }
   .seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; flex-shrink: 0; }
   .seg button { font: inherit; font-size: 11.5px; font-weight: 500; color: var(--text2); background: transparent; border: 0; border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease; }
@@ -1151,7 +1156,7 @@
   <div class="topbar-right">
     <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
     <button id="btnSave" class="primary" title="⌘S">Salva e pubblica</button>
-    <button onclick="location.reload()" class="topbar-icon-btn" title="Ricarica">↻</button>
+    <button onclick="location.reload()" class="topbar-icon-btn" title="Ricarica" aria-label="Ricarica"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
   </div>
 </div>
 
@@ -1176,11 +1181,11 @@
     <div id="initTextBlock" style="opacity:0;transition:opacity 0.6s ease;">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:24px;">Manager Portfolio</div>
       <div id="initSteps" style="text-align:left;font-size:12px;color:var(--text3);line-height:2.2;">
-        <div id="initStep1" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="color:var(--text3);">●</span> Verifica token GitHub...</div>
-        <div id="initStep2" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="color:var(--text3);">●</span> Connessione al repository...</div>
-        <div id="initStep3" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="color:var(--text3);">●</span> Sincronizzazione contenuti...</div>
-        <div id="initStep4" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="color:var(--text3);">●</span> Caricamento progetti...</div>
-        <div id="initStep5" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="color:var(--text3);">●</span> Convincere le foto a mettersi in posa...</div>
+        <div id="initStep1" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Verifica token GitHub...</div>
+        <div id="initStep2" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Connessione al repository...</div>
+        <div id="initStep3" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Sincronizzazione contenuti...</div>
+        <div id="initStep4" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Caricamento progetti...</div>
+        <div id="initStep5" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Convincere le foto a mettersi in posa...</div>
       </div>
       <!-- Bottoni overlay: nascosti finché non serve -->
       <div id="initActions" style="display:none;margin-top:20px;gap:10px;justify-content:center;flex-wrap:wrap;"></div>
@@ -4827,7 +4832,7 @@
     if (_toastTimer) clearTimeout(_toastTimer);
     const isErr = type === "err";
     const dur = isErr ? 8000 : 3500;
-    t.innerHTML = (isErr ? '<button class="toast-close" onclick="this.parentNode.className=\'toast\'">✕</button>' : '') + msg;
+    t.innerHTML = (isErr ? '<button class="toast-close" aria-label="Chiudi" onclick="this.parentNode.className=\'toast\'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' : '') + msg;
     t.className = "toast show " + type;
     _toastTimer = setTimeout(() => { t.className = "toast " + type; }, dur);
   }
@@ -5177,8 +5182,8 @@
         <div class="photos-header">
           <h3>Foto del progetto</h3>
           <div class="view-toggle" id="viewToggle">
-            <button class="vt-btn active" data-view="grid" title="Griglia">▦</button>
-            <button class="vt-btn" data-view="list" title="Elenco">☰</button>
+            <button class="vt-btn active" data-view="grid" title="Griglia" aria-label="Griglia"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></button>
+            <button class="vt-btn" data-view="list" title="Elenco" aria-label="Elenco"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg></button>
           </div>
         </div>
         <div class="upload-area" id="uploadArea">
@@ -5220,7 +5225,7 @@
             <input type="text" placeholder="Data" value="${escapeHtml(esp.data || "")}" data-field="data" style="font-size:12px;padding:6px 8px;">
             <input type="text" placeholder="Luogo" value="${escapeHtml(esp.luogo || "")}" data-field="luogo" style="font-size:12px;padding:6px 8px;">
             <input type="text" placeholder="Info evento" value="${escapeHtml(esp.info || "")}" data-field="info" style="font-size:12px;padding:6px 8px;">
-            <button class="ghost" style="font-size:11px;padding:6px 8px;color:var(--red);" title="Rimuovi">✕</button>
+            <button class="ghost" style="font-size:11px;padding:6px 8px;color:var(--red);" title="Rimuovi" aria-label="Rimuovi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
           `;
           row.querySelectorAll("input").forEach(inp => {
             inp.addEventListener("input", () => {
@@ -5476,7 +5481,7 @@
             <img src="${escapeHtml(thumbUrl)}" loading="lazy" alt="" onerror="this.style.display='none'">
             <div class="landing-thumb-info">
               <span style="color:${orientColor};font-weight:600;">${orientLabel}</span>
-              ${isSelected ? '<span style="color:#4ade80;">✓</span>' : ''}
+              ${isSelected ? '<span style="color:#4ade80;display:inline-flex;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M20 6 9 17l-5-5"/></svg></span>' : ''}
             </div>
           </div>`;
       }).join("");
@@ -5652,7 +5657,7 @@
     ov.innerHTML = `
       <div class="lightbox-topbar">
         <span class="lb-name lightbox-info">${escapeHtml(photo.name)} — ${d.index + 1} / ${d.photos.length}</span>
-        <button class="lb-close" title="Chiudi (Esc)">✕</button>
+        <button class="lb-close" title="Chiudi (Esc)" aria-label="Chiudi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       ${d.photos.length > 1 ? '<button class="lightbox-arrow prev" title="Precedente (←)">‹</button>' : ''}
       ${d.photos.length > 1 ? '<button class="lightbox-arrow next" title="Successiva (→)">›</button>' : ''}
@@ -5928,7 +5933,7 @@
       card.dataset.idx = idx;
       card.innerHTML = `
         <div class="select-badge">${isSelected ? selectedPhotos.size > 1 ? Array.from(selectedPhotos).sort((a,b)=>a-b).indexOf(idx)+1 : "1" : ""}</div>
-        <div class="drag-handle">&#x2630;</div>
+        <div class="drag-handle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" style="display:block"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
         ${p.banner === photo.name ? '<div class="banner-label">Banner</div>' : ''}
         ${p.anteprima === photo.name ? '<div class="anteprima-label">Anteprima</div>' : ''}
         <img src="${photo.url}" alt="" loading="lazy" draggable="false">
@@ -6375,8 +6380,7 @@
     try { return (geoRegionNames && geoRegionNames.of(cc)) || cc; } catch (e) { return cc; }
   }
   function geoFlag(cc) {
-    if (!/^[A-Z]{2}$/.test(cc || "")) return "";
-    return String.fromCodePoint(...[...cc].map(c => 127397 + c.charCodeAt(0)));
+    return /^[A-Z]{2}$/.test(cc || "") ? `<span class="cc-tag">${cc}</span>` : "";
   }
 
   function rankListHtml(items, opts) {
@@ -6402,6 +6406,20 @@
     </section>`;
   }
 
+  function anProjectIndex() {
+    const idx = {};
+    (state.projects || []).forEach(p => {
+      const lines = String(p.titolo || "").split("\n").map(l => l.trim()).filter(Boolean);
+      const parts = lines.length > 1 ? lines.slice(0, -1) : lines;
+      idx[`${p.section}/${p.slug}`] = {
+        title: parts[0] || p.slug, where: lines.length > 1 ? lines[lines.length - 1] : "",
+        section: p.section, slug: p.slug,
+        cover: p.anteprima || p.banner || (Array.isArray(p.ordine) ? p.ordine[0] : ""),
+      };
+    });
+    return idx;
+  }
+
   function geoCitiesList(data) {
     const cities = data.cities || {};
     return Object.entries(cities)
@@ -6418,13 +6436,13 @@
     const cityTotal = cities.reduce((s, c) => s + c.n, 0);
 
     const countryItems = cEntries.map(([cc, n]) => ({
-      label: escapeHtml(geoCountryName(cc)), value: n, icon: geoFlag(cc),
+      label: escapeHtml(geoCountryName(cc)), value: n, icon: cc, iconClass: "rk-cc",
       attrs: `data-geo-country="${cc}"`,
     }));
     const cityItems = cities.slice(0, 200).map(c => ({
       label: escapeHtml(c.city || "—"),
       sub: escapeHtml([c.region, geoCountryName(c.cc)].filter(Boolean).join(" · ")),
-      value: c.n, icon: geoFlag(c.cc),
+      value: c.n, icon: escapeHtml(c.cc || ""), iconClass: "rk-cc",
       attrs: `data-geo-lon="${c.lon}" data-geo-lat="${c.lat}"`,
     }));
 
@@ -6478,32 +6496,50 @@
       const name = direct ? "Accesso diretto" : src;
       return {
         label: escapeHtml(name), sub: direct ? "link digitato o salvato" : "",
-        value: n, icon: direct ? "↗" : escapeHtml(src.replace(/^www\./, "").charAt(0)), iconClass: "rk-avatar",
+        value: n, icon: direct ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M7 17 17 7M8 7h9v9"/></svg>' : escapeHtml(src.replace(/^www\./, "").charAt(0)), iconClass: "rk-avatar",
       };
     });
 
+    const pIndex = anProjectIndex();
+    const thumb = (info, file) => info && file
+      ? `<img src="${localPhotoUrl(`codice-sorgente/contenuti/${info.section}/${info.slug}`, file)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
+      : "";
+
+    let projHidden = 0;
     const projEntries = Object.entries(data.projects || {}).sort((a, b) => b[1] - a[1]);
     const projTotal = projEntries.reduce((s, [, v]) => s + v, 0);
-    const projItems = projEntries.slice(0, 15).map(([name, n]) => {
-      const m = name.match(/^(art|pro)\/(.*)$/);
-      const section = m ? (m[1] === "art" ? "Artwork" : "Professional") : "";
-      return { label: escapeHtml(m ? m[2] : name), sub: section, value: n };
+    const projItems = [];
+    projEntries.forEach(([key, n]) => {
+      const info = pIndex[key.replace(/^\/+/, "")];
+      if (!info) { projHidden++; return; }
+      projItems.push({
+        label: escapeHtml(info.title),
+        sub: escapeHtml([info.section === "art" ? "Artwork" : "Professional", info.where].filter(Boolean).join(" · ")),
+        value: n, icon: thumb(info, info.cover), iconClass: "rk-thumb",
+      });
     });
 
+    let photoHidden = 0;
     const photoEntries = Object.entries(data.photos || {}).sort((a, b) => b[1] - a[1]);
     const photoTotal = photoEntries.reduce((s, [, v]) => s + v, 0);
-    const photoItems = photoEntries.slice(0, 15).map(([path, n]) => {
-      const parts = path.split("/");
-      const file = parts.pop();
-      const proj = parts.filter(p => p !== "art" && p !== "pro").join(" / ");
-      return { label: escapeHtml(file), sub: escapeHtml(proj), value: n };
+    const photoItems = [];
+    photoEntries.forEach(([path, n]) => {
+      const m = String(path).replace(/^https?:\/\/[^/]+/, "").match(/^\/?projects\/(art|pro)\/([^/]+)\/([^/?#]+)/);
+      const info = m ? pIndex[`${m[1]}/${m[2]}`] : null;
+      if (!info) { photoHidden++; return; }
+      const file = decodeURIComponent(m[3]);
+      photoItems.push({
+        label: escapeHtml(info.title), sub: escapeHtml(file),
+        value: n, icon: thumb(info, file), iconClass: "rk-thumb",
+      });
     });
+    const hiddenNote = (k) => k ? `<div class="rk-foot">${k} ${k === 1 ? "voce" : "voci"} di prova o di progetti eliminati non ${k === 1 ? "mostrata" : "mostrate"}</div>` : "";
 
     const bottom = `
       <div class="bot-grid">
         ${anCard("Siti di provenienza", refTotal ? `${refTotal} visite` : "", rankListHtml(refItems, { total: refTotal, color: "#60a5fa", empty: "Nessun dato sui siti di provenienza." }))}
-        ${anCard("Progetti più visti", projTotal ? `${projTotal} visite` : "", rankListHtml(projItems, { total: projTotal, color: "var(--red)", empty: "Nessun progetto visitato ancora." }))}
-        ${anCard("Foto più viste", photoTotal ? `${photoTotal} aperture` : "", rankListHtml(photoItems, { total: photoTotal, color: "#a78bfa", empty: "Nessuna foto aperta ancora." }))}
+        ${anCard("Progetti più visti", projTotal ? `${projTotal} visite` : "", rankListHtml(projItems, { total: projTotal, color: "var(--red)", empty: "Nessun progetto visitato ancora." }) + hiddenNote(projHidden))}
+        ${anCard("Foto più viste", photoTotal ? `${photoTotal} aperture` : "", rankListHtml(photoItems, { total: photoTotal, color: "#a78bfa", empty: "Nessuna foto aperta ancora." }) + hiddenNote(photoHidden))}
       </div>`;
 
     return { geo, bottom };
@@ -6523,6 +6559,19 @@
       document.head.appendChild(s);
     });
     return geoLoadMapLibre._p;
+  }
+
+  const GEO_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+  async function geoLoadBaseStyle() {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(GEO_STYLE_URL, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      const st = await r.json();
+      return st && st.sources && Array.isArray(st.layers) ? st : null;
+    } catch (e) { return null; }
   }
 
   async function geoLoadCountries() {
@@ -6656,7 +6705,58 @@
         geometry: { type: "Point", coordinates: [c.lon, c.lat] },
       })),
     };
-    const tiles = (layer) => ["a", "b", "c", "d"].map(s => `https://${s}.basemaps.cartocdn.com/${layer}/{z}/{x}/{y}@2x.png`);
+    const baseStyle = await geoLoadBaseStyle();
+    if (!document.body.contains(mapEl)) return;
+    const landSrc = { type: "geojson", data: { type: "FeatureCollection", features }, promoteId: "iso" };
+    const citySrc = { type: "geojson", data: cityFC, cluster: true, clusterRadius: 44, clusterMaxZoom: 9,
+      clusterProperties: { n: ["+", ["get", "n"]] } };
+    const choroLayers = [
+      { id: "choro", type: "fill", source: "land", filter: [">", ["get", "v"], 0],
+        paint: {
+          "fill-color": ["interpolate", ["linear"], ["/", ["get", "v"], maxC], 0, "#4a0f19", 1, "#c8102e"],
+          "fill-opacity": ["interpolate", ["linear"], ["zoom"], 2, ["case", ["boolean", ["feature-state", "hover"], false], 0.7, 0.5], 6, 0.28, 9, 0.08, 11, 0],
+        } },
+      { id: "choro-line", type: "line", source: "land", filter: [">", ["get", "v"], 0],
+        paint: { "line-color": "#e0314f", "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0.8],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 9, 0.2, 11, 0] } },
+    ];
+    const hitLayer = { id: "cities-hit", type: "circle", source: "cities", paint: { "circle-radius": 2, "circle-opacity": 0.01, "circle-color": "#000" } };
+    let style;
+    if (baseStyle) {
+      style = baseStyle;
+      style.sources.land = landSrc;
+      style.sources.cities = citySrc;
+      const vec = Object.keys(style.sources).find(k => style.sources[k].type === "vector");
+      const extra = choroLayers.slice();
+      if (vec) {
+        // Confini amministrativi: province (livello 6) e comuni (livello 8, in Italia)
+        extra.push({ id: "admin-province", type: "line", source: vec, "source-layer": "boundary", minzoom: 6,
+          filter: ["all", ["==", ["get", "admin_level"], 6], ["!=", ["get", "maritime"], 1]],
+          paint: { "line-color": "#9a9a9a", "line-opacity": 0.45, "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.3] } });
+        extra.push({ id: "admin-comuni", type: "line", source: vec, "source-layer": "boundary", minzoom: 9,
+          filter: ["all", ["==", ["get", "admin_level"], 8], ["!=", ["get", "maritime"], 1]],
+          paint: { "line-color": "#b0b0b0", "line-dasharray": [3, 2],
+            "line-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.25, 12, 0.55],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 14, 1.2] } });
+      }
+      let at = style.layers.findIndex(l => l.type === "symbol");
+      if (at < 0) at = style.layers.length;
+      style.layers.splice(at, 0, ...extra);
+      style.layers.push(hitLayer);
+    } else {
+      // Offline: solo i confini dei paesi salvati in locale
+      style = {
+        version: 8,
+        sources: { land: landSrc, cities: citySrc },
+        layers: [
+          { id: "bg", type: "background", paint: { "background-color": "#0e0e0e" } },
+          { id: "land-base", type: "fill", source: "land", paint: { "fill-color": "#1c1c1c" } },
+          ...choroLayers,
+          { id: "borders", type: "line", source: "land", paint: { "line-color": "#3a3a3a", "line-width": 0.6 } },
+          hitLayer,
+        ],
+      };
+    }
 
     const map = new maplibregl.Map({
       container: mapEl,
@@ -6669,40 +6769,13 @@
       touchPitch: false,
       renderWorldCopies: false,
       attributionControl: false,
-      style: {
-        version: 8,
-        sources: {
-          land: { type: "geojson", data: { type: "FeatureCollection", features }, promoteId: "iso" },
-          base: { type: "raster", tiles: tiles("dark_nolabels"), tileSize: 256, maxzoom: 19,
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>' },
-          labels: { type: "raster", tiles: tiles("dark_only_labels"), tileSize: 256, maxzoom: 19 },
-          cities: { type: "geojson", data: cityFC, cluster: true, clusterRadius: 44, clusterMaxZoom: 9,
-            clusterProperties: { n: ["+", ["get", "n"]] } },
-        },
-        layers: [
-          { id: "bg", type: "background", paint: { "background-color": "#0e0e0e" } },
-          { id: "land-base", type: "fill", source: "land", paint: { "fill-color": "#1c1c1c" } },
-          { id: "base", type: "raster", source: "base", paint: { "raster-fade-duration": 150 } },
-          { id: "choro", type: "fill", source: "land", filter: [">", ["get", "v"], 0],
-            paint: {
-              "fill-color": ["interpolate", ["linear"], ["/", ["get", "v"], maxC], 0, "#4a0f19", 1, "#c8102e"],
-              "fill-opacity": ["interpolate", ["linear"], ["zoom"], 2, ["case", ["boolean", ["feature-state", "hover"], false], 0.75, 0.55], 6, 0.3, 9, 0.08, 11, 0],
-            } },
-          { id: "borders", type: "line", source: "land",
-            paint: { "line-color": "#3a3a3a", "line-width": ["interpolate", ["linear"], ["zoom"], 2, 0.4, 6, 1], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 8, 0] } },
-          { id: "choro-line", type: "line", source: "land", filter: [">", ["get", "v"], 0],
-            paint: { "line-color": "#e0314f", "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0.8],
-              "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.9, 9, 0.25] } },
-          { id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.95 } },
-          { id: "cities-hit", type: "circle", source: "cities", paint: { "circle-radius": 2, "circle-opacity": 0.01, "circle-color": "#000" } },
-        ],
-      },
+      style,
     });
     analyticsMap = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
-    map.on("error", () => {}); // tile mancanti (offline): si vede comunque la mappa base dei confini
+    map.on("error", () => {}); // tile mancanti: la mappa resta usabile con i confini locali
 
     let hoverIso = null;
     const setHover = (iso) => {
@@ -6770,7 +6843,7 @@
     if (data && data._branchMissing) {
       container.innerHTML = `
         <div style="text-align:center; padding: 60px 20px;">
-          <div style="font-size:32px;margin-bottom:16px;">📊</div>
+          <div style="display:flex;justify-content:center;margin-bottom:16px;color:var(--text3);"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M3 3v18h18"/><path d="M8 17v-6M13 17V7M18 17v-4"/></svg></div>
           <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">Analytics non ancora inizializzate</h3>
           <p style="font-size:13px;color:var(--text3);max-width:420px;margin:0 auto 20px;line-height:1.6;">
             Il branch <code style="background:var(--bg);padding:2px 6px;border-radius:3px;">data</code> non esiste nel repository.
@@ -6889,7 +6962,7 @@
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
           <div style="font-size: 32px; font-weight: 700; color: var(--text);">${totalViews}</div>
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Visite totali</div>
-          ${trendPct !== 0 ? `<div style="font-size: 10px; margin-top: 6px; color: ${trendUp ? "#4ade80" : "#f87171"};">${trendUp ? "&#9650;" : "&#9660;"} ${Math.abs(trendPct)}% vs sett. prec.</div>` : ""}
+          ${trendPct !== 0 ? `<div style="font-size: 10px; margin-top: 6px; color: ${trendUp ? "#4ade80" : "#f87171"};">${trendUp ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="m18 15-6-6-6 6"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="m6 9 6 6 6-6"/></svg>'} ${Math.abs(trendPct)}% vs sett. prec.</div>` : ""}
         </div>
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
           <div style="font-size: 32px; font-weight: 700; color: var(--text);">${uniqueSessions || totalViews}</div>
@@ -7048,35 +7121,35 @@
         <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Link rapidi</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <a href="https://alfredoenricoiacobucci.art" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
-            <span style="font-size:20px;">&#127760;</span>
+            <span style="display:flex;color:var(--text2);flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text);">Sito live</div>
               <div style="font-size:10px;color:var(--text3);margin-top:1px;">alfredoenricoiacobucci.art</div>
             </div>
           </a>
           <a href="https://github.com/${escapeHtml(repo)}" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
-            <span style="font-size:20px;">&#128025;</span>
+            <span style="display:flex;color:var(--text2);flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg></span>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text);">GitHub</div>
               <div style="font-size:10px;color:var(--text3);margin-top:1px;">Repository codice sorgente</div>
             </div>
           </a>
           <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/deployments" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
-            <span style="font-size:20px;">&#9650;</span>
+            <span style="display:flex;color:var(--text2);flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M12 4 21 20H3z"/></svg></span>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text);">Vercel Deploys</div>
               <div style="font-size:10px;color:var(--text3);margin-top:1px;">Stato e cronologia deploy</div>
             </div>
           </a>
           <a href="https://vercel.com/alfredoenricoiacobuccis-projects/portfolio/logs" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
-            <span style="font-size:20px;">&#128220;</span>
+            <span style="display:flex;color:var(--text2);flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text);">Vercel Logs</div>
               <div style="font-size:10px;color:var(--text3);margin-top:1px;">Log runtime e build</div>
             </div>
           </a>
           <a href="https://app.web3forms.com" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
-            <span style="font-size:20px;">&#9993;</span>
+            <span style="display:flex;color:var(--text2);flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text);">Web3Forms</div>
               <div style="font-size:10px;color:var(--text3);margin-top:1px;">Gestione mail di contatto</div>
@@ -7220,8 +7293,8 @@
             msg += "\n\nPRO — Sito:\n" + sitePro.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
           }
           msg += "\n\nSalva e pubblica per aggiornare il sito.";
-          if (!data.fileExists) msg += "\n\n⚠ Il file contenuti.json NON esiste sul server!";
-          if (data.parseError) msg += "\n\n⚠ Errore parsing: " + data.parseError;
+          if (!data.fileExists) msg += "\n\nAttenzione: il file contenuti.json NON esiste sul server!";
+          if (data.parseError) msg += "\n\nAttenzione, errore di lettura: " + data.parseError;
           toast("Ordine diverso — controlla il dettaglio.", "err");
           alert(msg);
         }
@@ -7593,7 +7666,7 @@
 
   function initStepOk(n) {
     const el = document.getElementById("initStep" + n);
-    if (el) { const dot = el.querySelector("span"); if (dot) { dot.style.color = "#4ade80"; dot.textContent = "✓"; } }
+    if (el) { const dot = el.querySelector("span"); if (dot) { dot.style.color = "#4ade80"; dot.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M20 6 9 17l-5-5"/></svg>'; } }
   }
 
   function initStepFail(n, msg) {
@@ -7601,7 +7674,7 @@
     const el = document.getElementById("initStep" + n);
     if (el) {
       const dot = el.querySelector("span");
-      if (dot) { dot.style.color = "#f87171"; dot.textContent = "✗"; }
+      if (dot) { dot.style.color = "#f87171"; dot.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M18 6 6 18M6 6l12 12"/></svg>'; }
       if (msg) el.innerHTML += ` <span style="color:#f87171;font-size:11px;">${msg}</span>`;
     }
   }
