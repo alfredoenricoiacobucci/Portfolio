@@ -1,22 +1,23 @@
 {
   "views": {
-    "total": 10,
-    "art": 3,
+    "total": 11,
+    "art": 4,
     "pro": 2,
     "landing": 5,
     "about": 0
   },
   "projects": {
     "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 1,
-    "art/xylella": 1
+    "art/xylella": 1,
+    "art/le-radici-ca-tieni": 1
   },
   "photos": {
     "/projects/art/xylella/xylella-2.jpg": 1
   },
   "daily": {
     "2026-10-07": {
-      "total": 10,
-      "art": 3,
+      "total": 11,
+      "art": 4,
       "pro": 2,
       "sessions": 5
     }
