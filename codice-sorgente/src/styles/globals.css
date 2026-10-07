@@ -51,7 +51,7 @@
   --border: #f8f4ed;
   /* #c8102e su #0a0a0a dà solo 3.4:1 e non passa AA: sul fondo scuro
      l'accento va schiarito. #e8364f dà 4.8:1 restando lo stesso rosso. */
-  --accent: #e8364f;
+  --accent: #c8102e;
   --error: #ff6b7f;
 }
 
@@ -458,8 +458,8 @@ body {
   animation: marqueeStaggerIn 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 @keyframes marqueeStaggerIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Footer: allineato a sinistra come il resto dell'impostazione editoriale,

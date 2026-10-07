@@ -963,7 +963,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 </h2>
               ))}
               {selectedProject.datePlace && (
-                <p className="banner-title font-display text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "var(--accent)" }}>
+                <p className="banner-title font-display text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
                   {selectedProject.datePlace}
                 </p>
               )}
@@ -1397,18 +1397,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       )}
 
       {/* FOOTER */}
-      <footer
-        className={`site-footer w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} space-y-2 md:space-y-0`}
-        style={{
-          borderColor: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork,
-          paddingLeft: ASP.marginLaterale + "%",
-          paddingRight: ASP.marginLaterale + "%",
-        }}
-      >
-        <div className="font-bold" style={{ fontSize: "var(--text-sm)" }}>
-          {S.COPYRIGHT} © {new Date().getFullYear()}
-        </div>
-        <div className="md:max-w-md md:text-right" style={{ fontSize: "var(--text-xs)" }}>
+      <footer className={`w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#f8f4ed" : "#000000" }}>
+        <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
+        <div className="text-xs font-normal">
           {S.DISCLAIMER}
         </div>
       </footer>
