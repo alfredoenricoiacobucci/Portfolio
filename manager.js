@@ -5,7 +5,7 @@ var sa = Application.currentApplication();
 sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
-var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading
+var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil
 _ROOTS=['/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI','/Users/enricoiacobucci/Desktop/Portfolio AEI']
 _root=next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
 if not _root:
@@ -17,9 +17,11 @@ def git_sync(msg="auto: media update"):
    cwd=os.path.join(os.getcwd(),'codice-sorgente')
    subprocess.run(['git','add','-A'],cwd=cwd,capture_output=True,timeout=10)
    subprocess.run(['git','commit','-m',msg],cwd=cwd,capture_output=True,timeout=10)
-   subprocess.run(['git','pull','--rebase'],cwd=cwd,capture_output=True,timeout=30)
-   subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
-  except:pass
+   r=subprocess.run(['git','pull','--rebase'],cwd=cwd,capture_output=True,timeout=30)
+   if r.returncode!=0:sys.stderr.write('git pull failed: '+r.stderr.decode(errors='replace')+'\\n')
+   r=subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
+   if r.returncode!=0:sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n')
+  except Exception as e:sys.stderr.write('git_sync error: '+str(e)+'\\n')
  threading.Thread(target=run,daemon=True).start()
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
@@ -54,8 +56,9 @@ class H(http.server.SimpleHTTPRequestHandler):
     self.send_response(404);self.end_headers();return
    ext=safe.rsplit('.',1)[-1].lower()
    ct={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif','mp4':'video/mp4','mov':'video/quicktime'}.get(ext,'application/octet-stream')
-   self.send_response(200);self.send_header('Content-Type',ct);self.end_headers()
-   with open(safe,'rb') as fp:self.wfile.write(fp.read())
+   fsize=os.path.getsize(safe)
+   self.send_response(200);self.send_header('Content-Type',ct);self.send_header('Content-Length',str(fsize));self.end_headers()
+   with open(safe,'rb') as fp:shutil.copyfileobj(fp,self.wfile,65536)
   else:super().do_GET()
  def do_POST(self):
   if self.path=='/upload':
@@ -165,7 +168,7 @@ win.setFrameDisplay(vf, true);
 
 // WKWebView with no cache + injected JS overrides
 var cfg = $.WKWebViewConfiguration.alloc.init;
-var injectCode = "(function(){var s=document.createElement('style');s.textContent='html,body{background:#1c1c1c!important}';document.documentElement.appendChild(s)})();window.confirm=function(){return true};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();document.execCommand('undo');}},true);";
+var injectCode = "(function(){var s=document.createElement('style');s.textContent='html,body{background:#1c1c1c!important}';document.documentElement.appendChild(s)})();window.confirm=function(msg){return new Promise(function(resolve){var bg=document.createElement('div');bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99998;display:flex;align-items:center;justify-content:center;';var box=document.createElement('div');box.style.cssText='background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:24px;max-width:420px;width:90%;color:#fff;font-size:14px;font-family:Inter,system-ui,sans-serif;';box.innerHTML='<div style=\"margin-bottom:16px;line-height:1.5;\">'+msg.replace(/\\n/g,'<br>')+'</div><div style=\"display:flex;gap:8px;justify-content:flex-end;\"><button id=\"_cfNo\" style=\"padding:8px 16px;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;cursor:pointer;font-size:12px;\">Annulla</button><button id=\"_cfYes\" style=\"padding:8px 16px;background:#c8102e;border:1px solid #c8102e;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;\">Conferma</button></div>';bg.appendChild(box);document.body.appendChild(bg);document.getElementById('_cfYes').onclick=function(){bg.remove();resolve(true);};document.getElementById('_cfNo').onclick=function(){bg.remove();resolve(false);};bg.onclick=function(e){if(e.target===bg){bg.remove();resolve(false);}};})};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();document.execCommand('undo');}},true);";
 var userScript = $.WKUserScript.alloc.initWithSourceInjectionTimeForMainFrameOnly(injectCode, $.WKUserScriptInjectionTimeAtDocumentStart, true);
 cfg.userContentController.addUserScript(userScript);
 

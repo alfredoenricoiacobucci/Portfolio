@@ -20,6 +20,16 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  ::-webkit-scrollbar-corner { background: transparent; }
   body {
     background: var(--bg);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -34,27 +44,63 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--bg);
+    background: rgba(10,10,10,0.82);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    backdrop-filter: blur(16px) saturate(1.6);
     border-bottom: 1px solid var(--border);
-    padding: 14px 24px;
+    padding: 0 20px;
+    height: 48px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    transition: box-shadow 0.3s ease;
+  }
+  .topbar.scrolled {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 100%;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   .topbar h1 {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.02em;
     color: var(--red);
+    margin-right: 4px;
   }
-  .topbar .sep { flex: 1; }
+  .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .topbar-icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .topbar-icon-btn:active { transform: scale(0.96); }
   .status-badge {
     font-size: 11px;
     padding: 4px 10px;
     border-radius: 4px;
-    border: 1px solid var(--border);
-    color: var(--text2);
+    border: 1px solid rgba(200,16,46,0.3);
+    color: var(--red);
+    background: rgba(200,16,46,0.08);
   }
   .status-badge.ok { border-color: #1e4620; color: #4ade80; }
   .status-badge.err { border-color: #4a1f1f; color: #f87171; }
@@ -64,24 +110,46 @@
     background: transparent;
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 8px 16px;
-    font-size: 12px;
-    letter-spacing: 0.03em;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: inherit;
-    transition: all 180ms ease;
+    transition: all 180ms cubic-bezier(0.32, 0.72, 0, 1);
+    line-height: 1.3;
   }
-  button:hover { border-color: var(--red); }
+  button:hover { border-color: var(--red); background: rgba(200,16,46,0.06); }
+  button:active { transform: scale(0.96); }
   button.primary {
     background: var(--red);
     border-color: var(--red);
     color: #fff;
     font-weight: 600;
+    padding: 7px 18px;
   }
-  button.primary:hover { background: #a50d25; }
-  button.ghost { color: var(--text2); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary:hover {
+    background: #a50d25;
+    box-shadow: 0 4px 16px rgba(200,16,46,0.3);
+  }
+  button.primary:active { transform: scale(0.96); box-shadow: none; }
+  button.ghost { color: var(--text2); border-color: transparent; }
+  button.ghost:hover { background: rgba(255,255,255,0.04); border-color: var(--border-hi); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  button.sm { padding: 4px 10px; font-size: 11px; }
+  button.danger { color: #ff4d4d; border-color: rgba(255,77,77,0.3); }
+  button.danger:hover { background: rgba(255,77,77,0.08); border-color: #ff4d4d; }
+  .btn-spinner {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---- DEPLOY BAR ---- */
   #deployBar {
@@ -107,6 +175,21 @@
     border-radius: 3px;
     background: var(--red);
     transition: width 600ms ease-out, background-color 400ms ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .deploy-bar-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: deployPulse 1.8s ease-in-out infinite;
+  }
+  .deploy-bar-fill.success::after,
+  .deploy-bar-fill.error::after { animation: none; opacity: 0; }
+  @keyframes deployPulse {
+    0%, 100% { transform: translateX(-100%); }
+    50%      { transform: translateX(100%); }
   }
   .deploy-bar-fill.success { background: #4ade80; }
   .deploy-bar-fill.error { background: #f87171; }
@@ -122,29 +205,34 @@
   .main {
     display: grid;
     grid-template-columns: 280px 1fr;
-    min-height: calc(100vh - 61px);
+    min-height: calc(100vh - 48px);
   }
   .sidebar {
     background: var(--bg2);
     border-right: 1px solid var(--border);
-    padding: 18px 0;
+    padding: 12px 0;
     overflow-y: auto;
-    height: calc(100vh - 61px);
+    height: calc(100vh - 48px);
     position: sticky;
-    top: 61px;
+    top: 48px;
     align-self: start;
     -webkit-overflow-scrolling: touch;
   }
   .sidebar .section-title {
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: var(--text3);
-    padding: 14px 20px 6px;
+    padding: 18px 18px 8px;
     font-weight: 600;
   }
+  .sidebar .section-title:not(:first-child) {
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
   .sidebar .item {
-    padding: 9px 20px;
+    padding: 10px 18px;
     cursor: pointer;
     border-left: 2px solid transparent;
     color: var(--text2);
@@ -153,14 +241,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background 0.12s ease, color 0.12s ease;
+    transition: background 0.18s ease, color 0.18s ease, border-left-color 0.22s ease, padding-left 0.18s ease;
   }
-  .sidebar .item:hover { background: #1a1a1a; color: var(--text); }
+  .sidebar .item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
   .sidebar .item.active {
-    background: #1a1a1a;
+    background: rgba(200,16,46,0.06);
     border-left-color: var(--red);
     color: var(--text);
     font-weight: 500;
+    padding-left: 22px;
   }
   .sidebar .item[draggable="true"] { cursor: grab; }
   .sidebar .item[draggable="true"]:active { cursor: grabbing; }
@@ -176,22 +265,28 @@
     font-size: 10px;
     color: var(--text3);
     font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 22px;
+    text-align: center;
   }
   .sidebar .add-btn {
-    margin: 14px 20px;
-    width: calc(100% - 40px);
+    margin: 16px 18px;
+    width: calc(100% - 36px);
     padding: 10px;
     font-size: 12px;
     color: var(--red);
-    border: 1px dashed var(--red);
+    border: 1px dashed rgba(200,16,46,0.4);
     background: transparent;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
-  .sidebar .add-btn:hover { background: rgba(200,16,46,0.08); }
+  .sidebar .add-btn:hover { background: rgba(200,16,46,0.08); border-color: var(--red); }
 
   .content {
-    padding: 30px 40px 60px;
+    padding: 28px 36px 60px;
     max-width: 1200px;
     width: 100%;
   }
@@ -206,53 +301,56 @@
 
   .project-header {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
   }
   .project-header .badge {
     display: inline-block;
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 3px;
-    margin-bottom: 6px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
   }
-  .badge.art { color: #a78bfa; border: 1px solid #a78bfa; }
-  .badge.pro { color: #60a5fa; border: 1px solid #60a5fa; }
-  .badge.about { color: #fbbf24; border: 1px solid #fbbf24; }
+  .badge.art { color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); background: rgba(167,139,250,0.08); }
+  .badge.pro { color: #60a5fa; border: 1px solid rgba(96,165,250,0.4); background: rgba(96,165,250,0.08); }
+  .badge.about { color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); background: rgba(251,191,36,0.08); }
   .project-header .title {
-    font-size: 17px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--text);
+    letter-spacing: -0.01em;
   }
   .project-header .slug {
     font-size: 11px;
     color: var(--text3);
     font-family: "SF Mono", Menlo, monospace;
-    margin-top: 3px;
+    margin-top: 4px;
+    opacity: 0.7;
   }
-  .project-header .actions { margin-left: auto; display: flex; gap: 8px; }
+  .project-header .actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 
   .field {
-    margin-bottom: 22px;
+    margin-bottom: 24px;
   }
   .field label {
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     color: var(--text3);
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
   .field .hint {
     font-size: 11px;
     color: var(--text3);
-    margin-top: 4px;
+    margin-top: 6px;
+    line-height: 1.4;
   }
   input[type="text"], textarea, select {
     width: 100%;
@@ -260,15 +358,17 @@
     color: var(--text);
     border: 1px solid var(--border);
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
-    border-radius: 4px;
+    border-radius: 6px;
     outline: none;
     line-height: 1.55;
     resize: vertical;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
   input[type="text"]:focus, textarea:focus, select:focus {
     border-color: var(--red);
+    box-shadow: 0 0 0 2px rgba(200,16,46,0.15);
   }
   textarea { min-height: 80px; }
   textarea.large { min-height: 220px; }
@@ -335,58 +435,74 @@
     width: 100%;
   }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
   /* ---- PHOTOS ---- */
   .photos-section {
-    margin-top: 28px;
-    padding-top: 24px;
+    margin-top: 32px;
+    padding-top: 28px;
     border-top: 1px solid var(--border);
   }
   .photos-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
   }
   .photos-header h3 {
     font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     color: var(--text3);
     font-weight: 600;
   }
   .photos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
   }
   .photo-card {
     position: relative;
     aspect-ratio: 1;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
+                box-shadow 0.22s ease,
+                border-color 0.22s ease,
+                opacity 0.15s ease;
     -webkit-user-select: none;
+    animation: cardFadeIn 0.35s ease-out both;
   }
-  .photo-card:active { cursor: grabbing; }
+  .photo-card:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-color: var(--border-hi);
+    z-index: 2;
+  }
+  .photo-card:active { cursor: grabbing; transform: scale(0.97); }
   .photo-card * { -webkit-user-drag: none; }
   .photo-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+  .photo-card:hover img { transform: scale(1.04); }
+  @keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .photo-card .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
     opacity: 0;
-    transition: opacity 180ms;
+    transition: opacity 0.22s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -603,16 +719,28 @@
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(0,0,0,0.95);
+    background: rgba(0,0,0,0.88);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 200ms;
+    transition: opacity 0.28s ease;
     padding: 0 70px;
   }
   .lightbox-overlay.show { opacity: 1; }
+  .lightbox-overlay img {
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .lightbox-overlay.show img {
+    animation: lbImgIn 0.36s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  @keyframes lbImgIn {
+    from { transform: scale(0.92); opacity: 0.5; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
   .lightbox-topbar {
     width: 100%;
     max-width: 86vw;
@@ -691,65 +819,112 @@
   }
 
   /* Focal point editor */
+  .focal-wrap {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-top: 10px;
+  }
   .focal-editor {
-    margin-top: 8px;
     position: relative;
     display: inline-block;
     cursor: crosshair;
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid var(--border);
+    flex-shrink: 0;
   }
   .focal-editor img {
     display: block;
-    max-width: 100%;
+    max-width: 280px;
     max-height: 200px;
     pointer-events: none;
   }
-  .focal-editor .focal-strip {
-    position: absolute;
-    left: 0; right: 0;
-    height: 25%;
-    border: 2px solid #3b82f6;
-    background: rgba(59,130,246,0.12);
-    pointer-events: none;
-    transition: top 0.15s ease;
-  }
   .focal-editor .focal-dot {
     position: absolute;
-    width: 12px; height: 12px;
+    width: 14px; height: 14px;
     border-radius: 50%;
     border: 2px solid #fff;
-    background: #3b82f6;
+    background: var(--red);
     transform: translate(-50%, -50%);
     pointer-events: none;
-    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    box-shadow: 0 0 6px rgba(0,0,0,0.6);
     transition: left 0.15s ease, top 0.15s ease;
   }
   .focal-editor .focal-crossh,
   .focal-editor .focal-crossv {
     position: absolute;
-    background: rgba(59,130,246,0.4);
+    background: rgba(200,16,46,0.35);
     pointer-events: none;
     transition: left 0.15s ease, top 0.15s ease;
   }
   .focal-editor .focal-crossh { left:0; right:0; height:1px; }
   .focal-editor .focal-crossv { top:0; bottom:0; width:1px; }
+  /* Live site preview */
+  .focal-preview {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .focal-preview-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    font-weight: 600;
+  }
+  .focal-preview-strip {
+    width: 100%;
+    height: 72px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+    background: #000;
+  }
+  .focal-preview-strip img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: object-position 0.2s ease;
+  }
+  .focal-preview-strip .fp-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.45) 100%);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+  }
+  .focal-preview-strip .fp-marquee {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .upload-area {
     border: 2px dashed var(--border-hi);
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 30px;
     text-align: center;
     color: var(--text3);
     cursor: pointer;
-    transition: all 180ms;
+    transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     margin-bottom: 14px;
   }
   .upload-area:hover, .upload-area.drag {
     border-color: var(--red);
     color: var(--red);
     background: rgba(200,16,46,0.04);
+    transform: scale(1.01);
+    box-shadow: 0 0 0 4px rgba(200,16,46,0.08);
   }
   .upload-area .hint2 { font-size: 11px; margin-top: 4px; }
 
@@ -757,21 +932,33 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.65);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    backdrop-filter: blur(8px) saturate(1.2);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     padding: 20px;
+    opacity: 0;
+    transition: opacity 0.22s ease;
   }
-  .modal-backdrop.show { display: flex; }
+  .modal-backdrop.show { display: flex; opacity: 1; }
   .modal {
     background: var(--bg2);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 24px;
     max-width: 480px;
     width: 100%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    transform: scale(0.94) translateY(8px);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.22s ease;
+  }
+  .modal-backdrop.show .modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
   }
   .modal h2 {
     font-size: 14px;
@@ -783,10 +970,6 @@
   .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
   .modal a { color: var(--red); text-decoration: underline; }
 
-  .token-status {
-    font-size: 11px;
-    color: var(--text3);
-  }
 
   /* ---- NOTIFICATIONS ---- */
   .toast {
@@ -797,209 +980,71 @@
     border: 1px solid var(--border);
     border-left: 3px solid var(--red);
     padding: 12px 18px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 12px;
     color: var(--text);
     max-width: 360px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-    transform: translateX(400px);
-    transition: transform 300ms ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    transform: translateY(16px) scale(0.95);
+    opacity: 0;
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.22s ease;
     z-index: 2000;
   }
-  .toast.show { transform: translateX(0); }
+  .toast.show { transform: translateY(0) scale(1); opacity: 1; }
   .toast.ok { border-left-color: #4ade80; }
   .toast.err { border-left-color: #f87171; }
+  .toast-close {
+    position: absolute; top: 4px; right: 6px;
+    background: none; border: none; color: var(--text3);
+    font-size: 14px; cursor: pointer; padding: 2px 4px; line-height: 1;
+  }
+  .toast-close:hover { color: var(--text); border: none; }
 
   /* ---- TOPBAR NAV ---- */
   .topbar-nav {
     display: flex;
     gap: 0;
-    margin-left: 24px;
+    height: 100%;
+    margin-left: 8px;
   }
   .topbar-nav-btn {
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
-    padding: 8px 18px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    padding: 0 16px;
+    height: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
     color: var(--text3);
     cursor: pointer;
     border-radius: 0;
-    transition: all 180ms;
+    transition: color 0.18s ease, border-bottom-color 0.18s ease, background 0.18s ease;
+    position: relative;
   }
-  .topbar-nav-btn:hover { color: var(--text); border-color: transparent; }
+  .topbar-nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .topbar-nav-btn:active { transform: none; }
   .topbar-nav-btn.active {
     color: var(--text);
     border-bottom-color: var(--red);
+    font-weight: 600;
   }
 
   /* ---- FULL-WIDTH SECTIONS ---- */
   .section-full {
-    min-height: calc(100vh - 61px);
+    min-height: calc(100vh - 48px);
     padding: 0;
   }
   .section-full-inner {
-    max-width: 960px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 32px 32px 80px;
+    padding: 32px 40px 80px;
   }
   .section-full-inner.wide {
     max-width: none;
-    padding: 28px 32px 80px;
+    padding: 32px 40px 80px;
   }
 
-  /* ---- ASPETTO PREVIEW ---- */
-  .aspetto-layout {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 20px;
-    align-items: start;
-  }
-  .aspetto-controls {
-    min-width: 0;
-    max-height: calc(100vh - 160px);
-    overflow-y: auto;
-    padding-right: 4px;
-    position: sticky;
-    top: 80px;
-  }
-  .aspetto-controls::-webkit-scrollbar { width: 3px; }
-  .aspetto-controls::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .aspetto-preview-wrap {
-    position: sticky;
-    top: 80px;
-    height: calc(100vh - 130px);
-    display: flex;
-    flex-direction: column;
-  }
-  .aspetto-preview {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    background: var(--panel);
-    flex: 1;
-    position: relative;
-    min-height: 500px;
-  }
-  .aspetto-preview iframe {
-    width: 1440px;
-    height: 900px;
-    border: none;
-    transform-origin: top left;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  /* Grid overlay */
-  .grid-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    pointer-events: none;
-    display: none;
-  }
-  .grid-overlay.active { display: block; }
-  .grid-overlay .guide {
-    position: absolute;
-    pointer-events: auto;
-  }
-  .grid-overlay .guide-v {
-    width: 1px;
-    top: 0;
-    bottom: 0;
-    cursor: ew-resize;
-  }
-  .grid-overlay .guide-v::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -4px;
-    width: 9px;
-  }
-  .grid-overlay .guide-h {
-    height: 1px;
-    left: 0;
-    right: 0;
-    pointer-events: none;
-    border-top: 1px dashed rgba(200,16,46,0.35);
-  }
-  .grid-overlay .guide-h-label {
-    position: absolute;
-    right: 8px;
-    background: rgba(200,16,46,0.85);
-    color: #fff;
-    font-size: 9px;
-    padding: 1px 5px;
-    border-radius: 2px;
-    white-space: nowrap;
-    pointer-events: none;
-    transform: translateY(-50%);
-  }
-  .grid-overlay .guide-center {
-    border-left: 1px dashed rgba(200,16,46,0.35);
-    left: 50%;
-    cursor: default;
-    pointer-events: none;
-  }
-  .grid-overlay .guide-margin {
-    border-left: 1px solid rgba(200,16,46,0.7);
-  }
-  .grid-overlay .guide-margin.snap {
-    border-left: 2px solid rgba(200,16,46,1);
-  }
-  .grid-overlay .guide-label {
-    position: absolute;
-    top: 8px;
-    background: rgba(200,16,46,0.85);
-    color: #fff;
-    font-size: 9px;
-    padding: 1px 5px;
-    border-radius: 2px;
-    white-space: nowrap;
-    pointer-events: none;
-    transform: translateX(-50%);
-  }
-  /* Fullscreen preview */
-  .aspetto-fullscreen {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: #000;
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-  }
-  .aspetto-fullscreen iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    transform: none !important;
-  }
-  .aspetto-fullscreen .fs-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10000;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 12px;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-  }
-  .aspetto-fullscreen .fs-close:hover {
-    background: rgba(255,255,255,0.15);
-  }
-  @media (max-width: 1100px) {
-    .aspetto-layout { grid-template-columns: 1fr; }
-    .aspetto-controls { position: relative; top: 0; max-height: none; }
-    .aspetto-preview-wrap { position: relative; top: 0; order: -1; height: 500px; }
-  }
 
   @media (max-width: 780px) {
     .main { grid-template-columns: 1fr; }
@@ -1014,29 +1059,37 @@
   .toggle-pill input { opacity:0; width:0; height:0; position:absolute; }
   .toggle-pill .pill-track { position:absolute; inset:0; background:#555; border-radius:18px; transition:background 0.2s; cursor:pointer; }
   .toggle-pill .pill-track::before { content:""; position:absolute; width:14px; height:14px; left:2px; top:2px; background:#aaa; border-radius:50%; transition:transform 0.2s, background 0.2s; }
-  .toggle-pill input:checked + .pill-track { background:#c8102e; }
+  .toggle-pill input:checked + .pill-track { background:var(--red); }
   .toggle-pill input:checked + .pill-track::before { transform:translateX(16px); background:#fff; }
+
+  /* ---- SECTION FADE TRANSITION ---- */
+  .section-fade { animation: sectionFadeIn 0.32s ease-out both; }
+  @keyframes sectionFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1 style="display:flex;align-items:center;line-height:1;">
-    <svg width="22" height="22" viewBox="-4 -4 208 208" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 8.2 2.4 C 5.1 4.9,1.4 0.9,0.0 15.0 C -1.4 29.1,-0.8 70.9,0.0 87.0 C 0.8 103.1,2.5 104.5,4.7 111.7 C 6.9 118.9,10.1 124.6,13.3 130.0 C 16.5 135.4,13.6 133.6,24.0 144.2 C 34.4 154.8,63.6 184.2,75.5 193.5 C 87.4 202.8,89.0 199.0,95.1 199.8 C 101.2 200.6,107.3 199.6,112.2 198.6 C 117.1 197.5,113.9 202.6,124.5 193.5 C 135.1 184.4,164.5 157.0,176.0 144.2 C 187.5 131.4,189.4 126.3,193.4 116.7 C 197.4 107.1,199.3 104.8,200.0 86.7 C 200.7 68.6,200.0 22.8,197.8 8.4 C 195.6 -6.0,191.3 1.4,187.0 0.5 C 182.7 -0.4,177.4 0.6,171.9 3.3 C 166.4 6.0,158.4 12.1,153.9 16.9 C 149.4 21.6,153.9 30.4,145.0 31.8 C 136.1 33.2,115.5 25.1,100.5 25.1 C 85.5 25.1,64.1 33.2,55.0 31.8 C 45.9 30.4,49.4 21.0,46.1 16.9 C 42.8 12.8,39.7 9.9,35.1 7.1 C 30.5 4.3,22.8 1.0,18.3 0.2 C 13.8 -0.6,11.2 -0.1,8.2 2.4 Z M 16.4 16.9 C 17.7 8.8,21.6 17.8,24.3 19.4 C 27.0 21.0,29.7 22.2,32.9 26.7 C 36.1 31.2,40.7 42.8,43.3 46.6 C 45.9 50.4,39.8 50.6,48.3 49.8 C 56.8 48.9,82.4 42.6,94.5 41.5 C 106.6 40.4,111.2 41.7,120.7 43.1 C 130.2 44.5,145.7 49.2,151.7 49.8 C 157.7 50.4,154.1 50.4,156.7 46.6 C 159.3 42.8,162.7 31.7,167.1 26.7 C 171.5 21.7,180.6 9.7,183.3 16.6 C 186.0 23.5,188.6 57.6,183.6 68.1 C 178.6 78.6,162.7 74.6,153.6 79.8 C 144.5 85.0,135.8 91.5,129.2 99.1 C 122.5 106.7,117.1 115.5,113.7 125.6 C 110.3 135.7,112.3 153.9,108.7 159.7 C 105.1 165.5,95.5 165.5,91.9 160.3 C 88.3 155.1,90.4 138.3,87.2 128.4 C 84.0 118.5,79.1 109.0,72.4 100.9 C 65.7 92.9,56.4 85.6,47.1 80.1 C 37.8 74.6,21.5 78.6,16.4 68.1 C 11.3 57.6,15.1 25.0,16.4 16.9 Z M 16.7 85.2 C 18.9 82.9,29.3 87.8,32.9 90.8 C 36.5 93.8,36.2 100.1,38.5 103.5 C 40.8 106.9,44.4 109.6,46.8 111.4 C 49.2 113.2,50.3 113.6,53.1 114.5 C 55.9 115.4,61.0 114.8,63.8 117.1 C 66.6 119.4,68.1 124.2,69.8 128.4 C 71.5 132.6,73.0 138.2,73.9 142.0 C 74.8 145.8,75.0 146.2,75.2 151.2 C 75.4 156.1,81.4 174.7,74.9 171.7 C 68.4 168.7,43.5 140.9,36.0 133.2 C 28.5 125.5,32.4 130.0,29.7 125.3 C 27.0 120.6,21.8 111.4,19.6 104.7 C 17.4 98.0,14.5 87.5,16.7 85.2 Z M 183.3 85.2 C 186.0 85.3,183.8 88.1,183.3 91.5 C 182.8 94.9,182.3 100.1,180.1 105.7 C 177.9 111.3,173.0 120.7,170.3 125.3 C 167.6 129.9,171.5 125.4,164.0 133.2 C 156.5 141.0,131.6 169.0,125.1 172.0 C 118.6 175.0,124.6 156.5,124.8 151.2 C 125.0 145.9,125.5 144.2,126.4 140.4 C 127.3 136.6,128.6 132.3,130.2 128.4 C 131.8 124.5,133.4 119.4,136.2 117.1 C 139.0 114.8,144.4 115.4,147.2 114.5 C 150.0 113.6,150.8 113.2,153.2 111.4 C 155.6 109.6,159.2 106.9,161.5 103.5 C 163.8 100.1,163.5 93.8,167.1 90.8 C 170.7 87.8,180.6 85.1,183.3 85.2 Z" fill="#c8102e" fill-rule="evenodd"/>
-    </svg>
-  </h1>
-  <nav class="topbar-nav" id="topbarNav">
-    <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
-    <button class="topbar-nav-btn" data-section="aspetto">Aspetto</button>
-    <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
-    <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
-  </nav>
-  <div class="sep"></div>
-  <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
-  <span id="tokenStatus" class="token-status">Token: <span id="tokenState">non impostato</span></span>
-  <button id="btnSave" class="primary">Salva e pubblica</button>
-  <button onclick="location.reload()" title="Ricarica" style="padding:6px 10px;font-size:15px;line-height:1;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;">↻</button>
+  <div class="topbar-left">
+    <h1 style="display:flex;align-items:center;line-height:1;">
+      <svg width="20" height="20" viewBox="-4 -4 208 208" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 8.2 2.4 C 5.1 4.9,1.4 0.9,0.0 15.0 C -1.4 29.1,-0.8 70.9,0.0 87.0 C 0.8 103.1,2.5 104.5,4.7 111.7 C 6.9 118.9,10.1 124.6,13.3 130.0 C 16.5 135.4,13.6 133.6,24.0 144.2 C 34.4 154.8,63.6 184.2,75.5 193.5 C 87.4 202.8,89.0 199.0,95.1 199.8 C 101.2 200.6,107.3 199.6,112.2 198.6 C 117.1 197.5,113.9 202.6,124.5 193.5 C 135.1 184.4,164.5 157.0,176.0 144.2 C 187.5 131.4,189.4 126.3,193.4 116.7 C 197.4 107.1,199.3 104.8,200.0 86.7 C 200.7 68.6,200.0 22.8,197.8 8.4 C 195.6 -6.0,191.3 1.4,187.0 0.5 C 182.7 -0.4,177.4 0.6,171.9 3.3 C 166.4 6.0,158.4 12.1,153.9 16.9 C 149.4 21.6,153.9 30.4,145.0 31.8 C 136.1 33.2,115.5 25.1,100.5 25.1 C 85.5 25.1,64.1 33.2,55.0 31.8 C 45.9 30.4,49.4 21.0,46.1 16.9 C 42.8 12.8,39.7 9.9,35.1 7.1 C 30.5 4.3,22.8 1.0,18.3 0.2 C 13.8 -0.6,11.2 -0.1,8.2 2.4 Z M 16.4 16.9 C 17.7 8.8,21.6 17.8,24.3 19.4 C 27.0 21.0,29.7 22.2,32.9 26.7 C 36.1 31.2,40.7 42.8,43.3 46.6 C 45.9 50.4,39.8 50.6,48.3 49.8 C 56.8 48.9,82.4 42.6,94.5 41.5 C 106.6 40.4,111.2 41.7,120.7 43.1 C 130.2 44.5,145.7 49.2,151.7 49.8 C 157.7 50.4,154.1 50.4,156.7 46.6 C 159.3 42.8,162.7 31.7,167.1 26.7 C 171.5 21.7,180.6 9.7,183.3 16.6 C 186.0 23.5,188.6 57.6,183.6 68.1 C 178.6 78.6,162.7 74.6,153.6 79.8 C 144.5 85.0,135.8 91.5,129.2 99.1 C 122.5 106.7,117.1 115.5,113.7 125.6 C 110.3 135.7,112.3 153.9,108.7 159.7 C 105.1 165.5,95.5 165.5,91.9 160.3 C 88.3 155.1,90.4 138.3,87.2 128.4 C 84.0 118.5,79.1 109.0,72.4 100.9 C 65.7 92.9,56.4 85.6,47.1 80.1 C 37.8 74.6,21.5 78.6,16.4 68.1 C 11.3 57.6,15.1 25.0,16.4 16.9 Z M 16.7 85.2 C 18.9 82.9,29.3 87.8,32.9 90.8 C 36.5 93.8,36.2 100.1,38.5 103.5 C 40.8 106.9,44.4 109.6,46.8 111.4 C 49.2 113.2,50.3 113.6,53.1 114.5 C 55.9 115.4,61.0 114.8,63.8 117.1 C 66.6 119.4,68.1 124.2,69.8 128.4 C 71.5 132.6,73.0 138.2,73.9 142.0 C 74.8 145.8,75.0 146.2,75.2 151.2 C 75.4 156.1,81.4 174.7,74.9 171.7 C 68.4 168.7,43.5 140.9,36.0 133.2 C 28.5 125.5,32.4 130.0,29.7 125.3 C 27.0 120.6,21.8 111.4,19.6 104.7 C 17.4 98.0,14.5 87.5,16.7 85.2 Z M 183.3 85.2 C 186.0 85.3,183.8 88.1,183.3 91.5 C 182.8 94.9,182.3 100.1,180.1 105.7 C 177.9 111.3,173.0 120.7,170.3 125.3 C 167.6 129.9,171.5 125.4,164.0 133.2 C 156.5 141.0,131.6 169.0,125.1 172.0 C 118.6 175.0,124.6 156.5,124.8 151.2 C 125.0 145.9,125.5 144.2,126.4 140.4 C 127.3 136.6,128.6 132.3,130.2 128.4 C 131.8 124.5,133.4 119.4,136.2 117.1 C 139.0 114.8,144.4 115.4,147.2 114.5 C 150.0 113.6,150.8 113.2,153.2 111.4 C 155.6 109.6,159.2 106.9,161.5 103.5 C 163.8 100.1,163.5 93.8,167.1 90.8 C 170.7 87.8,180.6 85.1,183.3 85.2 Z" fill="#c8102e" fill-rule="evenodd"/>
+      </svg>
+    </h1>
+    <nav class="topbar-nav" id="topbarNav">
+      <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
+      <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
+      <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
+    <button id="btnSave" class="primary" title="⌘S">Salva e pubblica</button>
+    <button onclick="location.reload()" class="topbar-icon-btn" title="Ricarica">↻</button>
+  </div>
 </div>
 
 <!-- DEPLOY PROGRESS BAR -->
@@ -1096,11 +1149,6 @@
   <main id="content" class="content empty-state">
     Seleziona un progetto dalla lista a sinistra.
   </main>
-</div>
-
-<!-- SEZIONE ASPETTO (full width) -->
-<div id="sectionAspetto" class="section-full" style="display:none;">
-  <div id="aspettoContent" class="section-full-inner wide"></div>
 </div>
 
 <!-- SEZIONE ANALYTICS (full width) -->
@@ -4402,6 +4450,12 @@
 (function() {
   "use strict";
 
+  // ========== TOPBAR SCROLL SHADOW ==========
+  const _topbar = document.querySelector(".topbar");
+  window.addEventListener("scroll", () => {
+    _topbar.classList.toggle("scrolled", window.scrollY > 8);
+  }, { passive: true });
+
   // ========== STATE ==========
   const STORAGE_TOKEN = "editor-github-token";
   const STORAGE_REPO = "editor-github-repo";
@@ -4445,6 +4499,7 @@
 
   function updateTokenStatus() {
     const el = document.getElementById("tokenState");
+    if (!el) return;
     el.textContent = getToken() ? "impostato" : "non impostato";
     el.style.color = getToken() ? "#4ade80" : "#f87171";
   }
@@ -4703,11 +4758,15 @@
   }
 
   // ========== TOAST ==========
+  let _toastTimer = null;
   function toast(msg, type = "") {
     const t = document.getElementById("toast");
-    t.textContent = msg;
+    if (_toastTimer) clearTimeout(_toastTimer);
+    const isErr = type === "err";
+    const dur = isErr ? 8000 : 3500;
+    t.innerHTML = (isErr ? '<button class="toast-close" onclick="this.parentNode.className=\'toast\'">✕</button>' : '') + msg;
     t.className = "toast show " + type;
-    setTimeout(() => { t.className = "toast " + type; }, 3500);
+    _toastTimer = setTimeout(() => { t.className = "toast " + type; }, dur);
   }
 
   // ========== SLUG ==========
@@ -4728,12 +4787,21 @@
     document.querySelectorAll(".topbar-nav-btn").forEach(b => {
       b.classList.toggle("active", b.dataset.section === section);
     });
-    document.getElementById("sectionContenuti").style.display = section === "contenuti" ? "" : "none";
-    document.getElementById("sectionAspetto").style.display = section === "aspetto" ? "" : "none";
-    document.getElementById("sectionAnalytics").style.display = section === "analytics" ? "" : "none";
-    document.getElementById("sectionImpostazioni").style.display = section === "impostazioni" ? "" : "none";
+    const ids = ["sectionContenuti","sectionAnalytics","sectionImpostazioni"];
+    const map = { contenuti: ids[0], analytics: ids[1], impostazioni: ids[2] };
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (id === map[section]) {
+        el.style.display = "";
+        el.classList.remove("section-fade");
+        void el.offsetWidth; // force reflow
+        el.classList.add("section-fade");
+      } else {
+        el.style.display = "none";
+        el.classList.remove("section-fade");
+      }
+    });
 
-    if (section === "aspetto") renderAspetto();
     if (section === "analytics") loadAndRenderAnalytics();
     if (section === "impostazioni") renderImpostazioni();
   }
@@ -5014,13 +5082,31 @@
       </div>
       `}
 
-      <div class="field" id="focalPointSection" style="display:none;margin-top:8px;">
+      <div class="field" id="focalPointSection" style="display:none;">
         <label>Punto focale anteprima <span id="focalCoords" style="font-weight:normal;color:var(--text3);font-size:11px;"></span></label>
-        <div class="focal-editor" id="focalEditor">
-          <img id="focalImg" src="" alt="">
-          <div class="focal-crossh" id="focalCrossH"></div>
-          <div class="focal-crossv" id="focalCrossV"></div>
-          <div class="focal-dot" id="focalDot"></div>
+        <div class="focal-wrap">
+          <div class="focal-editor" id="focalEditor">
+            <img id="focalImg" src="" alt="">
+            <div class="focal-crossh" id="focalCrossH"></div>
+            <div class="focal-crossv" id="focalCrossV"></div>
+            <div class="focal-dot" id="focalDot"></div>
+          </div>
+          <div class="focal-preview">
+            <span class="focal-preview-label">Anteprima sul sito</span>
+            <div class="focal-preview-strip">
+              <img id="focalPreviewImg" src="" alt="">
+              <div class="fp-overlay">
+                <span class="fp-marquee" id="focalPreviewTitle"></span>
+              </div>
+            </div>
+            <div class="focal-preview-strip" style="height:48px;border-radius:4px;">
+              <img id="focalPreviewImgSm" src="" alt="">
+              <div class="fp-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0.5) 100%);">
+                <span class="fp-marquee" style="font-size:9px;opacity:0.7;" id="focalPreviewTitleSm"></span>
+              </div>
+            </div>
+            <span style="font-size:10px;color:var(--text3);line-height:1.3;">Clicca sull'immagine per spostare il punto focale. Il banner sul sito verrà ritagliato centrandosi su questo punto.</span>
+          </div>
         </div>
       </div>
 
@@ -5071,7 +5157,7 @@
             <input type="text" placeholder="Data" value="${escapeHtml(esp.data || "")}" data-field="data" style="font-size:12px;padding:6px 8px;">
             <input type="text" placeholder="Luogo" value="${escapeHtml(esp.luogo || "")}" data-field="luogo" style="font-size:12px;padding:6px 8px;">
             <input type="text" placeholder="Info evento" value="${escapeHtml(esp.info || "")}" data-field="info" style="font-size:12px;padding:6px 8px;">
-            <button class="ghost" style="font-size:11px;padding:6px 8px;color:#c8102e;" title="Rimuovi">✕</button>
+            <button class="ghost" style="font-size:11px;padding:6px 8px;color:var(--red);" title="Rimuovi">✕</button>
           `;
           row.querySelectorAll("input").forEach(inp => {
             inp.addEventListener("input", () => {
@@ -5103,6 +5189,10 @@
       const crossH = document.getElementById("focalCrossH");
       const crossV = document.getElementById("focalCrossV");
       const coords = document.getElementById("focalCoords");
+      const prevImg = document.getElementById("focalPreviewImg");
+      const prevImgSm = document.getElementById("focalPreviewImgSm");
+      const prevTitle = document.getElementById("focalPreviewTitle");
+      const prevTitleSm = document.getElementById("focalPreviewTitleSm");
       if (!p.anteprima) { sec.style.display = "none"; return; }
       // Find the anteprima photo URL
       const photos = photosByProject[key] || [];
@@ -5117,6 +5207,15 @@
       crossH.style.top = pos.y + "%";
       crossV.style.left = pos.x + "%";
       coords.textContent = `(${Math.round(pos.x)}%, ${Math.round(pos.y)}%)`;
+      // Update live preview strips
+      const objPos = `${pos.x}% ${pos.y}%`;
+      prevImg.src = antPhoto.url;
+      prevImg.style.objectPosition = objPos;
+      prevImgSm.src = antPhoto.url;
+      prevImgSm.style.objectPosition = objPos;
+      const titleText = p.titolo ? p.titolo.split("\n")[0] : key;
+      prevTitle.textContent = titleText + "  —  " + titleText + "  —  " + titleText;
+      prevTitleSm.textContent = titleText;
     }
     document.getElementById("focalEditor").addEventListener("click", (e) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -5143,8 +5242,8 @@
     };
 
     // Delete
-    document.getElementById("btnDelete").onclick = () => {
-      if (!confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella del progetto verrà rimossa da GitHub al prossimo Salva.`)) return;
+    document.getElementById("btnDelete").onclick = async () => {
+      if (!await confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella del progetto verrà rimossa da GitHub al prossimo Salva.`)) return;
       state.projects = state.projects.filter(x => !(x.section === section && x.slug === slug));
       markDirty();
       currentKey = null;
@@ -5396,6 +5495,14 @@
     if (!photos.length) return;
     lightboxData = { photos, index: startIndex || 0, ...options };
     renderLightbox();
+    // Preload adiacenti all'apertura
+    const idx = lightboxData.index;
+    const len = photos.length;
+    if (len > 1) {
+      [((idx - 1 + len) % len), ((idx + 1) % len)].forEach(i => {
+        const img = new Image(); img.src = photos[i].url;
+      });
+    }
   }
 
   function closeLightbox() {
@@ -5432,6 +5539,13 @@
     if (info) info.textContent = `${photo.name} — ${lightboxData.index + 1} / ${len}`;
     updateLightboxBannerBtn();
     updateLightboxAnteprimaBtn();
+    // Preload immagini adiacenti
+    const prevIdx = (lightboxData.index - 1 + len) % len;
+    const nextIdx = (lightboxData.index + 1) % len;
+    [prevIdx, nextIdx].forEach(i => {
+      const img = new Image();
+      img.src = lightboxData.photos[i].url;
+    });
   }
 
   function updateLightboxBannerBtn() {
@@ -5590,8 +5704,7 @@
   }
 
   async function fetchPhotos(key) {
-    const isLocal = await checkLocalServer();
-    if (!isLocal && !getToken()) {
+    if (!await storageReady(true)) {
       document.getElementById("photosGrid").innerHTML =
         '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire le foto.</div>';
       return;
@@ -5599,19 +5712,7 @@
     const [section, slug] = key.split("/");
     const path = `codice-sorgente/contenuti/${section}/${slug}`;
     try {
-      if (isLocal) {
-        const names = await localListFiles(path);
-        const imgs = names.filter(n => /\.(jpg|jpeg|png|webp|gif)$/i.test(n));
-        photosByProject[key] = imgs.map(n => ({
-          name: n, sha: null, url: localPhotoUrl(path, n)
-        }));
-      } else {
-        const items = await ghListDir(path);
-        const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
-        photosByProject[key] = imgs.map(i => ({
-          name: i.name, sha: i.sha, url: photoRawUrl(path, i.name)
-        }));
-      }
+      photosByProject[key] = await storageListMedia(path);
       if (currentKey === key) renderPhotosGrid(key);
       renderSidebar();
       if (window._updateFocalPointUI) window._updateFocalPointUI();
@@ -5622,25 +5723,14 @@
   }
 
   async function fetchAboutMedia() {
-    const isLocal = await checkLocalServer();
-    if (!isLocal && !getToken()) {
+    if (!await storageReady(true)) {
       document.getElementById("photosGrid").innerHTML =
         '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire i media.</div>';
       return;
     }
     const aboutPath = "codice-sorgente/contenuti/about";
     try {
-      if (isLocal) {
-        const names = await localListFiles(aboutPath);
-        aboutMedia = names.filter(n => /\.(jpg|jpeg|png|webp|gif|mp4|mov)$/i.test(n)).map(n => ({
-          name: n, sha: null, url: localPhotoUrl(aboutPath, n)
-        }));
-      } else {
-        const items = await ghListDir(aboutPath);
-        aboutMedia = items.filter(i => i.type === "file").map(i => ({
-          name: i.name, sha: i.sha, url: photoRawUrl(aboutPath, i.name)
-        }));
-      }
+      aboutMedia = await storageListMedia(aboutPath, /\.(jpg|jpeg|png|webp|gif|mp4|mov)$/i);
       if (currentKey === "aboutArt" || currentKey === "aboutPro") renderAboutMediaGrid();
     } catch(e) {
       document.getElementById("photosGrid").innerHTML =
@@ -5650,8 +5740,8 @@
 
   // Fetch conteggio foto di TUTTI i progetti (per popolare sidebar all'avvio)
   async function fetchAllPhotoCounts() {
+    if (!await storageReady(true)) return;
     const isLocal = await checkLocalServer();
-    if (!isLocal && !getToken()) return;
     const toFetch = state.projects.filter(p => {
       const key = `${p.section}/${p.slug}`;
       return !photosByProject[key] || photosByProject[key].length === 0;
@@ -5663,15 +5753,7 @@
         const key = `${p.section}/${p.slug}`;
         const basePath = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
         try {
-          if (isLocal) {
-            const names = await localListFiles(basePath);
-            const imgs = names.filter(n => /\.(jpg|jpeg|png|webp|gif)$/i.test(n));
-            photosByProject[key] = imgs.map(n => ({ name: n, sha: null, url: localPhotoUrl(basePath, n) }));
-          } else {
-            const items = await ghListDir(basePath);
-            const imgs = items.filter(i => i.type === "file" && /\.(jpg|jpeg|png|webp|gif)$/i.test(i.name));
-            photosByProject[key] = imgs.map(i => ({ name: i.name, sha: i.sha, url: photoRawUrl(basePath, i.name) }));
-          }
+          photosByProject[key] = await storageListMedia(basePath);
         } catch { /* cartella vuota o inesistente */ }
       }));
       renderSidebar();
@@ -5740,33 +5822,23 @@
       const names = indices.map(i => sorted[i].name);
       // Eliminazione diretta senza conferma
       const deletedNames = [];
-      const isLocal = await checkLocalServer();
       toast(`Eliminazione di ${indices.length} foto…`, "");
-      if (isLocal) {
-        // Batch: elimina tutte in parallelo (max 10 alla volta)
-        for (let b = 0; b < indices.length; b += 10) {
-          const batch = indices.slice(b, b + 10);
-          await Promise.all(batch.map(async (i) => {
-            const photo = sorted[i];
-            try {
-              const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
-              if (r.ok) deletedNames.push(photo.name);
-            } catch {}
-          }));
-        }
-        // Un solo git sync alla fine
-        fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({message: `auto: delete ${deletedNames.length} foto da ${slug}`}) }).catch(()=>{});
-      } else {
-        for (const i of indices) {
+      // Batch di 10 alla volta (storageDeleteFile gestisce local/remote)
+      for (let b = 0; b < indices.length; b += 10) {
+        const batch = indices.slice(b, b + 10);
+        await Promise.all(batch.map(async (i) => {
           const photo = sorted[i];
           try {
-            await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
-              `editor: delete ${section}/${slug}/${photo.name}`);
+            await storageDeleteFile(
+              `codice-sorgente/contenuti/${section}/${slug}/${photo.name}`,
+              photo.sha,
+              `editor: delete ${section}/${slug}/${photo.name}`
+            );
             deletedNames.push(photo.name);
           } catch (err) { toast("Errore: " + photo.name + " — " + err.message, "err"); }
-        }
+        }));
       }
+      storageGitSync(`auto: delete ${deletedNames.length} foto da ${slug}`);
       if (deletedNames.length > 0) {
         const nameSet = new Set(deletedNames);
         photosByProject[key] = sorted.filter(x => !nameSet.has(x.name));
@@ -5844,14 +5916,8 @@
               const ph = sorted.find(x => x.name === name);
               if (!ph) return;
               try {
-                const isLocal = await checkLocalServer();
-                if (isLocal) {
-                  const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${name}`}) });
-                  if (!r.ok) throw new Error("delete failed");
-                } else {
-                  await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${name}`, ph.sha,
-                    `editor: delete ${section}/${slug}/${name}`);
-                }
+                const fullPath = `codice-sorgente/contenuti/${section}/${slug}/${name}`;
+                await storageDeleteFile(fullPath, ph.sha, `editor: delete ${section}/${slug}/${name}`);
                 photosByProject[key] = photosByProject[key].filter(x => x.name !== name);
                 if (p.ordine) p.ordine = p.ordine.filter(n => n !== name);
                 lightboxData.photos = lightboxData.photos.filter(x => x.name !== name);
@@ -5954,16 +6020,9 @@
       };
       card.querySelector('[data-act="delete"]').onclick = async (e) => {
         e.stopPropagation();
-        // Eliminazione diretta senza conferma
         try {
-          const isLocal = await checkLocalServer();
-          if (isLocal) {
-            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`}) });
-            if (!r.ok) throw new Error("delete failed");
-          } else {
-            await ghDelete(`codice-sorgente/contenuti/${section}/${slug}/${photo.name}`, photo.sha,
-              `editor: delete ${section}/${slug}/${photo.name}`);
-          }
+          const fullPath = `codice-sorgente/contenuti/${section}/${slug}/${photo.name}`;
+          await storageDeleteFile(fullPath, photo.sha, `editor: delete ${section}/${slug}/${photo.name}`);
           photosByProject[key] = sorted.filter(x => x.name !== photo.name);
           if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
           markDirty();
@@ -5973,6 +6032,7 @@
           toast("Foto eliminata.", "ok");
         } catch(err) { toast("Errore: " + err.message, "err"); }
       };
+      card.style.animationDelay = `${Math.min(idx * 30, 600)}ms`;
       frag.appendChild(card);
     });
 
@@ -6063,16 +6123,10 @@
       };
       card.querySelector('[data-act="delete"]').onclick = async (e) => {
         e.stopPropagation();
-        if (!confirm(`Eliminare ${media.name}?`)) return;
+        if (!await confirm(`Eliminare ${media.name}?`)) return;
         try {
-          const isLocal = await checkLocalServer();
-          if (isLocal) {
-            const r = await fetch("/delete-file", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({path:`codice-sorgente/contenuti/about/${media.name}`}) });
-            if (!r.ok) throw new Error("delete failed");
-          } else {
-            await ghDelete(`codice-sorgente/contenuti/about/${media.name}`, media.sha,
-              `editor: delete about/${media.name}`);
-          }
+          await storageDeleteFile(`codice-sorgente/contenuti/about/${media.name}`, media.sha,
+            `editor: delete about/${media.name}`);
           aboutMedia = aboutMedia.filter(x => x.name !== media.name);
           markDirty();
           renderAboutMediaGrid();
@@ -6086,7 +6140,8 @@
   // ========== ANALYTICS ==========
   let analyticsCache = null;
 
-  async function fetchAnalyticsData() {
+  async function fetchAnalyticsData(forceRefresh) {
+    if (analyticsCache && !forceRefresh) return analyticsCache;
     // Leggi dal branch "data" (separato da main per evitare conflitti)
     try {
       const token = getToken();
@@ -6103,10 +6158,53 @@
           return analyticsCache;
         }
       }
+      if (res.status === 404) {
+        // Branch "data" non esiste — dobbiamo crearlo
+        return { _branchMissing: true };
+      }
     } catch (e) {
       console.warn("Errore lettura analytics:", e.message);
+      return { _error: e.message };
     }
     return { views: { total: 0, art: 0, pro: 0, landing: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0 };
+  }
+
+  async function initDataBranch() {
+    const token = getToken();
+    const repo = getRepo();
+    const ghApi = `https://api.github.com/repos/${repo}`;
+    const hdrs = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json", "Content-Type": "application/json" };
+    try {
+      // Check se esiste già
+      const check = await fetch(`${ghApi}/git/ref/heads/data`, { headers: hdrs });
+      if (check.ok) { toast("Il branch data esiste già. Ricarica.", "ok"); return true; }
+      // Prendi SHA di main
+      const mainRef = await fetch(`${ghApi}/git/ref/heads/main`, { headers: hdrs });
+      if (!mainRef.ok) throw new Error("Impossibile leggere il branch main");
+      const mainData = await mainRef.json();
+      // Crea blob con analytics vuoto
+      const emptyData = JSON.stringify({ views: { total: 0, art: 0, pro: 0, landing: 0, about: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0, countries: {}, referrers: {}, devices: { desktop: 0, mobile: 0, tablet: 0 } }, null, 2) + "\n";
+      const blobRes = await fetch(`${ghApi}/git/blobs`, { method: "POST", headers: hdrs, body: JSON.stringify({ content: emptyData, encoding: "utf-8" }) });
+      if (!blobRes.ok) throw new Error("Errore creazione blob");
+      const blob = await blobRes.json();
+      // Crea tree
+      const treeRes = await fetch(`${ghApi}/git/trees`, { method: "POST", headers: hdrs, body: JSON.stringify({ tree: [{ path: "analytics.json", mode: "100644", type: "blob", sha: blob.sha }] }) });
+      if (!treeRes.ok) throw new Error("Errore creazione tree");
+      const tree = await treeRes.json();
+      // Crea commit orfano
+      const commitRes = await fetch(`${ghApi}/git/commits`, { method: "POST", headers: hdrs, body: JSON.stringify({ message: "analytics: init", tree: tree.sha }) });
+      if (!commitRes.ok) throw new Error("Errore creazione commit");
+      const commit = await commitRes.json();
+      // Crea ref
+      const refRes = await fetch(`${ghApi}/git/refs`, { method: "POST", headers: hdrs, body: JSON.stringify({ ref: "refs/heads/data", sha: commit.sha }) });
+      if (!refRes.ok) throw new Error("Errore creazione branch");
+      toast("Branch data creato con successo!", "ok");
+      analyticsCache = null;
+      return true;
+    } catch (e) {
+      toast("Errore: " + e.message, "err");
+      return false;
+    }
   }
 
   // renderAnalytics is now just loadAndRenderAnalytics since section is separate
@@ -6199,6 +6297,26 @@
     }, 0);
   }
 
+  // Stato mappa interattiva (zoom/pan/tooltip)
+  let mapCountryPositions = [];
+  let mapLastData = {};
+  const mapZoomState = { scale: 1, tx: 0, ty: 0, w: 800, h: 400 };
+  const MAP_MIN_SCALE = 1, MAP_MAX_SCALE = 8;
+  const countryNames = {
+    IT:"Italia",US:"Stati Uniti",GB:"Regno Unito",DE:"Germania",FR:"Francia",ES:"Spagna",
+    PT:"Portogallo",NL:"Paesi Bassi",BE:"Belgio",CH:"Svizzera",AT:"Austria",
+    SE:"Svezia",NO:"Norvegia",DK:"Danimarca",FI:"Finlandia",PL:"Polonia",
+    CZ:"Repubblica Ceca",RO:"Romania",GR:"Grecia",TR:"Turchia",RU:"Russia",
+    UA:"Ucraina",BR:"Brasile",AR:"Argentina",MX:"Messico",
+    CA:"Canada",JP:"Giappone",CN:"Cina",KR:"Corea del Sud",
+    IN:"India",AU:"Australia",ZA:"Sudafrica",EG:"Egitto",
+    MA:"Marocco",NG:"Nigeria",KE:"Kenya",IL:"Israele",AE:"Emirati Arabi Uniti",
+    SA:"Arabia Saudita",TH:"Thailandia",SG:"Singapore",ID:"Indonesia",PH:"Filippine",
+    VN:"Vietnam",NZ:"Nuova Zelanda",CL:"Cile",CO:"Colombia",
+    PE:"Perù",IE:"Irlanda",HR:"Croazia",HU:"Ungheria",BG:"Bulgaria",
+    SK:"Slovacchia",SI:"Slovenia",LT:"Lituania",LV:"Lettonia",EE:"Estonia",
+  };
+
   // Helper: Mappa del mondo semplificata (proiezione Mercator su canvas)
   // countryData = { "IT": 42, "US": 10, ... }
   function drawWorldMap(canvasId, countryData, w, h) {
@@ -6207,6 +6325,9 @@
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, w, h);
+      const isMain = canvasId === "mapWorld";
+      const Z = isMain ? mapZoomState : { scale: 1, tx: 0, ty: 0 };
+      if (isMain) { mapCountryPositions = []; mapLastData = countryData; mapZoomState.w = w; mapZoomState.h = h; }
 
       // Coordinate centrali dei paesi principali (lon, lat) → proiezione Mercator
       const CC = {
@@ -6225,11 +6346,11 @@
       };
 
       // Proiezione Mercator semplificata
-      const lonToX = (lon) => ((lon + 180) / 360) * w;
+      const lonToX = (lon) => (((lon + 180) / 360) * w) * Z.scale + Z.tx;
       const latToY = (lat) => {
         const latRad = lat * Math.PI / 180;
         const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-        return h / 2 - (mercN / Math.PI) * (h / 2) * 0.82;
+        return (h / 2 - (mercN / Math.PI) * (h / 2) * 0.82) * Z.scale + Z.ty;
       };
 
       // Sfondo continenti (forme semplificate con path)
@@ -6271,7 +6392,7 @@
       landDots.forEach(([lon, lat]) => {
         const x = lonToX(lon);
         const y = latToY(lat);
-        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 2.5 * Math.sqrt(Z.scale), 0, Math.PI * 2); ctx.fill();
       });
 
       // Punti dati
@@ -6302,9 +6423,10 @@
         // Cerchio
         ctx.fillStyle = `rgba(200, 16, 46, ${0.5 + ratio * 0.5})`;
         ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        if (isMain) mapCountryPositions.push({ code, count, x, y, r });
 
-        // Etichetta per paesi con visite significative
-        if (ratio > 0.15 || entries.length <= 5) {
+        // Etichetta per paesi con visite significative (tutte quando si zooma)
+        if (ratio > 0.15 || entries.length <= 5 || Z.scale >= 2) {
           ctx.fillStyle = "rgba(255,255,255,0.7)";
           ctx.font = "bold 9px Inter, sans-serif";
           ctx.textAlign = "center";
@@ -6316,7 +6438,132 @@
     }, 0);
   }
 
-  async function loadAndRenderAnalytics() {
+  // ---- Mappa interattiva: zoom, pan, tooltip ----
+  function applyMapTransform() {
+    const s = mapZoomState;
+    s.scale = Math.min(MAP_MAX_SCALE, Math.max(MAP_MIN_SCALE, s.scale));
+    s.tx = Math.min(0, Math.max(s.w - s.w * s.scale, s.tx));
+    s.ty = Math.min(0, Math.max(s.h - s.h * s.scale, s.ty));
+    const lbl = document.getElementById("mapZoomLevel");
+    if (lbl) lbl.textContent = Math.round(s.scale * 100) + "%";
+    const canvas = document.getElementById("mapWorld");
+    if (canvas) canvas.style.cursor = s.scale > 1 ? "grab" : "default";
+    if (!applyMapTransform._raf) {
+      applyMapTransform._raf = requestAnimationFrame(() => {
+        applyMapTransform._raf = null;
+        drawWorldMap("mapWorld", mapLastData, s.w, s.h);
+      });
+    }
+  }
+  function mapZoomAt(factor, cx, cy) {
+    const s = mapZoomState;
+    const ns = Math.min(MAP_MAX_SCALE, Math.max(MAP_MIN_SCALE, s.scale * factor));
+    const k = ns / s.scale;
+    s.tx = cx - (cx - s.tx) * k;
+    s.ty = cy - (cy - s.ty) * k;
+    s.scale = ns;
+    applyMapTransform();
+  }
+  function mapZoomIn() { mapZoomAt(1.5, mapZoomState.w / 2, mapZoomState.h / 2); }
+  function mapZoomOut() { mapZoomAt(1 / 1.5, mapZoomState.w / 2, mapZoomState.h / 2); }
+  function mapZoomReset() { Object.assign(mapZoomState, { scale: 1, tx: 0, ty: 0 }); applyMapTransform(); }
+
+  function initMapInteraction(countryData, names) {
+    const canvas = document.getElementById("mapWorld");
+    const wrap = document.getElementById("mapWrap");
+    const tip = document.getElementById("mapTooltip");
+    if (!canvas || !wrap || !tip) return;
+    Object.assign(mapZoomState, { scale: 1, tx: 0, ty: 0 });
+    const total = Object.values(countryData || {}).reduce((a, b) => a + b, 0) || 1;
+
+    // Coordinate mouse → coordinate canvas (il canvas è scalato via CSS)
+    const toCanvas = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        px: e.clientX - rect.left,
+        py: e.clientY - rect.top,
+        k: canvas.width / rect.width,
+      };
+    };
+    const hitTest = (p) => {
+      let best = null, bestD = Infinity;
+      for (const c of mapCountryPositions) {
+        const d = Math.hypot(c.x - p.x, c.y - p.y);
+        if (d <= Math.max(c.r, 8 * p.k) && d < bestD) { best = c; bestD = d; }
+      }
+      return best;
+    };
+    const hideTip = () => { tip.style.opacity = "0"; };
+
+    let drag = null;
+    canvas.addEventListener("mousemove", (e) => {
+      if (drag) return;
+      const p = toCanvas(e);
+      const hit = hitTest(p);
+      if (hit) {
+        const name = (names && names[hit.code]) || hit.code;
+        const pct = Math.round((hit.count / total) * 1000) / 10;
+        tip.innerHTML = `<strong style="color:#fff">${name}</strong><br><span style="color:var(--text2)">${hit.count} visite · ${pct}%</span>`;
+        tip.style.left = (hit.x / p.k) + "px";
+        tip.style.top = ((hit.y - hit.r) / p.k) + "px";
+        tip.style.opacity = "1";
+        canvas.style.cursor = "pointer";
+      } else {
+        hideTip();
+        canvas.style.cursor = mapZoomState.scale > 1 ? "grab" : "default";
+      }
+    });
+    canvas.addEventListener("mouseleave", hideTip);
+
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const p = toCanvas(e);
+      mapZoomAt(Math.exp(-e.deltaY * 0.0015), p.x, p.y);
+      hideTip();
+    }, { passive: false });
+
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.button !== 0 || mapZoomState.scale <= 1) return;
+      const p = toCanvas(e);
+      drag = { x: e.clientX, y: e.clientY, tx: mapZoomState.tx, ty: mapZoomState.ty, k: p.k };
+      canvas.style.cursor = "grabbing";
+      hideTip();
+      e.preventDefault();
+    });
+    const onMove = (e) => {
+      if (!drag) return;
+      mapZoomState.tx = drag.tx + (e.clientX - drag.x) * drag.k;
+      mapZoomState.ty = drag.ty + (e.clientY - drag.y) * drag.k;
+      applyMapTransform();
+    };
+    const onUp = () => {
+      if (!drag) return;
+      drag = null;
+      canvas.style.cursor = mapZoomState.scale > 1 ? "grab" : "default";
+    };
+    // Listener globali: rimossi quando il canvas viene ricreato
+    if (initMapInteraction._cleanup) initMapInteraction._cleanup();
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    initMapInteraction._cleanup = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    canvas.addEventListener("dblclick", (e) => { e.preventDefault(); mapZoomReset(); });
+
+    const bIn = document.getElementById("mapZoomInBtn");
+    const bOut = document.getElementById("mapZoomOutBtn");
+    const bReset = document.getElementById("mapZoomResetBtn");
+    if (bIn) bIn.addEventListener("click", mapZoomIn);
+    if (bOut) bOut.addEventListener("click", mapZoomOut);
+    if (bReset) bReset.addEventListener("click", mapZoomReset);
+    applyMapTransform();
+  }
+
+  async function loadAndRenderAnalytics(forceRefresh) {
     const container = document.getElementById("analyticsContent");
     if (!container) return;
 
@@ -6327,9 +6574,37 @@
 
     container.innerHTML = '<div style="text-align:center; padding: 80px 20px; color: var(--text3);">Caricamento dati da GitHub...</div>';
 
-    const data = await fetchAnalyticsData();
+    const data = await fetchAnalyticsData(forceRefresh);
+    if (data && data._branchMissing) {
+      container.innerHTML = `
+        <div style="text-align:center; padding: 60px 20px;">
+          <div style="font-size:32px;margin-bottom:16px;">📊</div>
+          <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">Analytics non ancora inizializzate</h3>
+          <p style="font-size:13px;color:var(--text3);max-width:420px;margin:0 auto 20px;line-height:1.6;">
+            Il branch <code style="background:var(--bg);padding:2px 6px;border-radius:3px;">data</code> non esiste nel repository.
+            Serve per salvare le statistiche separatamente dal codice sorgente.
+          </p>
+          <button class="primary" id="btnInitDataBranch" style="padding:10px 24px;">Crea branch data</button>
+          <p style="font-size:11px;color:var(--text3);margin-top:16px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.5;">
+            Inoltre, assicurati che la variabile d'ambiente <code style="background:var(--bg);padding:2px 6px;border-radius:3px;">GITHUB_TOKEN</code>
+            sia configurata nelle impostazioni del progetto su Vercel, altrimenti il tracking dal sito non funzionerà.
+          </p>
+        </div>`;
+      document.getElementById("btnInitDataBranch").onclick = async () => {
+        const btn = document.getElementById("btnInitDataBranch");
+        btn.disabled = true; btn.textContent = "Creazione in corso...";
+        const ok = await initDataBranch();
+        if (ok) loadAndRenderAnalytics(true);
+        else { btn.disabled = false; btn.textContent = "Crea branch data"; }
+      };
+      return;
+    }
+    if (data && data._error) {
+      container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);"><p>Errore di connessione: ${data._error}</p><button class="ghost" onclick="loadAndRenderAnalytics(true)" style="margin-top:12px;">Riprova</button></div>`;
+      return;
+    }
     if (!data || !data.views) {
-      container.innerHTML = '<p style="color:var(--text3);">Nessun dato disponibile. Le statistiche si popolano con le visite al sito.</p>';
+      container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text3);">Nessun dato disponibile. Le statistiche si popolano con le visite al sito.</div>';
       return;
     }
 
@@ -6409,14 +6684,14 @@
     container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
         <div>
-          <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Analytics</h2>
+          <h2 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Analytics</h2>
           <p style="font-size: 12px; color: var(--text3);">Statistiche di navigazione del portfolio</p>
         </div>
         <button class="ghost" id="btnRefreshAnalytics" style="font-size: 11px;">Aggiorna dati</button>
       </div>
 
       <!-- KPI CARDS -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 22px 18px; text-align: center;">
           <div style="font-size: 32px; font-weight: 700; color: var(--text);">${totalViews}</div>
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Visite totali</div>
@@ -6431,7 +6706,7 @@
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 6px;">Contatti ricevuti</div>
         </div>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 28px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
         <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 18px; text-align: center;">
           <div style="font-size: 26px; font-weight: 700; color: var(--text);">${avgTime > 0 ? avgMin + ":" + String(avgSec).padStart(2, "0") : "—"}</div>
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-top: 4px;">Tempo medio sessione</div>
@@ -6510,7 +6785,17 @@
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 18px;">
           <!-- Mappa -->
           <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px; overflow: hidden;">
-            <canvas id="mapWorld" width="800" height="400" style="width: 100%; height: auto; display: block; border-radius: 4px;"></canvas>
+            <div id="mapWrap" style="position: relative; border-radius: 4px; overflow: hidden; user-select: none;">
+              <canvas id="mapWorld" width="800" height="400" style="width: 100%; height: auto; display: block; border-radius: 4px; touch-action: none;"></canvas>
+              <div id="mapTooltip" style="position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.12s ease; background: rgba(10,10,10,0.92); border: 1px solid var(--border); border-radius: 4px; padding: 6px 9px; font-size: 11px; line-height: 1.45; color: var(--text); white-space: nowrap; transform: translate(-50%, calc(-100% - 8px)); z-index: 2;"></div>
+              <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; align-items: center; z-index: 3;">
+                <span id="mapZoomLevel" style="font-size: 10px; color: var(--text2); margin-right: 2px; padding: 0 6px; height: 26px; display: flex; align-items: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; font-variant-numeric: tabular-nums;">100%</span>
+                <button type="button" id="mapZoomInBtn" title="Zoom avanti" aria-label="Zoom avanti" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">+</button>
+                <button type="button" id="mapZoomOutBtn" title="Zoom indietro" aria-label="Zoom indietro" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">&minus;</button>
+                <button type="button" id="mapZoomResetBtn" title="Ripristina vista" aria-label="Ripristina vista" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.85); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; line-height: 1; cursor: pointer; padding: 0;">&#10226;</button>
+              </div>
+            </div>
+            <p style="font-size: 10px; color: var(--text3); margin: 8px 0 0;">Rotella o +/&minus; per lo zoom &middot; trascina per spostarti &middot; doppio clic per ripristinare &middot; passa sui punti per i dettagli</p>
           </div>
           <!-- Lista paesi + Referrer -->
           <div style="display: flex; flex-direction: column; gap: 14px;">
@@ -6623,425 +6908,10 @@
       { value: tabViews, color: "#fbbf24" },
     ], 180);
     drawWorldMap("mapWorld", countries, 800, 400);
+    initMapInteraction(countries, countryNames);
 
     const refreshBtn = document.getElementById("btnRefreshAnalytics");
-    if (refreshBtn) refreshBtn.onclick = () => { analyticsCache = null; loadAndRenderAnalytics(); };
-  }
-
-  // ========== ASPETTO ==========
-  function renderAspetto() {
-    const container = document.getElementById("aspettoContent");
-    if (!container) return;
-
-    // Defaults
-    if (!state.aspetto) state.aspetto = {};
-    const a = state.aspetto;
-    const defaults = {
-      colorBgArtwork: "#f8f4ed", colorBgProfessional: "#0a0a0a",
-      colorAccent: "#c8102e", colorTextArtwork: "#0a0a0a", colorTextProfessional: "#f8f4ed",
-      fontFamily: "Inter", fontSizeBase: "16", fontSizeTitolo: "28",
-      fontWeightTitolo: "800", lineHeight: "1.625",
-      marginLaterale: "8", gapColonne: "4",
-      bannerHeight: "100", bannerOverlayOpacity: "65",
-      galleriaMarginTop: "3", galleriaMarginBottom: "3",
-      galleriaRowHeight: "280", galleriaGap: "6",
-      aboutVideoHeight: "100", aboutQuotePadding: "6", aboutPhotoAspect: "3/2",
-      headerPaddingY: "14", headerFontSize: "12",
-      footerFontSize: "11", footerPaddingY: "12",
-      marqueeFontSize: "7", marqueeSpeed: "normal", marqueeOpacity: "6",
-      viewerBgOpacity: "95", viewerImageQuality: "85",
-      borderOpacity: "15", headerLetterSpacing: "0",
-      bannerTitleShadow: "4", galleriaRowSpacing: "6",
-      textMaxWidth: "100", techColWidth: "180",
-    };
-    Object.keys(defaults).forEach(k => { if (a[k] === undefined) a[k] = defaults[k]; });
-
-    // Compact helpers
-    function colorIn(id, label, key) {
-      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-        <input type="color" id="${id}" value="${a[key]}" style="width:22px;height:18px;border:1px solid var(--border);background:var(--panel);border-radius:2px;cursor:pointer;padding:0;">
-        <input type="text" id="${id}_hex" value="${a[key]}" style="width:58px;font-family:monospace;font-size:9px;padding:2px 4px;">
-        <label style="font-size:9px;color:var(--text2);margin:0;">${label}</label>
-      </div>`;
-    }
-    function rangeIn(id, label, key, min, max, step, unit) {
-      return `<div style="margin-bottom:7px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin:0;">${label}</label>
-          <span id="${id}_val" style="font-size:9px;color:var(--text2);font-variant-numeric:tabular-nums;">${a[key]}${unit}</span>
-        </div>
-        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${a[key]}" style="width:100%;accent-color:var(--red);height:2px;cursor:pointer;margin-top:1px;">
-      </div>`;
-    }
-    function selectIn(id, label, key, options) {
-      return `<div style="margin-bottom:7px;">
-        <label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;display:block;margin-bottom:1px;">${label}</label>
-        <select id="${id}" style="padding:3px 6px;font-size:10px;width:100%;">
-          ${options.map(o => `<option value="${o.value}" ${a[key] === o.value ? "selected" : ""}>${o.label}</option>`).join("")}
-        </select>
-      </div>`;
-    }
-    function secHead(label) {
-      return `<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:700;margin:12px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--border);">${label}</div>`;
-    }
-
-    const siteUrl = "https://alfredoenricoiacobucci.art";
-
-    container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div>
-          <h2 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;">Aspetto</h2>
-          <p style="font-size:10px;color:var(--text3);">Modifica i parametri a sinistra — l'anteprima del sito è navigabile</p>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text2);user-select:none;">
-            <input type="checkbox" id="aspGridToggle" style="accent-color:var(--red);">
-            Griglia
-          </label>
-          <button class="ghost" id="aspFullscreen" style="font-size:10px;padding:4px 10px;">Schermo intero</button>
-          <button class="ghost" id="aspResetDefaults" style="font-size:10px;color:#f87171;padding:4px 10px;">Reset</button>
-        </div>
-      </div>
-
-      <div class="aspetto-layout">
-      <div class="aspetto-controls">
-        ${secHead("Colori")}
-        ${colorIn("asp_bgArt", "Sfondo Artwork", "colorBgArtwork")}
-        ${colorIn("asp_bgPro", "Sfondo Professional", "colorBgProfessional")}
-        ${colorIn("asp_accent", "Accento", "colorAccent")}
-        ${colorIn("asp_textArt", "Testo Artwork", "colorTextArtwork")}
-        ${colorIn("asp_textPro", "Testo Professional", "colorTextProfessional")}
-
-        ${secHead("Tipografia")}
-        ${selectIn("asp_font", "Font", "fontFamily", [
-          {value:"Inter",label:"Inter"},{value:"Helvetica Neue",label:"Helvetica Neue"},
-          {value:"Playfair Display",label:"Playfair Display"},{value:"DM Sans",label:"DM Sans"},
-          {value:"Space Grotesk",label:"Space Grotesk"},{value:"system-ui",label:"System UI"},
-        ])}
-        ${rangeIn("asp_fontSize", "Corpo testo", "fontSizeBase", 12, 22, 1, "px")}
-        ${rangeIn("asp_titleSize", "Titolo", "fontSizeTitolo", 18, 48, 1, "px")}
-        ${rangeIn("asp_titleWeight", "Peso titolo", "fontWeightTitolo", 400, 900, 100, "")}
-        ${rangeIn("asp_lineH", "Interlinea", "lineHeight", 1.2, 2.2, 0.05, "")}
-        ${rangeIn("asp_headerLS", "Spaziatura header", "headerLetterSpacing", -1, 3, 0.1, "px")}
-
-        ${secHead("Layout")}
-        ${rangeIn("asp_margLat", "Margine laterale", "marginLaterale", 2, 16, 1, "%")}
-        ${rangeIn("asp_gapCol", "Gap colonne", "gapColonne", 0, 10, 0.5, "%")}
-        ${rangeIn("asp_textMax", "Max larghezza testo", "textMaxWidth", 60, 100, 5, "%")}
-        ${rangeIn("asp_techCol", "Largh. colonna tecnica", "techColWidth", 120, 280, 10, "px")}
-        ${rangeIn("asp_borderOp", "Opacità bordi", "borderOpacity", 0, 40, 1, "%")}
-
-        ${secHead("Header & Footer")}
-        ${rangeIn("asp_headerPad", "Padding header", "headerPaddingY", 6, 28, 1, "px")}
-        ${rangeIn("asp_headerFont", "Font header", "headerFontSize", 9, 16, 1, "px")}
-        ${rangeIn("asp_footerSize", "Font footer", "footerFontSize", 8, 16, 1, "px")}
-        ${rangeIn("asp_footerPad", "Padding footer", "footerPaddingY", 4, 24, 1, "px")}
-
-        ${secHead("Banner")}
-        ${rangeIn("asp_bannerH", "Altezza", "bannerHeight", 50, 120, 5, "vh")}
-        ${rangeIn("asp_bannerOverlay", "Overlay scuro", "bannerOverlayOpacity", 0, 100, 5, "%")}
-        ${rangeIn("asp_bannerShadow", "Ombra titolo", "bannerTitleShadow", 0, 12, 1, "px")}
-
-        ${secHead("Galleria")}
-        ${rangeIn("asp_galMT", "Margine sopra", "galleriaMarginTop", 0, 8, 0.5, "rem")}
-        ${rangeIn("asp_galMB", "Margine sotto", "galleriaMarginBottom", 0, 8, 0.5, "rem")}
-        ${rangeIn("asp_galRowH", "Altezza riga", "galleriaRowHeight", 150, 500, 10, "px")}
-        ${rangeIn("asp_galGap", "Gap foto", "galleriaGap", 0, 20, 1, "px")}
-        ${rangeIn("asp_galRowSp", "Spazio tra righe", "galleriaRowSpacing", 0, 20, 1, "px")}
-
-        ${secHead("About")}
-        ${rangeIn("asp_aboutVidH", "Altezza video", "aboutVideoHeight", 50, 120, 5, "vh")}
-        ${rangeIn("asp_aboutQuotePad", "Padding citazione", "aboutQuotePadding", 2, 12, 0.5, "rem")}
-        ${selectIn("asp_aboutPhotoAR", "Aspect ratio foto", "aboutPhotoAspect", [
-          {value:"3/2",label:"3:2"},{value:"16/9",label:"16:9"},{value:"4/3",label:"4:3"},
-          {value:"1/1",label:"1:1"},{value:"2.35/1",label:"2.35:1 cinema"},
-        ])}
-
-        ${secHead("Marquee")}
-        ${rangeIn("asp_marqueeSize", "Dimensione", "marqueeFontSize", 3, 14, 0.5, "rem")}
-        ${rangeIn("asp_marqueeOp", "Opacità", "marqueeOpacity", 1, 15, 1, "%")}
-        ${selectIn("asp_marqueeSpeed", "Velocità", "marqueeSpeed", [
-          {value:"slow",label:"Lento"},{value:"normal",label:"Normale"},{value:"fast",label:"Veloce"},
-        ])}
-
-        ${secHead("Viewer")}
-        ${rangeIn("asp_viewerBg", "Opacità sfondo", "viewerBgOpacity", 70, 100, 1, "%")}
-        ${rangeIn("asp_viewerQuality", "Qualità immagine", "viewerImageQuality", 60, 100, 5, "")}
-      </div><!-- /aspetto-controls -->
-
-      <!-- ANTEPRIMA LIVE: iframe del sito reale -->
-      <div class="aspetto-preview-wrap">
-        <div class="aspetto-preview" id="aspPreview">
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;" id="aspPreviewLoading">
-            <div style="text-align:center;">
-              <div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px;"></div>
-              Caricamento anteprima...
-            </div>
-          </div>
-          <div class="grid-overlay" id="aspGridOverlay">
-            <!-- Verticali -->
-            <div class="guide guide-v guide-center"></div>
-            <div class="guide guide-v guide-margin" id="guideLeft" style="left:8%;">
-              <div class="guide-label" style="left:0;">8%</div>
-            </div>
-            <div class="guide guide-v guide-margin" id="guideRight" style="right:8%;left:auto;">
-              <div class="guide-label" style="left:0;">8%</div>
-            </div>
-            <!-- Orizzontali -->
-            <div class="guide guide-h" id="guideHeader" style="top:5%;">
-              <div class="guide-h-label" style="top:0;">Header</div>
-            </div>
-            <div class="guide guide-h" style="top:50%;border-top:1px dashed rgba(200,16,46,0.2);">
-              <div class="guide-h-label" style="top:0;">50%</div>
-            </div>
-            <div class="guide guide-h" id="guideGalleryTop" style="top:12%;">
-              <div class="guide-h-label" style="top:0;">Contenuto</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      </div><!-- /aspetto-layout -->
-      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-    `;
-
-    // Wire all range/color/select inputs
-    const allIdToKey = {
-      asp_fontSize:"fontSizeBase",asp_titleSize:"fontSizeTitolo",asp_titleWeight:"fontWeightTitolo",
-      asp_lineH:"lineHeight",asp_margLat:"marginLaterale",asp_gapCol:"gapColonne",
-      asp_headerPad:"headerPaddingY",asp_headerFont:"headerFontSize",asp_headerLS:"headerLetterSpacing",
-      asp_bannerH:"bannerHeight",asp_bannerOverlay:"bannerOverlayOpacity",asp_bannerShadow:"bannerTitleShadow",
-      asp_galMT:"galleriaMarginTop",asp_galMB:"galleriaMarginBottom",
-      asp_galRowH:"galleriaRowHeight",asp_galGap:"galleriaGap",asp_galRowSp:"galleriaRowSpacing",
-      asp_aboutVidH:"aboutVideoHeight",asp_aboutQuotePad:"aboutQuotePadding",
-      asp_marqueeSize:"marqueeFontSize",asp_marqueeOp:"marqueeOpacity",
-      asp_viewerBg:"viewerBgOpacity",asp_viewerQuality:"viewerImageQuality",
-      asp_footerSize:"footerFontSize",asp_footerPad:"footerPaddingY",
-      asp_borderOp:"borderOpacity",asp_textMax:"textMaxWidth",asp_techCol:"techColWidth",
-    };
-    container.querySelectorAll('input[type="range"]').forEach(range => {
-      const k = allIdToKey[range.id];
-      if (!k) return;
-      const valSpan = document.getElementById(range.id + "_val");
-      range.addEventListener("input", () => {
-        a[k] = range.value;
-        if (valSpan) { const u = valSpan.textContent.replace(/[0-9.\-]/g, ""); valSpan.textContent = range.value + u; }
-        markDirty();
-      });
-    });
-    const colorMap = {
-      asp_bgArt:"colorBgArtwork",asp_bgPro:"colorBgProfessional",
-      asp_accent:"colorAccent",asp_textArt:"colorTextArtwork",asp_textPro:"colorTextProfessional",
-    };
-    Object.entries(colorMap).forEach(([id, k]) => {
-      const picker = document.getElementById(id);
-      const hex = document.getElementById(id + "_hex");
-      if (picker) picker.addEventListener("input", () => { a[k] = picker.value; if (hex) hex.value = picker.value; markDirty(); });
-      if (hex) hex.addEventListener("change", () => { a[k] = hex.value; if (picker) picker.value = hex.value; markDirty(); });
-    });
-    const selectMap = { asp_font:"fontFamily",asp_marqueeSpeed:"marqueeSpeed",asp_aboutPhotoAR:"aboutPhotoAspect" };
-    Object.entries(selectMap).forEach(([id, k]) => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener("change", () => { a[k] = el.value; markDirty(); });
-    });
-
-    // Reset
-    document.getElementById("aspResetDefaults").onclick = () => {
-      if (!confirm("Ripristinare tutti i valori predefiniti?")) return;
-      Object.keys(defaults).forEach(k => { a[k] = defaults[k]; });
-      markDirty(); renderAspetto();
-      toast("Valori predefiniti ripristinati.", "ok");
-    };
-
-    // ---- ANTEPRIMA LIVE: iframe del sito reale ----
-    function loadPreview() {
-      const p = document.getElementById("aspPreview");
-      if (!p) return;
-      const loading = document.getElementById("aspPreviewLoading");
-      const url = siteUrl;
-
-      // Scala iframe per riempire il container
-      const wrap = p;
-      const iframeW = 1440;
-      const iframeH = 900;
-
-      // Rimuovi vecchio iframe se esiste
-      const old = wrap.querySelector("iframe");
-      if (old) old.remove();
-
-      if (loading) loading.style.display = "flex";
-
-      const iframe = document.createElement("iframe");
-      iframe.src = url;
-      iframe.style.width = iframeW + "px";
-      iframe.style.height = iframeH + "px";
-      iframe.style.border = "none";
-      iframe.style.transformOrigin = "top left";
-      iframe.style.position = "absolute";
-      iframe.style.top = "0";
-      iframe.style.left = "0";
-
-      // Scala in base alla larghezza del container — riempie tutta la larghezza
-      function scaleIframe() {
-        const wrapW = wrap.clientWidth;
-        const wrapH = wrap.clientHeight;
-        const scale = wrapW / iframeW;
-        iframe.style.transform = `scale(${scale})`;
-        iframe.style.width = iframeW + "px";
-        iframe.style.height = Math.ceil(wrapH / scale) + "px";
-      }
-
-      iframe.onload = () => {
-        if (loading) loading.style.display = "none";
-        scaleIframe();
-      };
-
-      wrap.appendChild(iframe);
-      // Scala iniziale
-      requestAnimationFrame(scaleIframe);
-      // Riscala al resize
-      window.addEventListener("resize", scaleIframe);
-    }
-
-    // Prima render
-    loadPreview();
-
-    // ---- GRID OVERLAY con guide draggabili e snap magnetico ----
-    const gridToggle = document.getElementById("aspGridToggle");
-    const gridOverlay = document.getElementById("aspGridOverlay");
-    const guideLeft = document.getElementById("guideLeft");
-    const guideRight = document.getElementById("guideRight");
-
-    function updateGuides() {
-      const m = parseFloat(a.marginLaterale) || 8;
-      if (guideLeft) { guideLeft.style.left = m + "%"; guideLeft.querySelector(".guide-label").textContent = m + "%"; }
-      if (guideRight) { guideRight.style.right = m + "%"; guideRight.querySelector(".guide-label").textContent = m + "%"; }
-    }
-    updateGuides();
-
-    if (gridToggle) gridToggle.onchange = () => {
-      gridOverlay.classList.toggle("active", gridToggle.checked);
-    };
-
-    // Drag delle guide per modificare il margine
-    function setupGuideDrag(guideEl, side) {
-      if (!guideEl) return;
-      let dragging = false;
-
-      guideEl.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        dragging = true;
-        document.body.style.cursor = "ew-resize";
-        // Disabilita pointer events sull'iframe durante il drag
-        const iframe = document.querySelector("#aspPreview iframe");
-        if (iframe) iframe.style.pointerEvents = "none";
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (!dragging) return;
-        const preview = document.getElementById("aspPreview");
-        const rect = preview.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const pctFromLeft = (x / rect.width) * 100;
-        let margin;
-        if (side === "left") {
-          margin = Math.max(2, Math.min(16, pctFromLeft));
-        } else {
-          margin = Math.max(2, Math.min(16, 100 - pctFromLeft));
-        }
-
-        // Snap magnetico: centro (50%), bordi (0%), e valori rotondi (5%, 10%, 15%)
-        const snapPoints = [2, 4, 5, 6, 8, 10, 12, 14, 15, 16];
-        const snapThreshold = 0.7;
-        for (const sp of snapPoints) {
-          if (Math.abs(margin - sp) < snapThreshold) {
-            margin = sp;
-            guideEl.classList.add("snap");
-            setTimeout(() => guideEl.classList.remove("snap"), 150);
-            break;
-          }
-        }
-
-        margin = Math.round(margin * 2) / 2; // arrotonda a 0.5
-        a.marginLaterale = String(margin);
-        updateGuides();
-        // Aggiorna lo slider corrispondente
-        const slider = document.getElementById("asp_margLat");
-        const valSpan = document.getElementById("asp_margLat_val");
-        if (slider) slider.value = margin;
-        if (valSpan) valSpan.textContent = margin + "%";
-        markDirty();
-      });
-
-      document.addEventListener("mouseup", () => {
-        if (!dragging) return;
-        dragging = false;
-        document.body.style.cursor = "";
-        const iframe = document.querySelector("#aspPreview iframe");
-        if (iframe) iframe.style.pointerEvents = "";
-      });
-    }
-    setupGuideDrag(guideLeft, "left");
-    setupGuideDrag(guideRight, "right");
-
-    // Aggiorna guide quando lo slider cambia
-    const margSlider = document.getElementById("asp_margLat");
-    if (margSlider) {
-      margSlider.addEventListener("input", () => updateGuides());
-    }
-
-    // ---- FULLSCREEN PREVIEW ----
-    document.getElementById("aspFullscreen").onclick = () => {
-      const overlay = document.createElement("div");
-      overlay.className = "aspetto-fullscreen";
-      const iframe = document.createElement("iframe");
-      iframe.src = siteUrl;
-      // Toolbar
-      const toolbar = document.createElement("div");
-      toolbar.style.cssText = "position:absolute;top:16px;right:16px;z-index:10000;display:flex;gap:8px;";
-      // Grid toggle per fullscreen
-      const gridBtn = document.createElement("button");
-      gridBtn.className = "fs-close";
-      gridBtn.textContent = "Griglia";
-      gridBtn.style.opacity = "0.7";
-      // Grid overlay per fullscreen
-      const fsGrid = document.createElement("div");
-      fsGrid.className = "grid-overlay";
-      fsGrid.style.cssText = "position:absolute;inset:0;z-index:9998;";
-      const m = parseFloat(a.marginLaterale) || 8;
-      fsGrid.innerHTML = `
-        <div class="guide guide-v guide-center"></div>
-        <div class="guide guide-v guide-margin" style="left:${m}%;"><div class="guide-label" style="left:0;">${m}%</div></div>
-        <div class="guide guide-v guide-margin" style="right:${m}%;left:auto;"><div class="guide-label" style="left:0;">${m}%</div></div>
-        <div class="guide guide-h" style="top:5%;"><div class="guide-h-label" style="top:0;">Header</div></div>
-        <div class="guide guide-h" style="top:50%;border-top:1px dashed rgba(200,16,46,0.2);"><div class="guide-h-label" style="top:0;">50%</div></div>
-        <div class="guide guide-h" style="top:12%;"><div class="guide-h-label" style="top:0;">Contenuto</div></div>
-      `;
-      gridBtn.onclick = () => {
-        fsGrid.classList.toggle("active");
-        gridBtn.style.opacity = fsGrid.classList.contains("active") ? "1" : "0.7";
-      };
-      // Close button
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "fs-close";
-      closeBtn.textContent = "Chiudi (Esc)";
-      closeBtn.onclick = () => overlay.remove();
-      toolbar.appendChild(gridBtn);
-      toolbar.appendChild(closeBtn);
-      overlay.appendChild(iframe);
-      overlay.appendChild(fsGrid);
-      overlay.appendChild(toolbar);
-      document.body.appendChild(overlay);
-      // Se la griglia era attiva nel pannello, attivala anche qui
-      if (gridToggle && gridToggle.checked) {
-        fsGrid.classList.add("active");
-        gridBtn.style.opacity = "1";
-      }
-      const onKey = (e) => {
-        if (e.key === "Escape") { overlay.remove(); document.removeEventListener("keydown", onKey); }
-      };
-      document.addEventListener("keydown", onKey);
-    };
+    if (refreshBtn) refreshBtn.onclick = () => { loadAndRenderAnalytics(true); };
   }
 
   // ========== IMPOSTAZIONI ==========
@@ -7053,11 +6923,11 @@
     const branch = getBranch();
 
     container.innerHTML = `
-      <h2 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 28px;">Impostazioni</h2>
+      <h2 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 32px;">Impostazioni</h2>
 
       <!-- 1. CONNESSIONE GITHUB -->
-      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
-        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px;">Connessione GitHub</h3>
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Connessione GitHub</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div class="field"><label>Repository</label><input type="text" id="imp_repo" value="${escapeHtml(repo)}"></div>
           <div class="field"><label>Branch</label><input type="text" id="imp_branch" value="${escapeHtml(branch)}"></div>
@@ -7083,7 +6953,7 @@
       </div>
 
       <!-- 2. LINK RAPIDI -->
-      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
         <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Link rapidi</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <a href="https://alfredoenricoiacobucci.art" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;transition:border-color .15s;">
@@ -7125,7 +6995,7 @@
       </div>
 
       <!-- 3. DIAGNOSTICA -->
-      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+      <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
         <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px;">Diagnostica</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <button class="ghost" id="imp_force_sync" style="text-align:left;padding:10px 12px;">
@@ -7277,8 +7147,8 @@
       toast("Foto ricaricate.", "ok");
     };
 
-    document.getElementById("imp_clear_all").onclick = () => {
-      if (!confirm("Cancellare token, bozza e tutte le impostazioni?")) return;
+    document.getElementById("imp_clear_all").onclick = async () => {
+      if (!await confirm("Cancellare token, bozza e tutte le impostazioni?")) return;
       localStorage.removeItem(STORAGE_DRAFT);
       localStorage.removeItem(STORAGE_TOKEN);
       localStorage.removeItem(STORAGE_REPO);
@@ -7301,13 +7171,13 @@
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (ev) => {
+      reader.onload = async (ev) => {
         try {
           const imported = JSON.parse(ev.target.result);
           if (!imported.projects || !Array.isArray(imported.projects)) {
             toast("File non valido.", "err"); return;
           }
-          if (!confirm(`Importare ${imported.projects.length} progetti?`)) return;
+          if (!await confirm(`Importare ${imported.projects.length} progetti?`)) return;
           state.projects = imported.projects;
           if (imported.aboutArt) state.aboutArt = imported.aboutArt;
           if (imported.aboutPro) state.aboutPro = imported.aboutPro;
@@ -7360,6 +7230,59 @@
       localServerAvailable = r.ok;
     } catch(e) { localServerAvailable = false; }
     return localServerAvailable;
+  }
+
+  // ========== STORAGE ABSTRACTION ==========
+  // Unified layer that eliminates if(isLocal)/else duplication
+
+  /** Check if storage is ready (local server or GitHub token). Returns false with toast if neither. */
+  async function storageReady(silentFail) {
+    const isLocal = await checkLocalServer();
+    if (isLocal) return true;
+    if (getToken()) return true;
+    if (!silentFail) toast("Imposta il token GitHub nelle Impostazioni.", "err");
+    return false;
+  }
+
+  /** List media files in a folder. Returns [{name, sha, url}] (sha is null for local). */
+  async function storageListMedia(folderPath, filter) {
+    const rgx = filter || /\.(jpg|jpeg|png|webp|gif)$/i;
+    const isLocal = await checkLocalServer();
+    if (isLocal) {
+      const names = await localListFiles(folderPath);
+      return names.filter(n => rgx.test(n)).map(n => ({
+        name: n, sha: null, url: localPhotoUrl(folderPath, n)
+      }));
+    } else {
+      const items = await ghListDir(folderPath);
+      return items.filter(i => i.type === "file" && rgx.test(i.name)).map(i => ({
+        name: i.name, sha: i.sha, url: photoRawUrl(folderPath, i.name)
+      }));
+    }
+  }
+
+  /** Delete a file. Handles local (Python server) or remote (GitHub API). */
+  async function storageDeleteFile(fullPath, sha, commitMsg) {
+    const isLocal = await checkLocalServer();
+    if (isLocal) {
+      const r = await fetch("/delete-file", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({path: fullPath})
+      });
+      if (!r.ok) throw new Error("delete failed");
+    } else {
+      await ghDelete(fullPath, sha, commitMsg || `editor: delete ${fullPath}`);
+    }
+  }
+
+  /** Trigger git sync after local batch operations. No-op if remote. */
+  async function storageGitSync(message) {
+    const isLocal = await checkLocalServer();
+    if (!isLocal) return;
+    fetch("/git-sync", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({message})
+    }).catch(()=>{});
   }
 
   async function handleUpload(files, key) {
@@ -7441,11 +7364,7 @@
     toast(isLocal ? "Foto salvate nella cartella del progetto." : "Caricamento completato.", "ok");
     if (key === "aboutArt" || key === "aboutPro") await fetchAboutMedia();
     else await fetchPhotos(key);
-    // Git push automatico dopo upload locale
-    if (isLocal && uploadedNames.length > 0) {
-      fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({message: `auto: upload ${uploadedNames.length} foto in ${folderPath}`}) }).catch(()=>{});
-    }
+    if (uploadedNames.length > 0) storageGitSync(`auto: upload ${uploadedNames.length} foto in ${folderPath}`);
   }
 
   // ========== NEW PROJECT ==========
@@ -7511,7 +7430,7 @@
     if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
     const btn = document.getElementById("btnSave");
     btn.disabled = true;
-    btn.textContent = "Salvataggio...";
+    btn.innerHTML = '<span class="btn-spinner"></span> Salvataggio…';
     const isLocal = await checkLocalServer();
     try {
       const newJson = JSON.stringify(state, null, 2) + "\n";
@@ -7567,7 +7486,7 @@
       toast("Errore salvataggio: " + e.message, "err");
     } finally {
       btn.disabled = false;
-      btn.textContent = "Salva e pubblica";
+      btn.innerHTML = "Salva e pubblica";
     }
   };
 
