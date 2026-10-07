@@ -14,17 +14,45 @@
   z-index: 60;
 }
 
-/* === Modalità colore per Artwork (chiaro) / Professional (scuro) === */
+/* === Token di tema — un unico blocco per modalità ===
+   Prima :root e .mode-professional erano definiti due volte (colori qui,
+   bordi 50 righe più sotto); ora stanno insieme. */
 :root {
   --bg: #f8f4ed; /* Artwork (bianco caldo) */
   --fg: #0a0a0a;
   --muted: #4a4a4a;
+  --border: #000000;
+  /* Accento: #c8102e dà 5.4:1 sul bianco caldo — passa AA. */
+  --accent: #c8102e;
+  /* Errore: distinto dall'accento, perché un colore che significa
+     "attivo", "hover" ed "errore" insieme non significa niente. */
+  --error: #b00020;
+
+  /* Curve easing — le built-in CSS sono troppo deboli per dare
+     intenzione alle animazioni. Queste hanno più "punch". */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-smooth: cubic-bezier(0.2, 0.9, 0.2, 1);
+
+  /* Scala tipografica — prima convivevano 9/11/12/13/14/15/20px sparsi tra
+     Tailwind, stili inline e CSS. Il 9px delle label era illeggibile. */
+  --text-2xs: 0.6875rem; /* 11px — label micro uppercase, con tracking */
+  --text-xs: 0.75rem;    /* 12px — minimo per testo di servizio */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px — corpo */
+  --text-lg: 1.25rem;    /* 20px — nav */
+  --text-xl: 2rem;       /* 32px */
 }
 
 .mode-professional {
   --bg: #0a0a0a; /* Professional (scuro) */
   --fg: #f8f4ed;
   --muted: #a3a3a3;
+  --border: #f8f4ed;
+  /* #c8102e su #0a0a0a dà solo 3.4:1 e non passa AA: sul fondo scuro
+     l'accento va schiarito. #e8364f dà 4.8:1 restando lo stesso rosso. */
+  --accent: #e8364f;
+  --error: #ff6b7f;
 }
 
 html,
@@ -47,13 +75,30 @@ body {
   #__next { width: 100vw; max-width: 100vw; overflow-x: clip; }
 }
 
+/* Skip link: primo elemento focusabile, permette di saltare l'header */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 300;
+  padding: 0.75rem 1.25rem;
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
 /* utilities */
 .bg-base { background: var(--bg); }
 .text-fg { color: var(--fg); }
 .text-muted { color: var(--muted); }
 
 /* Marquee base styles — animation is controlled by the JSX <style> in artwork/index.js */
-.marquee-seq { display: inline-block; padding-right: 2rem; font-size: 7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; will-change: transform; transform: translateZ(0); contain: layout style; }
+.marquee-seq { display: inline-block; padding-right: 2rem; font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif; font-size: 7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; will-change: transform; transform: translateZ(0); contain: layout style; }
 
 @keyframes kbOut { 0% { transform: scale(1.03); } 100% { transform: scale(1.00); } }
 .animate-kb-out { animation: kbOut 12s ease-in-out both; }
@@ -63,17 +108,17 @@ body {
 .fade-in { animation: fadeIn 400ms ease-out both; }
 .fade-out { animation: fadeOut 400ms ease-out both; }
 
-/* ---------- bordi dinamici (nero per artwork / bianco per professional) ---------- */
-:root {
-  --border: #000000; /* artwork: bordo nero */
+/* Pannello modale: entra con leggero scale per dare profondità.
+   Niente in natura appare dal nulla — anche un piccolo 0.95 basta. */
+@keyframes modalPanelIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.modal-panel {
+  animation: modalPanelIn 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-/* professional = sfondo scuro -> bordi bianchi (caldi) */
-.mode-professional {
-  --border: #f8f4ed;
-}
-
-/* utility per applicare il colore del bordo dinamico */
+/* utility per applicare il colore del bordo dinamico (--border sta nei token sopra) */
 .site-border {
   border-color: var(--border) !important;
 }
@@ -85,7 +130,7 @@ body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(.2,.9,.2,1);
+  transition: opacity 400ms var(--ease-smooth);
   z-index: 0;
   will-change: opacity;
 }
@@ -113,9 +158,9 @@ body {
   background: linear-gradient(180deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.78) 40%, rgba(0,0,0,0.70) 100%);
 }
 
-/* smoother crossfade: allow slight overlap and smoother timing */
-.landing-bg--artwork { z-index: 0; transition: opacity 400ms ease; contain: paint; }
-.landing-bg--professional { z-index: 1; transition: opacity 400ms ease; contain: paint; }
+/* smoother crossfade: curva custom per un cambio di atmosfera più morbido */
+.landing-bg--artwork { z-index: 0; transition: opacity 400ms var(--ease-smooth); contain: paint; }
+.landing-bg--professional { z-index: 1; transition: opacity 400ms var(--ease-smooth); contain: paint; }
 
 /* Landing dark modifier: force text bianco caldo in content when professional is active */
 .landing--dark .landing-content, .landing--dark span {
@@ -128,16 +173,42 @@ h1 { line-height: 1.05; }
   .landing--dark h1 { letter-spacing: -0.02em; }
 }
 
+/* ===== Focus da tastiera =====
+   Prima il sito non aveva nessuno stile di focus e JustifiedGallery usava
+   focus:outline-none senza sostituto: navigando col Tab non si vedeva dove
+   si era. :focus-visible colpisce solo la tastiera, non il mouse. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* Sul banner e nel viewer il focus sta su fondo fotografico: serve contrasto
+   su qualunque immagine. */
+.project-banner :focus-visible,
+.viewer-fullscreen :focus-visible {
+  outline: 2px solid #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
 /* Hover rosso su tutti gli elementi interattivi */
-.hover-red:hover { color: #c8102e !important; }
+.hover-red:hover { color: var(--accent) !important; }
+
+/* Press feedback: tutti i bottoni e link interattivi rispondono al click.
+   Senza questo, l'interfaccia sembra inerte al tocco. */
+:where(button, a, [role="button"]):active {
+  transform: scale(0.97);
+}
 
 /* Pallino nav: rosso su hover con ingrandimento */
 .dot-nav {
-  transition: background-color 300ms ease, transform 300ms ease;
+  transition: background-color 200ms ease-out, transform 200ms ease-out;
 }
 .dot-nav:hover {
-  background-color: #c8102e !important;
-  transform: translate(-50%, -50%) scale(1.5);
+  background-color: var(--accent) !important;
+  transform: translate(-50%, -50%) scale(1.3);
+}
+.dot-nav:active {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* Triangolo back: rubber-band squeeze */
@@ -145,7 +216,7 @@ h1 { line-height: 1.05; }
   transition: fill 300ms ease;
 }
 .tri-back-hover:hover .tri-back-svg polygon {
-  fill: #c8102e !important;
+  fill: var(--accent) !important;
 }
 .tri-back-hover:hover .tri-back-svg {
   animation: rubberSnap 400ms cubic-bezier(.2,.8,.2,1) forwards;
@@ -176,8 +247,9 @@ h1 { line-height: 1.05; }
 
 /* Chevron toggle per blocco testo sotto banner */
 /* L'intero wrap (label + freccia) rimbalza insieme */
+/* 3 rimbalzi, pausa 5 s, poi ricomincia — richiama l'attenzione senza stancare. */
 .project-chevron-wrap {
-  animation: chevronBounce 2s ease-in-out infinite;
+  animation: chevronBounce 11s ease-in-out infinite;
 }
 .project-chevron-wrap:has(.project-chevron--open) {
   animation: none;
@@ -189,20 +261,34 @@ h1 { line-height: 1.05; }
   transform: rotate(180deg);
 }
 @keyframes chevronBounce {
-  0%, 100% { opacity: 0.55; transform: translateY(0); }
-  40% { opacity: 1; transform: translateY(8px); }
-  60% { opacity: 1; transform: translateY(8px); }
-  80% { opacity: 0.75; transform: translateY(-2px); }
+  /* Bounce 1 (0 – 18%) */
+  0%   { opacity: 0.55; transform: translateY(0); }
+  7%   { opacity: 1;    transform: translateY(8px); }
+  11%  { opacity: 1;    transform: translateY(8px); }
+  15%  { opacity: 0.75; transform: translateY(-2px); }
+  18%  { opacity: 0.55; transform: translateY(0); }
+  /* Bounce 2 (18 – 36%) */
+  25%  { opacity: 1;    transform: translateY(8px); }
+  29%  { opacity: 1;    transform: translateY(8px); }
+  33%  { opacity: 0.75; transform: translateY(-2px); }
+  36%  { opacity: 0.55; transform: translateY(0); }
+  /* Bounce 3 (36 – 55%) */
+  43%  { opacity: 1;    transform: translateY(8px); }
+  47%  { opacity: 1;    transform: translateY(8px); }
+  51%  { opacity: 0.75; transform: translateY(-2px); }
+  55%  { opacity: 0.55; transform: translateY(0); }
+  /* Pausa 5 s */
+  100% { opacity: 0.55; transform: translateY(0); }
 }
 /* Hover desktop: chevron e label diventano rossi */
 .project-chevron__stroke {
   transition: stroke 300ms ease;
 }
 .project-chevron-wrap:hover .project-chevron__stroke {
-  stroke: #c8102e !important;
+  stroke: var(--accent) !important;
 }
 .project-chevron-wrap:hover .project-chevron-label {
-  color: #c8102e !important;
+  color: var(--accent) !important;
   opacity: 1;
 }
 .project-chevron-wrap:hover {
@@ -223,10 +309,10 @@ h1 { line-height: 1.05; }
     opacity: 0.7;
   }
   .project-chevron-wrap:active .project-chevron__stroke {
-    stroke: #c8102e !important;
+    stroke: var(--accent) !important;
   }
   .project-chevron-wrap:active .project-chevron-label {
-    color: #c8102e !important;
+    color: var(--accent) !important;
     opacity: 1;
   }
   .project-chevron-wrap:active {
@@ -234,14 +320,25 @@ h1 { line-height: 1.05; }
     opacity: 1;
   }
 }
+/* Text reveal: CSS Grid 0fr→1fr al posto di max-height.
+   max-height animata aveva due problemi: il magic number 1200px (se il testo
+   è più corto, la transizione "finisce prima" visivamente) e il layout
+   thrashing (il browser ricalcola l'altezza a ogni frame).
+   grid-template-rows: 0fr→1fr anima l'altezza reale senza magic number. */
+.project-text-reveal__wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 500ms var(--ease-in-out);
+}
+.project-text-reveal__wrapper--open {
+  grid-template-rows: 1fr;
+}
 .project-text-reveal__content {
-  max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 400ms ease;
+  transition: opacity 400ms var(--ease-smooth);
 }
-.project-text-reveal__content--open {
-  max-height: 1200px;
+.project-text-reveal__wrapper--open .project-text-reveal__content {
   opacity: 1;
 }
 
@@ -318,5 +415,63 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.15s !important;
+  }
+}
+
+/* ===== Controlli del viewer =====
+   Prima erano i caratteri ‹ › × in un <button> testuale: bersaglio reale
+   sotto i 44x44px richiesti sul touch, e allineamento dipendente dal font. */
+.viewer-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+  transition: color 200ms ease, transform 200ms ease;
+}
+.viewer-nav:hover {
+  color: var(--accent);
+  transform: scale(1.12);
+}
+.viewer-nav:active {
+  transform: scale(0.96);
+}
+
+/* ===== Righe marquee =====
+   L'espansione in hover animava il padding, che ricalcola il layout di tutta
+   la lista a ogni frame. `contain` limita il ricalcolo alla singola riga. */
+.marquee-row {
+  contain: layout paint;
+  transition: opacity 150ms ease-out;
+}
+/* Press feedback su touch: la riga si attenua leggermente confermando il tap.
+   opacity non trigghera layout (a differenza di transform che combatte con contain). */
+.marquee-row:active {
+  opacity: 0.85;
+}
+/* Stagger: ogni riga entra con un leggero ritardo dalla precedente.
+   Guida l'occhio verso il basso e dà ritmo alla pagina. */
+.marquee-row-stagger {
+  opacity: 0;
+  animation: marqueeStaggerIn 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+@keyframes marqueeStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Footer: allineato a sinistra come il resto dell'impostazione editoriale,
+   invece di essere l'unico blocco centrato e in grassetto del sito. */
+.site-footer {
+  text-align: left;
+}
+@media (min-width: 768px) {
+  .site-footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
   }
 }

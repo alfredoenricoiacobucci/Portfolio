@@ -1,10 +1,14 @@
 // pages/artwork/index.js
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Modal from "@/components/Modal";
+import Seo from "@/components/Seo";
 import { useRouter } from "next/router";
-// BY_MODE non più usato: l'ordine viene da contenuti.json via getServerSideProps
 import dynamic from "next/dynamic";
+import { readJSON, readStrings } from "@/lib/contenuti";
+import { fallbackToOriginal, preview } from "@/lib/images";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
 
@@ -15,26 +19,8 @@ export async function getStaticProps() {
   // ISR: pagina pre-generata, servita dalla CDN, rigenerata ogni 60s in background.
   // Molto più veloce di getServerSideProps (zero attesa server ad ogni navigazione).
 
-  // Leggiamo SOLO contenuti.json e stringhe.txt (file piccoli).
-  const fs = await import("fs");
-  const path = await import("path");
-  const fsMod = await fs;
-  const pathMod = await path;
-
-  const root = process.cwd();
-  const contenutiDir = pathMod.join(root, "contenuti");
-
-  // Helper: leggi file di testo (trim), ritorna stringa vuota se non esiste
-  const readText = (filePath) => {
-    try { return fsMod.readFileSync(filePath, "utf-8").trim(); } catch { return ""; }
-  };
-  // Helper: leggi JSON, ritorna null se non esiste o è corrotto
-  const readJSON = (filePath) => {
-    try { return JSON.parse(fsMod.readFileSync(filePath, "utf-8")); } catch { return null; }
-  };
-
   // ---- contenuti.json è l'UNICA fonte dati ----
-  const contenuti = readJSON(pathMod.join(contenutiDir, "contenuti.json")) || { projects: [], aboutArt: {}, aboutPro: {}, aboutShared: {} };
+  const contenuti = readJSON("contenuti.json", { projects: [], aboutArt: {}, aboutPro: {}, aboutShared: {} });
 
   // ---- PROGETTI: tutto da contenuti.json, zero accesso al filesystem immagini ----
   const projects = (contenuti.projects || []).map((data) => {
@@ -130,18 +116,8 @@ export async function getStaticProps() {
   const aboutArt = buildAbout(aboutArtRaw, aboutArtRaw);
   const aboutPro = buildAbout(aboutProRaw, aboutArtRaw);
 
-  // ---- STRINGHE: leggi da contenuti/stringhe.txt ----
-  const stringheRaw = readText(pathMod.join(contenutiDir, "stringhe.txt"));
-  const strings = {};
-  stringheRaw.split("\n").forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) return;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) return;
-    const key = trimmed.slice(0, eqIdx).trim();
-    const val = trimmed.slice(eqIdx + 1).trim();
-    if (key) strings[key] = val;
-  });
+  // ---- STRINGHE: parser condiviso con la landing (lib/contenuti) ----
+  const strings = readStrings();
 
   return {
     props: {
@@ -229,7 +205,9 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
       <input name="contact-name" type="text" placeholder={S.PLACEHOLDER_NOME || "Nome e Cognome"} className={inputCls} required />
       <input name="contact-email" type="email" placeholder={S.PLACEHOLDER_EMAIL || "La tua email"} className={inputCls} />
       <textarea name="contact-message" placeholder={S.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio"} className={`${inputCls} resize-none`} rows={5} required />
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && (
+        <p role="alert" style={{ color: "var(--error)", fontSize: "var(--text-xs)" }}>{error}</p>
+      )}
       <button type="submit" className={btnCls} disabled={sending}>
         {sending ? "Invio in corso..." : (S.TASTO_INVIA || "Invia")}
       </button>
@@ -242,7 +220,7 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
    Ogni riga ha MINIMO 2 foto. Se ne avanza 1, viene assorbita
    dalla riga precedente. Tutte le righe riempiono la larghezza.
    ============================================================ */
-function JustifiedGallery({ images = [], onImageClick }) {
+function JustifiedGallery({ images = [], onImageClick, altFor }) {
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const GAP = 6;
@@ -332,17 +310,26 @@ function JustifiedGallery({ images = [], onImageClick }) {
                 onClick={() => onImageClick?.(item.idx)}
                 aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
               >
-                <Image src={item.src} alt=""
+                <Image src={item.src} alt={altFor ? altFor(item.idx) : ""}
                   fill
                   sizes={`${Math.round(w)}px`}
                   quality={80}
                   loading={ri < 2 ? "eager" : "lazy"}
                   className="object-cover" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200" />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <span className="rounded px-3 py-1 text-white text-xs md:text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-150 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
-                    visualizza a schermo intero
-                  </span>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-200" />
+                {/* Prima qui compariva la scritta "visualizza a schermo
+                    intero" centrata su OGNI foto: su un mosaico di tre per
+                    riga era rumore. Una lente in un angolo dice la stessa
+                    cosa senza coprire l'immagine (il cursore è già zoom-in). */}
+                <div className="pointer-events-none absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} aria-hidden>
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" />
+                    <line x1="11" y1="8" x2="11" y2="14" />
+                    <line x1="8" y1="11" x2="14" y2="11" />
+                  </svg>
                 </div>
               </button>
             );
@@ -394,6 +381,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     LABEL_FOTO_PLACEHOLDER: strings.LABEL_FOTO_PLACEHOLDER || "Foto",
   };
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
 
   // Mode come stato locale — niente round-trip SSR al cambio Art/Pro
   const [mode, setMode] = useState(
@@ -415,13 +403,22 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   const navHistoryRef = useRef([]);
 
   // ===== HEADER HEIGHT per banner calc =====
+  // Prima questo effect non aveva array di dipendenze: girava a ogni render
+  // leggendo offsetHeight (forced layout) e riscrivendo una custom property.
+  // Con lo scroll che aggiorna tre stati era layout thrashing continuo.
+  // Ora misura al mount e solo quando l'header cambia davvero dimensione.
   const headerRef = useRef(null);
   useEffect(() => {
-    if (headerRef.current) {
-      const h = headerRef.current.offsetHeight;
-      document.documentElement.style.setProperty('--header-h', `${h}px`);
-    }
-  });
+    const el = headerRef.current;
+    if (!el) return;
+    const apply = () => {
+      document.documentElement.style.setProperty("--header-h", `${el.offsetHeight}px`);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ===== HEADER AUTO-HIDE su progetto e about =====
   const [headerHidden, setHeaderHidden] = useState(false);
@@ -488,6 +485,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   const activeBannerSlugRef = useRef(null);
 
   const startBannerScroll = useCallback((slug) => {
+    // Animazione guidata da JS: il blocco @media in globals.css non la copre,
+    // quindi la condizione va controllata qui.
+    if (reducedMotion) return;
     activeBannerSlugRef.current = slug;
     // Determina start/end dal data attribute (verticale vs orizzontale)
     const el = document.querySelector(`[data-banner-slug="${slug}"]`);
@@ -529,7 +529,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       bannerRafRef.current = requestAnimationFrame(animate);
     };
     bannerRafRef.current = requestAnimationFrame(animate);
-  }, []);
+  }, [reducedMotion]);
 
   const stopBannerScroll = useCallback(() => {
     const slug = activeBannerSlugRef.current;
@@ -587,29 +587,24 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     stopBannerScroll();
   }, [selectedProject, stopBannerScroll]);
 
+  // La navigazione la fa <Link>. Qui resta solo la logica touch:
+  // primo tap mostra l'anteprima (e blocca il link), secondo tap lascia
+  // passare la navigazione.
   const onRowClick = (project, e) => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    if (!isTouch) {
-      router.push(hrefProject(project.slug), undefined, { shallow: true });
+    if (!isTouch) return;
+    if (activeRowSlug === project.slug) {
+      setActiveRowSlug(null);
       return;
     }
-    if (activeRowSlug === project.slug) {
-      // Secondo tap → naviga
-      setActiveRowSlug(null);
-      router.push(hrefProject(project.slug), undefined, { shallow: true });
-    } else {
-      // Primo tap → mostra anteprima, chiudi eventuali altre
-      e.preventDefault();
-      setActiveRowSlug(project.slug);
-      preloadAndScroll(project);
-    }
+    e.preventDefault();
+    setActiveRowSlug(project.slug);
+    preloadAndScroll(project);
   };
 
   // ===== VIEWER: SOLO STATE LOCALE, NIENTE URL SYNC =====
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
-  // Indici visitati — le immagini già caricate restano nel DOM per evitare ricaricamento
-  const viewerVisitedRef = useRef(new Set());
 
   // ===== TOGGLE BLOCCO TESTO SOTTO BANNER =====
   const [textOpen, setTextOpen] = useState(false);
@@ -727,6 +722,40 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   // Flag: siamo nella vista home (marquee visibile)?
   const isHome = !selectedProject;
 
+  /* Titolo leggibile del progetto, usato per alt text e <title>.
+     Prima ogni foto aveva alt="": corretto per immagini decorative, ma qui le
+     foto SONO il contenuto, quindi vanno descritte. */
+  const projectLabel = useMemo(
+    () =>
+      selectedProject
+        ? [selectedProject.name, ...(selectedProject.titleExtra || []), selectedProject.datePlace]
+            .filter(Boolean)
+            .join(" — ")
+        : "",
+    [selectedProject]
+  );
+
+  const viewerAlt = useCallback(
+    (idx) => `${projectLabel} — foto ${idx + 1} di ${selectedProject?.images?.length ?? 0}`,
+    [projectLabel, selectedProject]
+  );
+
+  /* Finestra di immagini montate nel viewer: corrente ±2. */
+  const viewerWindow = useMemo(() => {
+    const imgs = selectedProject?.images;
+    if (!viewerOpen || !imgs?.length) return [];
+    const total = imgs.length;
+    const seen = new Set();
+    const out = [];
+    for (let o = -2; o <= 2; o++) {
+      const idx = (viewerIndex + o + total) % total;
+      if (seen.has(idx)) continue; // gallerie con meno di 5 foto
+      seen.add(idx);
+      out.push({ idx, src: imgs[idx]?.src || imgs[idx], isCurrent: idx === viewerIndex });
+    }
+    return out;
+  }, [viewerOpen, viewerIndex, selectedProject]);
+
   // Gradiente bottom home: opacità basata sulla distanza dal fondo della pagina
   const [gradientOpacity, setGradientOpacity] = useState(1);
 
@@ -787,8 +816,35 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     });
   }, [mode, isHome]);
 
+  // Metadati: dipendono dal progetto aperto, così ogni URL condivisa
+  // mostra titolo e anteprima propri invece di restare anonima.
+  const seo = useMemo(() => {
+    const sezione = mode === "professional" ? "Professional" : "Artwork";
+    if (selectedProject && selectedProject.name === "About") {
+      return {
+        title: `About ${sezione}`,
+        description: (selectedProject.description || "").slice(0, 200),
+        image: selectedProject.photo || undefined,
+        path: `/${mode}?p=about`,
+      };
+    }
+    if (selectedProject) {
+      const cover = selectedProject.images?.[selectedProject.bannerStartIndex || 0]?.src;
+      return {
+        title: projectLabel,
+        description: (selectedProject.description || "").slice(0, 200) || undefined,
+        image: cover,
+        path: `/${mode}?p=${currentSlug}`,
+      };
+    }
+    return { title: sezione, path: `/${mode}` };
+  }, [mode, selectedProject, projectLabel, currentSlug]);
+
   return (
     <div ref={pageRef} className="min-h-screen flex flex-col items-center fade-in" style={{ animationDuration: '300ms', backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork, color: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork }}>
+      <Seo title={seo.title} description={seo.description} image={seo.image} path={seo.path} />
+      {/* Skip link: primo elemento focusabile, salta header e banner */}
+      <a href="#contenuto" className="skip-link">Vai al contenuto</a>
       {/* HEADER */}
       <header ref={headerRef} className={`w-full flex justify-between items-center py-[2.2rem] px-4 ${mode === "professional" ? "border-b-[2.5px]" : "border-b-4"} text-[15px] font-bold relative`} style={{ borderColor: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork, backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
         {/* SINISTRA: Art / Pro */}
@@ -837,22 +893,36 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           );
         })()}
 
-        {/* DESTRA: Home, About, Email */}
-        <nav className="text-[20px]">
-          <span className="cursor-pointer transition-colors hover-red" onClick={() => {
-            navHistoryRef.current = [];
-            router.push(basePath, undefined, { shallow: true });
-          }}>{S.LABEL_HOME}</span>
-          <span>,{" "}</span>
-          <span className="cursor-pointer transition-colors hover-red" onClick={() => {
-            if (selectedProject && selectedProject.name !== "About") {
-              navHistoryRef.current.push(currentSlug);
-            }
-            router.push(`${basePath}?p=about`, undefined, { shallow: true });
-          }}>{S.LABEL_ABOUT}</span>
-          <span>,{" "}</span>
-          <span className="cursor-pointer transition-colors hover-red" onClick={() => setShowContact(true)}>{S.LABEL_EMAIL}</span>
-          <span>.</span>
+        {/* DESTRA: Home, About, Email
+            Erano <span onClick>: non focusabili col Tab, non attivabili da
+            tastiera e non annunciati come link. Home e About sono navigazione
+            vera, quindi diventano <Link>; Email apre una modale, quindi
+            <button>. */}
+        <nav className="text-[20px]" aria-label="Navigazione principale">
+          <Link
+            href={basePath}
+            shallow
+            className="cursor-pointer transition-colors hover-red"
+            onClick={() => { navHistoryRef.current = []; }}
+          >{S.LABEL_HOME}</Link>
+          <span aria-hidden>,{" "}</span>
+          <Link
+            href={`${basePath}?p=about`}
+            shallow
+            className="cursor-pointer transition-colors hover-red"
+            onClick={() => {
+              if (selectedProject && selectedProject.name !== "About") {
+                navHistoryRef.current.push(currentSlug);
+              }
+            }}
+          >{S.LABEL_ABOUT}</Link>
+          <span aria-hidden>,{" "}</span>
+          <button
+            type="button"
+            className="cursor-pointer transition-colors hover-red"
+            onClick={() => setShowContact(true)}
+          >{S.LABEL_EMAIL}</button>
+          <span aria-hidden>.</span>
         </nav>
       </header>
 
@@ -870,29 +940,30 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             zoomMs={7000}
             priorityFirst
           />
-          <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
-          {/* Sfumatura leggera in basso — sempre visibile per evitare riga */}
+          {/* Un solo gradiente, concentrato in basso dove serve leggibilità.
+              Prima erano due overlay sovrapposti (0.55→0.65→nero, più una
+              seconda sfumatura) che sommati annerivano del tutto il terzo
+              inferiore della fotografia. */}
           <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0"
+            className="pointer-events-none absolute inset-0 z-30"
             style={{
-              zIndex: 45,
-              height: 'calc(2rem + 70px)',
-              background: "linear-gradient(to top, black 0%, rgba(0,0,0,0.6) 40%, transparent 100%)",
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 72%, rgba(0,0,0,0.92) 90%, #000 100%)",
             }}
           />
           {/* Titolo — stessa posizione di About: items-end, mb-8 */}
           <div className="absolute inset-0 z-50 flex items-end px-6 md:px-12" style={{ bottom: "80px" }}>
             <div className="mb-8 space-y-0 leading-tight">
-              <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+              <h2 className="banner-title font-display text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                 {selectedProject.name}
               </h2>
               {selectedProject.titleExtra?.map((line, i) => (
-                <h2 key={i} className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                <h2 key={i} className="banner-title font-display text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                   {line}
                 </h2>
               ))}
               {selectedProject.datePlace && (
-                <p className="banner-title text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "#c8102e" }}>
+                <p className="banner-title font-display text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]" style={{ color: "var(--accent)" }}>
                   {selectedProject.datePlace}
                 </p>
               )}
@@ -927,14 +998,18 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         </section>
       )}
 
+      <div id="contenuto" tabIndex={-1} />
+
       {/* CONTENUTO PROGETTO — chevron toggle testo sotto banner, poi galleria, poi footer */}
       {selectedProject && selectedProject.name !== "About" ? (
         <div key={`project-${currentSlug}`} className="w-full" style={{ backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflowX: 'auto' }}>
-              {/* Contenuto testo — si rivela al click */}
-              <div className={`project-text-reveal__content ${textOpen ? "project-text-reveal__content--open" : ""} ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
+              {/* Wrapper grid: anima l'altezza 0fr→1fr senza magic number */}
+              <div className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
+              {/* Contenuto testo — opacity controllata dal wrapper */}
+              <div className={`project-text-reveal__content ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
                 <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
@@ -950,30 +1025,30 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                     {selectedProject.section === "art" ? (
                       selectedProject.esposizioni?.length > 0 && (
                         <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
-                          <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "9px" }}>Esposizioni</div>
+                          <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "var(--text-2xs)" }}>Esposizioni</div>
                           {selectedProject.esposizioni.map((esp, ei) => (
                             <div key={ei} className="space-y-3">
                               {esp.nome && (
                                 <div>
-                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Nome evento</div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Nome evento</div>
                                   <div>{esp.nome}</div>
                                 </div>
                               )}
                               {esp.data && (
                                 <div>
-                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Data</div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Data</div>
                                   <div>{esp.data}</div>
                                 </div>
                               )}
                               {esp.luogo && (
                                 <div>
-                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Luogo</div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Luogo</div>
                                   <div>{esp.luogo}</div>
                                 </div>
                               )}
                               {esp.info && (
                                 <div>
-                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Info evento</div>
+                                  <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Info evento</div>
                                   <div>{esp.info}</div>
                                 </div>
                               )}
@@ -984,22 +1059,22 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                       )
                     ) : selectedProject.techData && (
                       <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
-                        <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "9px" }}>Attrezzatura</div>
+                        <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "var(--text-2xs)" }}>Attrezzatura</div>
                         {selectedProject.techData.camera && (
                           <div>
-                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Camera</div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Camera</div>
                             <div>{selectedProject.techData.camera}</div>
                           </div>
                         )}
                         {selectedProject.techData.ottica && (
                           <div>
-                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Ottica</div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Ottica</div>
                             <div>{selectedProject.techData.ottica}</div>
                           </div>
                         )}
                         {selectedProject.techData.luce && (
                           <div>
-                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "9px" }}>Luce</div>
+                            <div className="uppercase tracking-wider font-semibold mb-0.5" style={{ fontSize: "var(--text-2xs)" }}>Luce</div>
                             <div>{selectedProject.techData.luce}</div>
                           </div>
                         )}
@@ -1013,14 +1088,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   </div>
                 </div>
               </div>
+              </div>{/* chiude project-text-reveal__wrapper */}
             </div>
           )}
           {/* Gallery — margini simmetrici sopra e sotto */}
           <div style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
             <JustifiedGallery
               images={selectedProject.images || []}
+              altFor={viewerAlt}
               onImageClick={(i) => {
-                viewerVisitedRef.current = new Set();
                 setViewerIndex(i);
                 setViewerOpen(true);
                 if (selectedProject?.images?.[i]) {
@@ -1043,7 +1119,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   playsInline
                   muted
                   loop
-                  autoPlay
+                  autoPlay={!reducedMotion}
+                  controls={reducedMotion}
                   preload="metadata"
                   src={selectedProject.video}
                 />
@@ -1053,10 +1130,18 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 </span>
               )}
             </div>
-            <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-b from-black/55 via-black/65 to-black" />
+            {/* Gradiente allineato a quello dei banner progetti: leggero al centro,
+                concentrato in basso per leggibilità del titolo. */}
+            <div
+              className="pointer-events-none absolute inset-0 z-30"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 72%, rgba(0,0,0,0.92) 90%, #000 100%)",
+              }}
+            />
             <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
               <div className="mb-8 space-y-0 leading-tight">
-                <h2 className="banner-title text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
+                <h2 className="banner-title font-display text-white text-4xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                   {mode === "professional" ? "About Professional" : "About Artwork"}
                 </h2>
               </div>
@@ -1079,15 +1164,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
               <div className={`flex items-center text-sm ${mode === "professional" ? "text-white/50" : "text-black/40"}`} style={{ marginTop: "4rem", justifyContent: "space-between" }}>
-                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {S.TELEFONO}
                 </a>
-                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   {S.EMAIL_DESTINATARIO}
                 </a>
-                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover:text-[#c8102e]">
+                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
@@ -1100,7 +1185,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
                   <div className="text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: ASP.colorAccent }}>&ldquo;&rdquo;</div>
-                  <blockquote className="text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: ASP.colorAccent }}>
+                  <blockquote className="font-display text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: ASP.colorAccent }}>
                     {selectedProject.quote}
                   </blockquote>
                 </div>
@@ -1133,11 +1218,21 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
-                <div
+                /* Era un <div onClick>: l'intero accesso ai progetti — la
+                   navigazione principale del sito — non era raggiungibile da
+                   tastiera. Ora è un <Link>, quindi focusabile, attivabile con
+                   Invio, apribile in nuova tab e con prefetch di Next. */
+                <Link
                   key={project.slug}
-                  className={`marquee-row w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
+                  href={hrefProject(project.slug)}
+                  shallow
+                  aria-label={`Apri il progetto ${project.name}`}
+                  className={`marquee-row marquee-row-stagger block w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                   onMouseEnter={() => onRowHover(project)}
                   onMouseLeave={onRowLeave}
+                  onFocus={() => preloadAndScroll(project)}
+                  onBlur={onRowLeave}
                   onClick={(e) => onRowClick(project, e)}
                 >
                   {/* Contenitore relativo — il banner si posiziona dietro al testo */}
@@ -1145,7 +1240,11 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                     {/* Banner background — visibile solo su hover */}
                     {bannerSrc && (
                       <div className="marquee-row__banner">
-                        <img src={bannerSrc} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" style={{ objectPosition: `${aPos.x}% ${aPos.y}%` }} />
+                        {/* Anteprima @md (~59 KB): prima qui finiva
+                            l'originale a piena risoluzione, fino a 17 MB,
+                            per riempire una striscia sotto un overlay nero
+                            al 45%. */}
+                        <img src={preview(bannerSrc)} onError={fallbackToOriginal(bannerSrc)} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" decoding="async" style={{ objectPosition: `${aPos.x}% ${aPos.y}%` }} />
                         <div className="marquee-row__banner-overlay" />
                       </div>
                     )}
@@ -1156,7 +1255,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                       <span className="marquee-seq" aria-hidden="true">{marqueeText}</span>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -1185,17 +1284,25 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       {/* VIEWER FULLSCREEN */}
       {viewerOpen && selectedProject?.images?.length > 0 && (
         <div
-          className="fixed inset-0 z-[200] flex flex-col bg-black/95 fade-in py-2"
+          className="viewer-fullscreen fixed inset-0 z-[200] flex flex-col bg-black/95 fade-in py-2"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Visualizzazione a schermo intero — ${projectLabel}`}
           style={{ animationDuration: '250ms' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setViewerOpen(false);
           }}
         >
           {/* Title bar */}
-          <div className="w-full flex items-center justify-center h-[44px] shrink-0 pointer-events-none">
+          <div className="w-full flex items-center justify-center gap-3 h-[44px] shrink-0 pointer-events-none">
             <span className="text-white text-sm font-semibold text-center px-4 whitespace-nowrap">
-              {[selectedProject?.name, ...(selectedProject?.titleExtra || []), selectedProject?.datePlace].filter(Boolean).join(" - ")}
+              {projectLabel}
             </span>
+            {selectedProject.images.length > 1 && (
+              <span className="text-white/50 tabular-nums" style={{ fontSize: "var(--text-xs)" }}>
+                {viewerIndex + 1}/{selectedProject.images.length}
+              </span>
+            )}
           </div>
 
           {/* Image area — swipe support for mobile */}
@@ -1217,76 +1324,87 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           >
             {selectedProject.images.length > 1 && (
               <>
+                {/* SVG al posto dei caratteri ‹ › : non dipendono dal font,
+                    si allineano in modo prevedibile e il bersaglio arriva a
+                    44x44px come richiesto sul touch. */}
                 <button
-                  className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
+                  className="viewer-nav absolute left-4 md:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-10"
                   onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
                   aria-label="Immagine precedente"
                 >
-                  ‹
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
                 </button>
                 <button
-                  className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
+                  className="viewer-nav absolute right-4 md:right-8 lg:right-12 top-1/2 -translate-y-1/2 z-10"
                   onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
                   aria-label="Immagine successiva"
                 >
-                  ›
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </button>
               </>
             )}
             <div className="relative max-w-[95vw] max-h-full w-full h-full">
-              {/* Render corrente + ±3 adiacenti + già visitati — toggle con opacity */}
-              {(() => {
-                const imgs = selectedProject.images;
-                const total = imgs.length;
-                // Segna l'indice corrente come visitato
-                viewerVisitedRef.current.add(viewerIndex);
-                // Calcola indici da renderizzare: corrente + ±3 + visitati
-                const nearby = new Set();
-                for (let o = -3; o <= 3; o++) {
-                  nearby.add((viewerIndex + o + total) % total);
-                }
-                // Unisci con visitati
-                viewerVisitedRef.current.forEach(i => nearby.add(i));
-                const indices = [...nearby].sort((a, b) => a - b);
-                return indices.map(idx => {
-                  const src = imgs[idx]?.src || imgs[idx];
-                  const isCurrent = idx === viewerIndex;
-                  return (
-                    <Image
-                      key={src}
-                      src={src}
-                      alt=""
-                      fill
-                      sizes="95vw"
-                      quality={85}
-                      priority={isCurrent}
-                      loading="eager"
-                      className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
-                      style={{ opacity: isCurrent ? 1 : 0, transition: "opacity 120ms ease", position: "absolute", pointerEvents: isCurrent ? "auto" : "none" }}
-                    />
-                  );
-                });
-              })()}
+              {/* Finestra fissa: corrente ±2, niente altro.
+                  Prima teneva nel DOM corrente ±3 PIU' tutti gli indici già
+                  visitati, tutti con loading="eager": su le-radici-ca-tieni
+                  (98 foto) sfogliando la galleria si arrivava a ~95 <Image>
+                  montati insieme. Il browser tiene comunque in cache le
+                  immagini già scaricate, quindi tornare indietro resta
+                  immediato senza mantenerle montate. */}
+              {viewerWindow.map(({ idx, src, isCurrent }) => (
+                <Image
+                  key={src}
+                  src={src}
+                  alt={isCurrent ? viewerAlt(idx) : ""}
+                  fill
+                  sizes="95vw"
+                  quality={85}
+                  priority={isCurrent}
+                  className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
+                  style={{
+                    opacity: isCurrent ? 1 : 0,
+                    transition: "opacity 150ms cubic-bezier(0.23, 1, 0.32, 1)",
+                    position: "absolute",
+                    pointerEvents: isCurrent ? "auto" : "none",
+                  }}
+                />
+              ))}
             </div>
           </div>
 
           {/* Close button */}
-          <div className="w-full flex items-center justify-center h-[44px] shrink-0">
+          <div className="w-full flex items-center justify-center shrink-0">
             <button
-              className="text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-all hover-red z-10"
+              className="viewer-nav"
               onClick={() => setViewerOpen(false)}
               aria-label="Chiudi visualizzazione"
             >
-              ×
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
             </button>
           </div>
         </div>
       )}
 
       {/* FOOTER */}
-      <footer className={`w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} text-center text-sm font-bold space-y-2`} style={{ borderColor: mode === "professional" ? "#f8f4ed" : "#000000" }}>
-        <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
-        <div className="text-xs font-normal">
+      <footer
+        className={`site-footer w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} space-y-2 md:space-y-0`}
+        style={{
+          borderColor: mode === "professional" ? "#f8f4ed" : "#000000",
+          paddingLeft: ASP.marginLaterale + "%",
+          paddingRight: ASP.marginLaterale + "%",
+        }}
+      >
+        <div className="font-bold" style={{ fontSize: "var(--text-sm)" }}>
+          {S.COPYRIGHT} © {new Date().getFullYear()}
+        </div>
+        <div className="md:max-w-md md:text-right" style={{ fontSize: "var(--text-xs)" }}>
           {S.DISCLAIMER}
         </div>
       </footer>
@@ -1330,7 +1448,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           inset: 0;
           z-index: 1;
           opacity: 0;
-          transition: opacity 400ms ease;
+          transition: opacity 400ms var(--ease-smooth);
         }
         @media (hover: hover) and (pointer: fine) {
           .marquee-row:hover .marquee-row__banner { opacity: 1; }

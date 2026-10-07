@@ -1,8 +1,33 @@
 // pages/_app.js
 import "@/styles/globals.css";
 import { useEffect, useRef, useCallback, useState } from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
+import { Archivo, Inter } from "next/font/google";
 import { useTrackPageView } from "@/lib/useAnalytics";
+
+/* Font self-hosted da next/font: zero richieste a fonts.googleapis.com, zero
+ * render-blocking, zero CLS. Prima arrivavano da un <link> in _document.js,
+ * che scaricava 6 pesi di Inter per intero.
+ *
+ * Archivo regge il display — marquee a 7rem, titoli dei banner, citazioni —
+ * dove Inter risultava anonimo. Inter resta per corpo e UI, dove ai corpi
+ * piccoli e' piu' leggibile. Per tornare a Inter su tutto, basta puntare
+ * --font-display sul font body in tailwind.config.js.
+ */
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 /*
  * Transizione Art ↔ Pro — taglio netto:
@@ -345,9 +370,9 @@ export default function App({ Component, pageProps }) {
           100% { transform: rotate(0deg); }
         }
         @keyframes phoneColor {
-          0%, 20% { stroke: #c8102e; }
+          0%, 20% { stroke: var(--accent, #c8102e); }
           50%, 70% { stroke: #22c55e; }
-          100% { stroke: #c8102e; }
+          100% { stroke: var(--accent, #c8102e); }
         }
         @keyframes warningPulse {
           0%, 100% { stroke: #facc15; opacity: 0.5; }
@@ -383,9 +408,12 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </Head>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
-      <div ref={wrapRef} style={{ opacity: 1 }}>
+      <div ref={wrapRef} className={`${archivo.variable} ${inter.variable}`} style={{ opacity: 1 }}>
         <Component {...pageProps} />
       </div>
     </>

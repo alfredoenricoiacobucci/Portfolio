@@ -1,6 +1,7 @@
 // components/TopRotator.js
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 function shuffle(a) {
   const arr = [...a];
@@ -26,6 +27,9 @@ export default function TopRotator({
   fadeMs = 1000,
   priorityFirst = true,
 }) {
+  // Rotazione guidata da setTimeout: il blocco @media in globals.css non la
+  // ferma, quindi con la riduzione del movimento attiva resta la prima foto.
+  const reducedMotion = useReducedMotion();
   const [bufSrc, setBufSrc] = useState([null, null]);
   const [top, setTop] = useState(0);
   const [fading, setFading] = useState(false);
@@ -102,6 +106,7 @@ export default function TopRotator({
   // Ciclo crossfade
   useEffect(() => {
     if (!ready || !slidesRef.current.length) return;
+    if (reducedMotion) return;
 
     const loop = () => {
       timers.current.dwell = setTimeout(() => {
@@ -135,7 +140,7 @@ export default function TopRotator({
       clearTimeout(timers.current.dwell);
       clearTimeout(timers.current.fade);
     };
-  }, [interval, fadeMs, top, ready]);
+  }, [interval, fadeMs, top, ready, reducedMotion]);
 
   // Opacità incrociata
   const aIsTop = top === 0;

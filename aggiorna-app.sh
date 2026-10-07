@@ -1,7 +1,10 @@
 #!/bin/bash
 APP="/Applications/Manager Portfolio.app"
-JS="$HOME/Desktop/Portfolio AEI/manager.js"
-ICON_PNG="$HOME/Desktop/Portfolio AEI/icon_1024.png"
+if [ -d "/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI" ]; then ROOT="/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI"; else ROOT="$HOME/Desktop/Portfolio AEI"; fi
+JS="$ROOT/manager.js"
+ICON_PNG="$ROOT/icon_1024.png"
+# Se esiste la versione con frame squircle (stessa immagine, solo bordo trasparente), usa quella
+[ -f "$ROOT/icon_1024_squircle.png" ] && ICON_PNG="$ROOT/icon_1024_squircle.png"
 
 # Chiudi tutto
 killall "Manager Portfolio" 2>/dev/null
