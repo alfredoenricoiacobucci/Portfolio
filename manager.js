@@ -129,20 +129,48 @@ nsApp.setActivationPolicy($.NSApplicationActivationPolicyRegular);
 
 ObjC.import("stdlib");
 
+// ---- Chiusura: Cmd+Q, "Esci" dal Dock e chiusura finestra terminano davvero l'app ----
+// L'app è uno script (applet): il gestore "quit" standard aspetta la fine dello script,
+// che però resta fermo in nsApp.run, e il server Python avviato con NSTask resterebbe acceso.
+var mpQuitting = false;
+function mpQuitNow() {
+  if (mpQuitting) return;
+  mpQuitting = true;
+  try { task.terminate; } catch (e) {}
+  try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch (e) {}
+  $.exit(0);
+}
+var AE_CORE = 0x61657674; // 'aevt'
+var AE_QUIT = 0x71756974; // 'quit'
 ObjC.registerSubclass({
-  name:"MPDel8",superclass:"NSObject",protocols:["NSApplicationDelegate"],
+  name:"MPDel9",superclass:"NSObject",protocols:["NSApplicationDelegate","NSWindowDelegate"],
   methods:{
-    "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}}
+    "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
+    "applicationShouldTerminate:":{types:["int",["id"]],implementation:function(s){ mpQuitNow(); return 1; }},
+    "windowWillClose:":{types:["void",["id"]],implementation:function(n){ mpQuitNow(); }},
+    "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpQuitNow(); }},
+    "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpQuitNow(); }},
+    "mpInstallQuit:":{types:["void",["id"]],implementation:function(t){ mpInstallQuitHandler(); }}
   }
 });
-nsApp.delegate = $.MPDel8.alloc.init;
+var mpDel = $.MPDel9.alloc.init;
+nsApp.delegate = mpDel;
+function mpInstallQuitHandler() {
+  $.NSAppleEventManager.sharedAppleEventManager.setEventHandlerAndSelectorForEventClassAndEventID(mpDel, "mpHandleQuit:withReply:", AE_CORE, AE_QUIT);
+}
+mpInstallQuitHandler();
+// Reinstalla dopo l'avvio del ciclo dell'app, che potrebbe ripristinare il gestore standard
+$.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(1.0, mpDel, "mpInstallQuit:", null, false);
+$.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(4.0, mpDel, "mpInstallQuit:", null, false);
 
 // Menu bar with App menu + Edit menu
 var mb = $.NSMenu.alloc.init;
 var appMi = $.NSMenuItem.alloc.init;
 mb.addItem(appMi);
 var appMenu = $.NSMenu.alloc.initWithTitle("Manager Portfolio");
-appMenu.addItem($.NSMenuItem.alloc.initWithTitleActionKeyEquivalent("Esci da Manager Portfolio","terminate:","q"));
+var quitItem = $.NSMenuItem.alloc.initWithTitleActionKeyEquivalent("Esci da Manager Portfolio","mpQuit:","q");
+quitItem.target = mpDel;
+appMenu.addItem(quitItem);
 appMi.submenu = appMenu;
 var editMi = $.NSMenuItem.alloc.init;
 mb.addItem(editMi);
@@ -160,6 +188,7 @@ nsApp.mainMenu = mb;
 var st = $.NSTitledWindowMask|$.NSClosableWindowMask|$.NSResizableWindowMask|$.NSMiniaturizableWindowMask;
 var win = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer($.NSMakeRect(0,0,800,600),st,$.NSBackingStoreBuffered,false);
 win.title = "Manager Portfolio";
+win.delegate = mpDel;
 win.setTitlebarAppearsTransparent(true);
 win.backgroundColor = $.NSColor.colorWithSRGBRedGreenBlueAlpha(0.11, 0.11, 0.11, 1.0);
 // Imposta il FRAME (non content rect) alla zona visibile intera

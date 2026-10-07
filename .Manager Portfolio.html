@@ -6292,8 +6292,8 @@
       const token = getToken();
       const repo = getRepo();
       const res = await fetch(
-        `https://api.github.com/repos/${repo}/contents/analytics.json?ref=data`,
-        { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" } }
+        `https://api.github.com/repos/${repo}/contents/analytics.json?ref=data&t=${Date.now()}`,
+        { cache: "no-store", headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" } }
       );
       if (res.ok) {
         const remote = await res.json();
@@ -6471,7 +6471,7 @@
     return `<svg width="${size || 12}" height="${size || 12}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${P[name]}</svg>`;
   }
   function anTrend(cur, prev) {
-    if (!prev && !cur) return `<span class="an-trend flat">nessuna visita</span>`;
+    if (!prev && !cur) return `<span class="an-trend flat">nessun dato</span>`;
     if (!prev) return `<span class="an-trend up">${anIcon("up", 10)} nuove</span>`;
     const pct = Math.round(((cur - prev) / prev) * 100);
     if (pct === 0) return `<span class="an-trend flat">stabile</span>`;
@@ -6584,7 +6584,7 @@
     const n = series.length;
     const max = Math.max(...series.map(d => d.v), 0);
     const niceStep = (m) => { const raw = Math.max(1, m) / 4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
-    const step = niceStep(max);
+    const step = Math.max(1, niceStep(max));
     const top = Math.max(step * 4, step * Math.ceil(max / step));
     const W = 1000, H = 240;
     const x = (i) => n === 1 ? W / 2 : (i / (n - 1)) * W;
@@ -6644,7 +6644,7 @@
     try {
       const url = `https://api.github.com/repos/${getRepo()}/contents/analytics.json`;
       const h = { Authorization: `Bearer ${getToken()}`, Accept: "application/vnd.github.v3+json" };
-      const cur = await fetch(url + "?ref=data", { headers: h }).then(r => r.ok ? r.json() : null);
+      const cur = await fetch(url + "?ref=data&t=" + Date.now(), { cache: "no-store", headers: h }).then(r => r.ok ? r.json() : null);
       const empty = { views: { total: 0, art: 0, pro: 0, landing: 0, about: 0 }, projects: {}, photos: {}, daily: {}, contacts: 0,
         countries: {}, cities: {}, referrers: {}, devices: { desktop: 0, mobile: 0, tablet: 0 }, sessions: 0 };
       const body = { message: "analytics: azzeramento dati di prova", branch: "data",
@@ -6652,9 +6652,10 @@
       if (cur && cur.sha) body.sha = cur.sha;
       const r = await fetch(url, { method: "PUT", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) throw new Error("GitHub " + r.status);
-      analyticsCache = null;
+      // Mostra subito i dati vuoti: rileggerli da GitHub darebbe ancora per qualche secondo la versione precedente
+      analyticsCache = empty;
       toast("Statistiche azzerate.");
-      loadAndRenderAnalytics(true);
+      loadAndRenderAnalytics(false);
     } catch (e) {
       toast("Azzeramento non riuscito: " + e.message, "err");
       if (btn) { btn.disabled = false; btn.textContent = "Azzera statistiche"; }
