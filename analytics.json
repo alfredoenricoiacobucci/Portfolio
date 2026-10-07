@@ -1,19 +1,20 @@
 {
   "views": {
-    "total": 8,
-    "art": 1,
+    "total": 9,
+    "art": 2,
     "pro": 2,
     "landing": 5,
     "about": 0
   },
   "projects": {
-    "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 1
+    "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 1,
+    "art/xylella": 1
   },
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 8,
-      "art": 1,
+      "total": 9,
+      "art": 2,
       "pro": 2,
       "sessions": 5
     }
