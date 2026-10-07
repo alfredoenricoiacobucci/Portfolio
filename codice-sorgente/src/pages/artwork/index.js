@@ -1231,7 +1231,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   href={hrefProject(project.slug)}
                   shallow
                   aria-label={`Apri il progetto ${project.name}`}
-                  className={`marquee-row marquee-row-stagger block w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
+                  className={`marquee-row block w-full ${mode === "professional" ? "border-t-[2.5px] border-b-[2.5px] border-white" : "border-t-4 border-b-4 border-black"} overflow-hidden cursor-pointer ${activeRowSlug === project.slug ? "active" : ""}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                   onMouseEnter={() => onRowHover(project)}
                   onMouseLeave={onRowLeave}
