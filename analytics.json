@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 3,
-    "art": 1,
+    "total": 4,
+    "art": 2,
     "pro": 0,
     "landing": 2,
     "about": 0
@@ -10,21 +10,22 @@
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 3,
-      "art": 1,
+      "total": 4,
+      "art": 2,
       "pro": 0
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 3
+    "IT": 4
   },
   "referrers": {
-    "test-verification": 1
+    "test-verification": 1,
+    "google.com": 1
   },
   "devices": {
     "desktop": 3,
-    "mobile": 0,
+    "mobile": 1,
     "tablet": 0
   }
 }
