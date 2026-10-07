@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 15,
-    "art": 6,
+    "total": 16,
+    "art": 7,
     "pro": 3,
     "landing": 4,
     "about": 2
@@ -12,31 +12,32 @@
     "progetto-3": 1
   },
   "photos": {
-    "foto-001": 1
+    "foto-001": 1,
+    "foto-002": 1
   },
   "daily": {
     "2026-10-07": {
-      "total": 15,
-      "art": 6,
+      "total": 16,
+      "art": 7,
       "pro": 3
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 15
+    "IT": 16
   },
   "referrers": {
     "test-verification": 1,
     "google.com": 2,
     "instagram.com": 2,
-    "direct": 3,
+    "direct": 4,
     "twitter.com": 1,
     "pinterest.com": 2,
     "linkedin.com": 1,
     "facebook.com": 1
   },
   "devices": {
-    "desktop": 8,
+    "desktop": 9,
     "mobile": 5,
     "tablet": 2
   }
