@@ -1,22 +1,42 @@
 {
   "views": {
-    "total": 0,
+    "total": 1,
     "art": 0,
     "pro": 0,
-    "landing": 0,
+    "landing": 1,
     "about": 0
   },
   "projects": {},
   "photos": {},
-  "daily": {},
+  "daily": {
+    "2026-10-07": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
+    }
+  },
   "contacts": 0,
-  "countries": {},
-  "cities": {},
-  "referrers": {},
+  "countries": {
+    "DE": 1
+  },
+  "cities": {
+    "DE|Falkenstein": {
+      "n": 1,
+      "city": "Falkenstein",
+      "region": "SN",
+      "cc": "DE",
+      "lat": 50.48,
+      "lon": 12.37
+    }
+  },
+  "referrers": {
+    "direct": 1
+  },
   "devices": {
-    "desktop": 0,
+    "desktop": 1,
     "mobile": 0,
     "tablet": 0
   },
-  "sessions": 0
+  "sessions": 1
 }
