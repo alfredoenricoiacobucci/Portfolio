@@ -150,8 +150,8 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
   const isDark = mode === "professional";
 
   const inputCls = isDark
-    ? "w-full bg-transparent border-b border-white/30 text-white placeholder-white/40 py-3 focus:outline-none focus:border-white transition-colors"
-    : "w-full bg-transparent border-b border-black/20 text-black placeholder-black/35 py-3 focus:outline-none focus:border-black transition-colors";
+    ? "w-full bg-transparent border-b border-white/30 text-white placeholder-white/55 py-3 focus:outline-none focus:border-white transition-colors"
+    : "w-full bg-transparent border-b border-black/20 text-black placeholder-black/55 py-3 focus:outline-none focus:border-black transition-colors";
   const btnCls = isDark
     ? "w-full py-3 mt-2 font-semibold border border-white text-white hover:bg-white hover:text-black transition-colors"
     : "w-full py-3 mt-2 font-semibold border border-black text-black hover:bg-black hover:text-white transition-colors";
@@ -202,14 +202,14 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-1">
-      <input name="contact-name" type="text" placeholder={S.PLACEHOLDER_NOME || "Nome e Cognome"} className={inputCls} required />
-      <input name="contact-email" type="email" placeholder={S.PLACEHOLDER_EMAIL || "La tua email"} className={inputCls} />
-      <textarea name="contact-message" placeholder={S.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio"} className={`${inputCls} resize-none`} rows={5} required />
+      <input name="contact-name" type="text" autoComplete="name" aria-label={S.PLACEHOLDER_NOME || "Nome e Cognome"} placeholder={S.PLACEHOLDER_NOME || "Nome e Cognome"} className={inputCls} required />
+      <input name="contact-email" type="email" autoComplete="email" aria-label={S.PLACEHOLDER_EMAIL || "La tua email"} placeholder={S.PLACEHOLDER_EMAIL || "La tua email"} className={inputCls} />
+      <textarea name="contact-message" aria-label={S.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio"} placeholder={S.PLACEHOLDER_MESSAGGIO || "Il tuo messaggio"} className={`${inputCls} resize-none`} rows={5} required />
       {error && (
         <p role="alert" style={{ color: "var(--error)", fontSize: "var(--text-xs)" }}>{error}</p>
       )}
-      <button type="submit" className={btnCls} disabled={sending}>
-        {sending ? "Invio in corso..." : (S.TASTO_INVIA || "Invia")}
+      <button type="submit" className={btnCls} disabled={sending} aria-busy={sending}>
+        {sending ? (S.TASTO_INVIO_IN_CORSO || "Invio in corso…") : (S.TASTO_INVIA || "Invia")}
       </button>
     </form>
   );
@@ -305,7 +305,7 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
             const w = item.ratio * row.height;
             return (
               <button key={item.idx} type="button"
-                className="group relative overflow-hidden cursor-zoom-in focus:outline-none flex-shrink-0"
+                className="group relative overflow-hidden cursor-zoom-in flex-shrink-0"
                 style={{ width: `${w}px`, height: `${row.height}px` }}
                 onClick={() => onImageClick?.(item.idx)}
                 aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
@@ -882,7 +882,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
         {/* CENTRO: Pallino sempre — porta alla landing */}
         {(() => {
-          const navColor = mode === "professional" ? "#f8f4ed" : "#000000";
+          const navColor = mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork;
           return (
             <button
               onClick={() => router.push("/")}
@@ -930,7 +930,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem + 80px)', background: 'black', marginBottom: '-1px' }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100svh - var(--header-h, 80px))', background: 'black', marginBottom: '-1px' }}>
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -971,19 +971,23 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           </div>
           {/* Chevron — centrata nello spazio extra (80px) in fondo al banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
-            <div
-              className="absolute left-0 right-0 bottom-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none project-chevron-wrap"
+            <button
+              type="button"
+              className="absolute left-0 right-0 mx-auto w-max bottom-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none project-chevron-wrap px-6"
               style={{ height: "80px" }}
               onClick={() => setTextOpen((v) => !v)}
+              aria-expanded={textOpen}
+              aria-controls="project-text"
+              aria-label={textOpen ? (S.LABEL_CHIUDI_TESTO || "Chiudi il testo") : (S.LABEL_SCOPRI || "Scopri di più")}
             >
               {!textOpen && (
-                <span className="project-chevron-label text-xs tracking-wide text-white/70" style={{ marginBottom: "2px", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                  Scopri di più
+                <span className="project-chevron-label text-xs tracking-wide text-white/70" style={{ marginBottom: "2px", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }} aria-hidden>
+                  {S.LABEL_SCOPRI || "Scopri di più"}
                 </span>
               )}
               <svg
                 className={`project-chevron ${textOpen ? "project-chevron--open" : ""}`}
-                width="36" height="36" viewBox="0 0 24 24" fill="none"
+                width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden
                 style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }}
               >
                 <polyline
@@ -993,7 +997,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                 />
               </svg>
-            </div>
+            </button>
           )}
         </section>
       )}
@@ -1007,7 +1011,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
             <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflowX: 'auto' }}>
               {/* Wrapper grid: anima l'altezza 0fr→1fr senza magic number */}
-              <div className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
+              <div id="project-text" inert={!textOpen} className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
               {/* Contenuto testo — opacity controllata dal wrapper */}
               <div className={`project-text-reveal__content ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
                 <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
@@ -1024,7 +1028,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                     {/* Esposizioni per art, attrezzatura per pro */}
                     {selectedProject.section === "art" ? (
                       selectedProject.esposizioni?.length > 0 && (
-                        <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                        <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/55" : "text-black/55"}`}>
                           <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "var(--text-2xs)" }}>Esposizioni</div>
                           {selectedProject.esposizioni.map((esp, ei) => (
                             <div key={ei} className="space-y-3">
@@ -1058,7 +1062,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                         </div>
                       )
                     ) : selectedProject.techData && (
-                      <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                      <div className={`text-xs leading-relaxed space-y-3 ${mode === "professional" ? "text-white/55" : "text-black/55"}`}>
                         <div className="uppercase tracking-wider font-semibold mb-1" style={{ fontSize: "var(--text-2xs)" }}>Attrezzatura</div>
                         {selectedProject.techData.camera && (
                           <div>
@@ -1081,7 +1085,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                       </div>
                     )}
                     {/* Copyright in basso */}
-                    <div className={`text-xs leading-relaxed mt-6 ${mode === "professional" ? "text-white/40" : "text-black/35"}`}>
+                    <div className={`text-xs leading-relaxed mt-6 ${mode === "professional" ? "text-white/55" : "text-black/55"}`}>
                       <div>Alfredo Enrico Iacobucci</div>
                       <div>© {new Date().getFullYear()} Tutti i diritti riservati.</div>
                     </div>
@@ -1112,7 +1116,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         <>
           {/* VIDEO — letto da content/about/ */}
           <section key="about-video" className="w-full relative about-video-section" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem)' }}>
-            <div className="relative w-full h-full overflow-hidden flex items-center justify-center" style={{ background: "#c8c8c8" }}>
+            <div className="relative w-full h-full overflow-hidden flex items-center justify-center" style={{ background: ASP.colorBgProfessional }}>
               {selectedProject.video ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
@@ -1125,8 +1129,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   src={selectedProject.video}
                 />
               ) : (
-                <span className="relative z-10 text-xs font-medium tracking-widest uppercase" style={{ color: "#a8a8a8" }}>
-                  video coming soon
+                <span className="relative z-40 text-xs font-medium tracking-widest uppercase" style={{ color: ASP.colorTextProfessional, opacity: 0.6 }}>
+                  {S.LABEL_VIDEO_PLACEHOLDER}
                 </span>
               )}
             </div>
@@ -1163,7 +1167,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 </div>
               </div>
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
-              <div className={`flex items-center text-sm ${mode === "professional" ? "text-white/50" : "text-black/40"}`} style={{ marginTop: "4rem", justifyContent: "space-between" }}>
+              <div className={`flex items-center text-sm ${mode === "professional" ? "text-white/60" : "text-black/55"}`} style={{ marginTop: "4rem", justifyContent: "space-between" }}>
                 <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {S.TELEFONO}
@@ -1184,7 +1188,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
-                  <div className="text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: ASP.colorAccent }}>&ldquo;&rdquo;</div>
+                  <div className="font-display text-5xl md:text-7xl font-extrabold leading-none -mb-2" style={{ color: ASP.colorAccent }} aria-hidden>&ldquo;&rdquo;</div>
                   <blockquote className="font-display text-2xl md:text-4xl lg:text-5xl font-extrabold uppercase leading-tight tracking-tight" style={{ color: ASP.colorAccent }}>
                     {selectedProject.quote}
                   </blockquote>
@@ -1193,12 +1197,12 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
               {/* FOTO 3:2 — stessi margini laterali del testo (8%) */}
               <div className="w-full about-photo-wrap" style={{ marginTop: ASP.aboutQuotePadding + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
-                <div className="w-full about-photo overflow-hidden flex items-center justify-center" style={{ aspectRatio: ASP.aboutPhotoAspect, background: "#c8c8c8" }}>
+                <div className="w-full about-photo overflow-hidden flex items-center justify-center" style={{ aspectRatio: ASP.aboutPhotoAspect, border: selectedProject.photo ? undefined : "1px solid currentColor", borderColor: selectedProject.photo ? undefined : "color-mix(in srgb, currentColor 25%, transparent)" }}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xs font-medium tracking-widest uppercase" style={{ color: "#a8a8a8" }}>
-                      foto coming soon
+                    <span className="text-xs font-medium tracking-widest uppercase" style={{ opacity: 0.6 }}>
+                      {S.LABEL_FOTO_PLACEHOLDER}
                     </span>
                   )}
                 </div>
@@ -1396,7 +1400,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       <footer
         className={`site-footer w-full py-12 mobile-footer ${mode === "professional" ? "border-t-[2.5px]" : "border-t-4"} space-y-2 md:space-y-0`}
         style={{
-          borderColor: mode === "professional" ? "#f8f4ed" : "#000000",
+          borderColor: mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork,
           paddingLeft: ASP.marginLaterale + "%",
           paddingRight: ASP.marginLaterale + "%",
         }}

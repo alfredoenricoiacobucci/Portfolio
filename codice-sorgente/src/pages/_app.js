@@ -411,6 +411,16 @@ export default function App({ Component, pageProps }) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
+      {/* Le variabili dei font vanno su :root, non solo sul wrapper: il
+          preflight di Tailwind assegna font-sans a <html>, dove le classi
+          .variable non arrivano. La var risultava indefinita e tutto il corpo
+          ricadeva su Times; lo stesso per modale e overlay fuori dal wrapper. */}
+      <style jsx global>{`
+        :root {
+          --font-body: ${inter.style.fontFamily};
+          --font-display: ${archivo.style.fontFamily};
+        }
+      `}</style>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
       <div ref={wrapRef} className={`${archivo.variable} ${inter.variable}`} style={{ opacity: 1 }}>

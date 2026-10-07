@@ -6,6 +6,9 @@ const nextConfig = {
     deviceSizes: [640, 828, 1200, 1920, 2560],
     imageSizes: [256, 384, 640, 1024],
     minimumCacheTTL: 31536000,
+    // Next 16 accetta solo le qualità elencate: senza 80 e 85 galleria e
+    // viewer venivano ricondotti in silenzio a 75.
+    qualities: [75, 80, 85],
   },
   compress: true,
   // Le immagini vengono copiate in public/projects/ durante il build (vedi vercel.json)

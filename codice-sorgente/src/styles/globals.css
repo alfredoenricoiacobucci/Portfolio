@@ -377,7 +377,7 @@ h1 { line-height: 1.05; }
   .banner-title { font-size: 2rem !important; }
 
   /* Banner altezza su mobile — proporzionato come desktop con spazio chevron */
-  .project-banner { height: calc(100vh - var(--header-h, 60px) + 80px) !important; }
+  .project-banner { height: calc(100svh - var(--header-h, 60px)) !important; }
 
   /* (sticky rimosso: galleria e testo scorrono con la pagina) */
 

@@ -24,6 +24,7 @@ PLACEHOLDER_NOME = Nome e Cognome
 PLACEHOLDER_EMAIL = La tua email
 PLACEHOLDER_MESSAGGIO = Il tuo messaggio
 TASTO_INVIA = Invia
+TASTO_INVIO_IN_CORSO = Invio in corso…
 MESSAGGIO_INVIATO = Messaggio inviato!
 MESSAGGIO_INVIATO_SUB = Ti risponderò il prima possibile.
 EMAIL_DESTINATARIO = a.e.iacobucci@icloud.com
@@ -35,3 +36,7 @@ INSTAGRAM_HANDLE = @alfredoenricoiacobucci
 # About
 LABEL_VIDEO_PLACEHOLDER = Video coming soon
 LABEL_FOTO_PLACEHOLDER = Foto
+
+# Progetto
+LABEL_SCOPRI = Scopri di più
+LABEL_CHIUDI_TESTO = Chiudi il testo

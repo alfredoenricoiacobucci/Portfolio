@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T21:53:55.295133+00:00",
+  "title": "Design System: Alfredo Enrico Iacobucci",
+  "extensions": {
+    "colorMeta": {
+      "darkroom-paper": {
+        "role": "neutral",
+        "displayName": "Darkroom Paper",
+        "canonical": "oklch(96.6% 0.011 80)",
+        "tonalRamp": [
+          "oklch(15% 0.011 80)",
+          "oklch(25% 0.011 80)",
+          "oklch(35% 0.011 80)",
+          "oklch(47% 0.011 80)",
+          "oklch(59% 0.011 80)",
+          "oklch(71% 0.011 80)",
+          "oklch(83% 0.011 80)",
+          "oklch(95% 0.011 80)"
+        ]
+      },
+      "ink-black": {
+        "role": "neutral",
+        "displayName": "Ink Black",
+        "canonical": "oklch(14.5% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(47% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(71% 0 0)",
+          "oklch(83% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "safelight-red": {
+        "role": "primary",
+        "displayName": "Safelight Red",
+        "canonical": "oklch(52.5% 0.205 22)",
+        "tonalRamp": [
+          "oklch(15% 0.19 22)",
+          "oklch(25% 0.19 22)",
+          "oklch(35% 0.19 22)",
+          "oklch(47% 0.19 22)",
+          "oklch(59% 0.19 22)",
+          "oklch(71% 0.19 22)",
+          "oklch(83% 0.19 22)",
+          "oklch(95% 0.19 22)"
+        ]
+      },
+      "safelight-red-lifted": {
+        "role": "primary",
+        "displayName": "Safelight Red, lifted",
+        "canonical": "oklch(61% 0.21 18)",
+        "tonalRamp": [
+          "oklch(15% 0.19 18)",
+          "oklch(25% 0.19 18)",
+          "oklch(35% 0.19 18)",
+          "oklch(47% 0.19 18)",
+          "oklch(59% 0.19 18)",
+          "oklch(71% 0.19 18)",
+          "oklch(83% 0.19 18)",
+          "oklch(95% 0.19 18)"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(41% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(47% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(71% 0 0)",
+          "oklch(83% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "ash": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "oklch(72% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(47% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(71% 0 0)",
+          "oklch(83% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "error-ink": {
+        "role": "error",
+        "displayName": "Error Ink",
+        "canonical": "oklch(46% 0.19 20)",
+        "tonalRamp": [
+          "oklch(15% 0.17 20)",
+          "oklch(25% 0.17 20)",
+          "oklch(35% 0.17 20)",
+          "oklch(47% 0.17 20)",
+          "oklch(59% 0.17 20)",
+          "oklch(71% 0.17 20)",
+          "oklch(83% 0.17 20)",
+          "oklch(95% 0.17 20)"
+        ]
+      },
+      "error-lifted": {
+        "role": "error",
+        "displayName": "Error, lifted",
+        "canonical": "oklch(72% 0.17 15)",
+        "tonalRamp": [
+          "oklch(15% 0.15 15)",
+          "oklch(25% 0.15 15)",
+          "oklch(35% 0.15 15)",
+          "oklch(47% 0.15 15)",
+          "oklch(59% 0.15 15)",
+          "oklch(71% 0.15 15)",
+          "oklch(83% 0.15 15)",
+          "oklch(95% 0.15 15)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Project names in the marquee rows, uppercase."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titles over the project banner; date and place in red."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "The name on the landing."
+      },
+      "nav": {
+        "displayName": "Nav",
+        "purpose": "Art / Pro switch and section navigation."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "About texts, flush left with hyphenation."
+      },
+      "body-narrow": {
+        "displayName": "Body narrow",
+        "purpose": "Project texts in the narrow side column."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Technical data and micro labels, uppercase with tracking."
+      }
+    },
+    "shadows": [
+      {
+        "name": "photo-title",
+        "value": "drop-shadow(0 3px 8px rgba(0,0,0,0.9))",
+        "purpose": "Banner titles over photographs only."
+      },
+      {
+        "name": "photo-text",
+        "value": "0 2px 8px rgba(0,0,0,0.6)",
+        "purpose": "text-shadow on the active marquee over its banner."
+      },
+      {
+        "name": "viewer-control",
+        "value": "drop-shadow(0 2px 4px rgba(0,0,0,0.7))",
+        "purpose": "Viewer controls over any photograph."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Entrances, modal panel, marquee stagger."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Text reveal (grid-template-rows 0fr→1fr, 500ms)."
+      },
+      {
+        "name": "ease-smooth",
+        "value": "cubic-bezier(0.2, 0.9, 0.2, 1)",
+        "purpose": "Photo crossfades on landing and marquee banners (400ms)."
+      },
+      {
+        "name": "rubber-snap",
+        "value": "cubic-bezier(.2,.8,.2,1) 400ms",
+        "purpose": "Back triangle squeeze-and-release on hover."
+      },
+      {
+        "name": "press",
+        "value": "scale(0.97)",
+        "purpose": "Active state of every button and link."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "mobile-landscape",
+        "value": "(max-height: 500px) and (orientation: landscape) and (pointer: coarse)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Form submit: transparent with a 1px rule, full inversion on hover.",
+      "html": "<button class=\"ds-btn-outline\">Invia</button>",
+      "css": ".ds-btn-outline{width:100%;padding:12px 0;background:transparent;color:var(--fg,#0a0a0a);border:1px solid var(--fg,#0a0a0a);border-radius:0;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:16px;cursor:pointer;transition:background-color 150ms,color 150ms,transform 150ms}.ds-btn-outline:hover{background:var(--fg,#0a0a0a);color:var(--bg,#f8f4ed)}.ds-btn-outline:active{transform:scale(0.97)}.ds-btn-outline:focus-visible{outline:2px solid var(--accent,#c8102e);outline-offset:3px;border-radius:2px}"
+    },
+    {
+      "name": "Underline Input",
+      "kind": "input",
+      "refersTo": "input-underline",
+      "description": "Contact field: underline only, solid line on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nome e Cognome\" />",
+      "css": ".ds-input{width:100%;padding:12px 0;background:transparent;color:var(--fg,#0a0a0a);border:0;border-bottom:1px solid rgba(10,10,10,0.2);border-radius:0;font-family:Inter,system-ui,sans-serif;font-size:16px;outline:none;transition:border-color 150ms}.ds-input::placeholder{color:rgba(10,10,10,0.35)}.ds-input:focus{border-bottom-color:var(--fg,#0a0a0a)}.ds-input:focus-visible{outline:2px solid var(--accent,#c8102e);outline-offset:3px}"
+    },
+    {
+      "name": "Mode Switch",
+      "kind": "nav",
+      "refersTo": "nav-mode-switch",
+      "description": "Art / Pro in the header; the active mode is red, hover turns red.",
+      "html": "<nav class=\"ds-mode\"><button class=\"ds-mode__btn ds-mode__btn--on\">Art</button><span>/</span><button class=\"ds-mode__btn\">Pro</button></nav>",
+      "css": ".ds-mode{display:flex;align-items:center;gap:8px;font-family:Inter,system-ui,sans-serif;font-size:20px;font-weight:700;color:var(--fg,#0a0a0a)}.ds-mode__btn{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;transition:color 300ms}.ds-mode__btn--on,.ds-mode__btn:hover{color:var(--accent,#c8102e)}.ds-mode__btn:active{transform:scale(0.97)}.ds-mode__btn:focus-visible{outline:2px solid var(--accent,#c8102e);outline-offset:3px;border-radius:2px}"
+    },
+    {
+      "name": "Header",
+      "kind": "nav",
+      "refersTo": "nav-mode-switch",
+      "description": "Full-width header with a 4px ink rule, mode switch, centre dot and links.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-header__mode\">Art / Pro</span><button class=\"ds-dot\" aria-label=\"Home\"></button><nav class=\"ds-header__links\"><a>about</a><a>email</a><a>Insta</a></nav></header>",
+      "css": ".ds-header{position:relative;display:flex;justify-content:space-between;align-items:center;padding:2.2rem 16px;border-bottom:4px solid var(--fg,#0a0a0a);background:var(--bg,#f8f4ed);color:var(--fg,#0a0a0a);font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:700}.ds-header__mode{font-size:20px}.ds-header__links{display:flex;gap:16px}.ds-header__links a{cursor:pointer;transition:color 300ms}.ds-header__links a:hover{color:var(--accent,#c8102e)}.ds-dot{position:absolute;left:50%;top:50%;width:13px;height:13px;border:0;border-radius:9999px;background:var(--fg,#0a0a0a);transform:translate(-50%,-50%);cursor:pointer;transition:background-color 200ms ease-out,transform 200ms ease-out}.ds-dot:hover{background:var(--accent,#c8102e);transform:translate(-50%,-50%) scale(1.3)}.ds-dot:active{transform:translate(-50%,-50%) scale(1.1)}"
+    },
+    {
+      "name": "Marquee Row",
+      "kind": "custom",
+      "refersTo": "marquee-row",
+      "description": "Signature: a project as a poster line, 7rem Archivo uppercase between 4px rules.",
+      "html": "<div class=\"ds-marquee\"><span class=\"ds-marquee__seq\">Xylella, Bellezza Fragile</span></div>",
+      "css": ".ds-marquee{overflow:hidden;white-space:nowrap;border-top:4px solid var(--fg,#0a0a0a);border-bottom:4px solid var(--fg,#0a0a0a);background:var(--bg,#f8f4ed);cursor:pointer;transition:background-color 300ms}.ds-marquee__seq{display:inline-block;padding:0 1rem;font-family:Archivo,Inter,system-ui,sans-serif;font-size:7rem;font-weight:800;line-height:1;text-transform:uppercase;color:var(--fg,#0a0a0a);transition:color 300ms}.ds-marquee:hover{background:#0a0a0a}.ds-marquee:hover .ds-marquee__seq{color:#f8f4ed;text-shadow:0 2px 8px rgba(0,0,0,0.6)}.ds-marquee:active{opacity:.85}"
+    },
+    {
+      "name": "Banner Title",
+      "kind": "custom",
+      "refersTo": "headline",
+      "description": "Project title over the photo; date and place in safelight red.",
+      "html": "<div class=\"ds-banner\"><h2 class=\"ds-banner__t\">Gemelli Cosmici</h2><p class=\"ds-banner__t ds-banner__t--red\">Rimini (RM) 2025</p></div>",
+      "css": ".ds-banner{padding:48px;background:#3a3a3a}.ds-banner__t{margin:0;font-family:Archivo,Inter,system-ui,sans-serif;font-size:3.75rem;font-weight:800;line-height:1.1;color:#f8f4ed;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.9))}.ds-banner__t--red{color:var(--accent,#c8102e)}"
+    },
+    {
+      "name": "Viewer Control",
+      "kind": "button",
+      "refersTo": "",
+      "description": "44×44 white control over photographs; red and enlarged on hover.",
+      "html": "<button class=\"ds-viewer-nav\" aria-label=\"Avanti\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M9 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-viewer-nav{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:0;color:#fff;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7));transition:color 200ms ease,transform 200ms ease}.ds-viewer-nav:hover{color:var(--accent,#c8102e);transform:scale(1.12)}.ds-viewer-nav:active{transform:scale(0.96)}.ds-viewer-nav:focus-visible{outline:2px solid #fff;box-shadow:0 0 0 4px rgba(0,0,0,0.6)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Darkroom",
+    "overview": "The site is a developing room. Warm paper and black ink make up the whole interface, and one red, the safelight, marks what is active, hovered or important. The photograph is what comes up out of the bath: everything else stays in the half-dark so the image can come forward. The interface never decorates; it frames, separates with thick rules, and gives way.\n\nTwo registers live in the same room. **Artwork** is the paper: warm white `#f8f4ed`, black ink, 4px black rules. **Professional** is the same room with the light off: black background, paper-coloured text, thinner 2.5px rules and a lifted red to keep contrast. The switch between them is a full inversion of `--bg` and `--fg`, never a second palette.\n\nType is set like a poster: Archivo Extra Bold for titles and huge uppercase marquees, Inter for everything you read and use. Controls are silent and lean (text, thin lines, no fills) but react with small physical movements: a press at 0.97, the back triangle that stretches like rubber, the nav dot that grows. Never intrusive.",
+    "keyCharacteristics": [
+      "Three key colours: Darkroom Paper, Ink Black, Safelight Red. No other hues.",
+      "Artwork / Professional as an inversion of the same tokens.",
+      "Thick black rules as the only structure; no cards, no shadows for depth.",
+      "Square corners everywhere; the only circle is the nav dot.",
+      "Small, tactile motion with strong ease-out curves; everything collapses under `prefers-reduced-motion`."
+    ],
+    "rules": [
+      {
+        "name": "The Safelight Rule",
+        "body": "Red is the only colour. It means \"this responds\" or \"this is where you are\"; it is never a background, a fill or decoration, and never takes up more than a handful of words on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Meaning Rule",
+        "body": "Error is a separate token from the accent. A colour that means active, hover and error at once means nothing.",
+        "section": "colors"
+      },
+      {
+        "name": "The Inversion Rule",
+        "body": "Professional does not get its own palette: it swaps `--bg` and `--fg` and lifts the red. Any new component must work in both by reading the variables, not by hardcoding hex values.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Floor Rule",
+        "body": "No text below 11px; the old 9px labels were unreadable. 11px only uppercase with tracking; service text starts at 12px.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flush Left Rule",
+        "body": "Text is flush left with hyphenation, never justified and never centred, footer included. Only the landing is centred.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Room Rule",
+        "body": "Nothing floats. A shadow is only allowed where text sits on a photograph, and only to make it readable.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** read colours from `--bg`, `--fg`, `--muted`, `--border`, `--accent`, `--error`, so every component works in both Artwork and Professional.",
+      "**Do** use Safelight Red only for hover, the active state, focus and the date/place in the banner.",
+      "**Do** keep corners square (0); the only circle is the nav dot.",
+      "**Do** separate sections with 4px ink rules (2.5px paper in Professional), not with cards or backgrounds.",
+      "**Do** use the defined curves: `--ease-out cubic-bezier(0.23,1,0.32,1)` for entrances, `--ease-in-out cubic-bezier(0.77,0,0.175,1)` for reveals, `--ease-smooth cubic-bezier(0.2,0.9,0.2,1)` for crossfades; durations of 150–500ms.",
+      "**Do** give every touch control a target of at least 44×44px.",
+      "**Do** take every text, size and spacing that can be changed from `contenuti.json` / `stringhe.txt` / `aspetto`, with the default as a fallback."
+    ],
+    "donts": [
+      "**Don't** add hues beyond paper, ink and red; don't use pure `#fff` for surfaces (Tailwind `white` is already `#f8f4ed`).",
+      "**Don't** use the accent for errors, or the error colour as an accent.",
+      "**Don't** add shadows for elevation; shadows only where text sits on a photo.",
+      "**Don't** add rounded corners, cards or panels to the public site.",
+      "**Don't** go below 11px for text or justify paragraphs.",
+      "**Don't** crop images against the focal point chosen in the Manager, or cover them with interface.",
+      "**Don't** add looping animations beyond the marquee and the chevron, or motion that ignores `prefers-reduced-motion`."
+    ]
+  }
+}
