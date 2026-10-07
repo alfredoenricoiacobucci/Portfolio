@@ -39,6 +39,46 @@ function detectDevice() {
 }
 
 const ENTRY_KEY = "aei-entry";
+const NOTRACK_KEY = "aei-notrack";
+const BOT_UA = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|facebookexternalhit|embedly|whatsapp|telegram|discord|slack|curl|wget|python|axios|node-fetch|go-http|java\/|phantom|puppeteer|playwright|selenium/i;
+
+/** Mostra per qualche secondo un avviso in basso (solo dopo ?notrack=…). */
+function notice(text) {
+  try {
+    const el = document.createElement("div");
+    el.textContent = text;
+    el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#0a0a0a;color:#f8f4ed;font:500 13px/1.4 system-ui,sans-serif;padding:10px 16px;max-width:90vw;text-align:center";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  } catch {}
+}
+
+/**
+ * false se questa visita non va contata:
+ * - il proprietario ha escluso questo dispositivo con ?notrack=1 (si annulla con ?notrack=0)
+ * - browser automatizzati e programmi che si dichiarano tali
+ */
+function trackingAllowed() {
+  if (typeof window === "undefined") return false;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.has("notrack")) {
+      const off = q.get("notrack") !== "0";
+      if (off) localStorage.setItem(NOTRACK_KEY, "1");
+      else localStorage.removeItem(NOTRACK_KEY);
+      q.delete("notrack");
+      const qs = q.toString();
+      window.history.replaceState(window.history.state, "", window.location.pathname + (qs ? "?" + qs : "") + window.location.hash);
+      notice(off
+        ? "Le tue visite da questo dispositivo non vengono più contate nelle statistiche."
+        : "Le tue visite da questo dispositivo vengono di nuovo contate.");
+    }
+    if (localStorage.getItem(NOTRACK_KEY) === "1") return false;
+  } catch {}
+  if (navigator.webdriver) return false;
+  if (BOT_UA.test(navigator.userAgent || "")) return false;
+  return true;
+}
 
 /** true solo per il primo evento della sessione (ingresso nel sito). */
 function isEntry() {
@@ -52,6 +92,16 @@ function isEntry() {
 }
 
 function sendTrack(payload, { canBeEntry = true } = {}) {
+  if (!trackingAllowed()) return;
+  // Si conta solo chi resta almeno un secondo con la pagina visibile:
+  // i programmi che caricano e chiudono subito restano fuori.
+  setTimeout(() => {
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+    sendNow(payload, canBeEntry);
+  }, 1200);
+}
+
+function sendNow(payload, canBeEntry) {
   try {
     // Provenienza, dispositivo e luogo si contano una volta per sessione:
     // con la navigazione interna di Next document.referrer resta quello iniziale

@@ -104,6 +104,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "GITHUB_TOKEN not configured" });
   }
 
+  // Scarta programmi automatici e richieste che non arrivano dalle pagine del sito
+  const ua = String(req.headers["user-agent"] || "");
+  const BOT_UA = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|facebookexternalhit|embedly|curl|wget|python|axios|node-fetch|go-http|java\/|phantom|puppeteer|playwright|selenium/i;
+  const fetchSite = req.headers["sec-fetch-site"];
+  if (!ua || BOT_UA.test(ua) || (fetchSite && fetchSite !== "same-origin")) {
+    return res.status(204).end();
+  }
+
   const { page, project, photo, type, referrer, device, entry } = req.body || {};
   const isContact = type === "contact";
 
