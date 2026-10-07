@@ -1,19 +1,29 @@
 {
   "views": {
-    "total": 0,
+    "total": 1,
     "art": 0,
     "pro": 0,
-    "landing": 0,
+    "landing": 1,
     "about": 0
   },
   "projects": {},
   "photos": {},
-  "daily": {},
+  "daily": {
+    "2026-10-07": {
+      "total": 1,
+      "art": 0,
+      "pro": 0
+    }
+  },
   "contacts": 0,
-  "countries": {},
-  "referrers": {},
+  "countries": {
+    "IT": 1
+  },
+  "referrers": {
+    "test-verification": 1
+  },
   "devices": {
-    "desktop": 0,
+    "desktop": 1,
     "mobile": 0,
     "tablet": 0
   }
