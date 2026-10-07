@@ -1,10 +1,10 @@
 {
   "views": {
-    "total": 17,
+    "total": 18,
     "art": 7,
     "pro": 4,
     "landing": 4,
-    "about": 2
+    "about": 3
   },
   "projects": {
     "progetto-1": 1,
@@ -18,27 +18,27 @@
   },
   "daily": {
     "2026-10-07": {
-      "total": 17,
+      "total": 18,
       "art": 7,
       "pro": 4
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 17
+    "IT": 18
   },
   "referrers": {
     "test-verification": 1,
     "google.com": 2,
     "instagram.com": 2,
-    "direct": 4,
+    "direct": 5,
     "twitter.com": 1,
     "pinterest.com": 2,
     "linkedin.com": 1,
     "facebook.com": 2
   },
   "devices": {
-    "desktop": 9,
+    "desktop": 10,
     "mobile": 5,
     "tablet": 3
   }
