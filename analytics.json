@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 6,
+    "total": 7,
     "art": 1,
-    "pro": 0,
+    "pro": 1,
     "landing": 5,
     "about": 0
   },
@@ -10,9 +10,9 @@
   "photos": {},
   "daily": {
     "2026-10-07": {
-      "total": 6,
+      "total": 7,
       "art": 1,
-      "pro": 0,
+      "pro": 1,
       "sessions": 5
     }
   },
