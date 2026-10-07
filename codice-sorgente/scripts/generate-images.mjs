@@ -36,6 +36,9 @@ const SRC = path.join(ROOT, "contenuti");
 const OUT = path.join(ROOT, "public", "projects");
 const CACHE_DIR = path.join(ROOT, ".next", "cache", "img-pipeline");
 const MANIFEST = path.join(CACHE_DIR, "manifest.json");
+// Copia dei risultati dentro .next/cache, che Vercel conserva tra i build:
+// public/ invece riparte vuoto a ogni clone.
+const CACHE_OUT = path.join(CACHE_DIR, "out");
 
 const MAX_W = 2400; // lato lungo per galleria e viewer
 const PREVIEW_W = 1280; // anteprime: sfondi landing + righe marquee
@@ -94,11 +97,25 @@ async function walk(dir, base = dir) {
   return out;
 }
 
-/** Identita' del sorgente: cambia se il file cambia, senza rileggere i byte. */
-function sourceKey(stat) {
+/** Identita' del sorgente basata sul contenuto: su Vercel ogni clone git
+ *  rimette la data di modifica a "adesso", quindi mtime non e' affidabile. */
+async function sourceKey(srcPath) {
+  const buf = await fs.readFile(srcPath);
   return createHash("sha1")
-    .update(`${stat.size}:${stat.mtimeMs}:${MAX_W}:${PREVIEW_W}:${QUALITY}:${PREVIEW_QUALITY}`)
+    .update(buf)
+    .update(`:${MAX_W}:${PREVIEW_W}:${QUALITY}:${PREVIEW_QUALITY}`)
     .digest("hex");
+}
+
+/** Copia un file creando le cartelle; false se il sorgente non c'e'. */
+async function copyIn(from, to) {
+  try {
+    await fs.mkdir(path.dirname(to), { recursive: true });
+    await fs.copyFile(from, to);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function loadManifest() {
@@ -200,6 +217,10 @@ async function processImage(rel, srcPath, outPath, key, manifest, needsPreview) 
   stats.bytesOut += previewBytes;
 
   manifest[rel] = { key, main: mainBytes, preview: previewBytes };
+
+  // Salva i risultati nella cache per i build successivi
+  await copyIn(outPath, path.join(CACHE_OUT, rel));
+  if (previewBytes) await copyIn(previewPath, path.join(CACHE_OUT, rel).replace(/\.[^.]+$/, "@md.webp"));
 }
 
 async function main() {
@@ -232,15 +253,17 @@ async function main() {
 
     tasks.push(async () => {
       const srcStat = await fs.stat(srcPath);
-      const key = sourceKey(srcStat);
+      const key = await sourceKey(srcPath);
       const cached = manifest[rel];
       const previewPath = outPath.replace(/\.[^.]+$/, "@md.webp");
+      const cachedMain = path.join(CACHE_OUT, rel);
+      const cachedPreview = cachedMain.replace(/\.[^.]+$/, "@md.webp");
 
-      // Cache valida solo se l'output e' davvero ancora sul disco.
+      // Cache valida: stesso contenuto e risultati salvati -> si copiano e basta.
       if (cached?.key === key) {
         const [mainOk, previewOk] = await Promise.all([
-          fs.access(outPath).then(() => true, () => false),
-          cached.preview ? fs.access(previewPath).then(() => true, () => false) : true,
+          copyIn(cachedMain, outPath),
+          cached.preview ? copyIn(cachedPreview, previewPath) : true,
         ]);
         if (mainOk && previewOk) {
           stats.cached++;

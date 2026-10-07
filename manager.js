@@ -146,7 +146,6 @@ ObjC.registerSubclass({
   name:"MPDel9",superclass:"NSObject",protocols:["NSApplicationDelegate","NSWindowDelegate"],
   methods:{
     "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
-    "applicationShouldTerminate:":{types:["int",["id"]],implementation:function(s){ mpQuitNow(); return 1; }},
     "windowWillClose:":{types:["void",["id"]],implementation:function(n){ mpQuitNow(); }},
     "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpQuitNow(); }},
     "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpQuitNow(); }},
