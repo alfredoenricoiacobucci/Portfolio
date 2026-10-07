@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 13,
+    "total": 14,
     "art": 6,
     "pro": 2,
-    "landing": 5,
+    "landing": 6,
     "about": 0
   },
   "projects": {
@@ -16,7 +16,7 @@
   },
   "daily": {
     "2026-10-07": {
-      "total": 13,
+      "total": 14,
       "art": 6,
       "pro": 2,
       "sessions": 7
