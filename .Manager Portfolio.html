@@ -438,6 +438,70 @@
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
+  /* ---- COMPOSIZIONE LIBERA (galleria Art) ---- */
+  .cmp-note { font-size: 11.5px; color: var(--text3); line-height: 1.55; margin: -6px 0 16px; max-width: 660px; }
+  .cmp-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cmp-bar .sp { flex: 1; }
+  .cmp-rows { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .cmp-rows span { font-size: 11.5px; color: var(--text2); padding: 0 10px; min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+  .cmp-rows button { border: 0; border-radius: 0; padding: 6px 11px; }
+  .cmp-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .cmp-seg button { border: 0; border-radius: 0; }
+  .cmp-seg button.on { background: rgba(200,16,46,0.14); color: #fff; }
+  .cmp-stage { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+  .cmp-canvas {
+    position: relative; width: 100%; margin: 0 auto; background-color: #f8f4ed;
+    outline: none; user-select: none; -webkit-user-select: none;
+    box-shadow: 0 0 0 1px rgba(200,16,46,0.75);
+    transition: max-width 260ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .cmp-canvas.phone { max-width: 340px; }
+  .cmp-canvas.dropping { box-shadow: 0 0 0 2px var(--red); }
+  .cmp-center { position: absolute; pointer-events: none; z-index: 0; }
+  .cmp-center.v { top: 0; bottom: 0; left: 50%; border-left: 1px dashed rgba(200,16,46,0.55); }
+  .cmp-center.h { left: 0; right: 0; border-top: 1px dashed rgba(200,16,46,0.55); }
+  .cmp-dot { position: absolute; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; border-radius: 50%; background: rgba(0,0,0,0.18); pointer-events: none; }
+  .cmp-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(0,0,0,0.38); font-size: 12.5px; pointer-events: none; text-align: center; padding: 20px; }
+  .cmp-item { position: absolute; box-sizing: border-box; padding: 0.23%; cursor: grab; touch-action: none; }
+  .cmp-item:active { cursor: grabbing; }
+  .cmp-item img { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; background: rgba(0,0,0,0.06); }
+  .cmp-item.contain img { object-fit: contain; background: transparent; }
+  .cmp-item.sel { outline: 2px solid var(--red); outline-offset: -1px; }
+  .cmp-h { position: absolute; width: 10px; height: 10px; background: #fff; border: 2px solid var(--red); border-radius: 2px; display: none; z-index: 2; }
+  .cmp-item.sel .cmp-h { display: block; }
+  .cmp-h[data-h="nw"] { left: -5px; top: -5px; cursor: nwse-resize; }
+  .cmp-h[data-h="ne"] { right: -5px; top: -5px; cursor: nesw-resize; }
+  .cmp-h[data-h="sw"] { left: -5px; bottom: -5px; cursor: nesw-resize; }
+  .cmp-h[data-h="se"] { right: -5px; bottom: -5px; cursor: nwse-resize; }
+  .cmp-h[data-h="n"] { left: calc(50% - 5px); top: -5px; cursor: ns-resize; }
+  .cmp-h[data-h="s"] { left: calc(50% - 5px); bottom: -5px; cursor: ns-resize; }
+  .cmp-h[data-h="w"] { top: calc(50% - 5px); left: -5px; cursor: ew-resize; }
+  .cmp-h[data-h="e"] { top: calc(50% - 5px); right: -5px; cursor: ew-resize; }
+  .cmp-guide { position: absolute; pointer-events: none; z-index: 9999; }
+  .cmp-guide.v { top: -10px; bottom: -10px; border-left: 1px solid var(--red); }
+  .cmp-guide.h { left: -10px; right: -10px; border-top: 1px solid var(--red); }
+  .cmp-guide.grid.v { border-left-color: rgba(200,16,46,0.45); }
+  .cmp-guide.grid.h { border-top-color: rgba(200,16,46,0.45); }
+  .cmp-size { position: absolute; z-index: 10000; pointer-events: none; background: var(--red); color: #fff; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; display: none; }
+  .cmp-sel-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; min-height: 32px; }
+  .cmp-sel-bar .lbl { font-size: 11.5px; color: var(--text3); margin-right: 4px; }
+  .cmp-tray-h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 22px 0 10px; }
+  .cmp-tray { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cmp-tray img { height: 64px; width: auto; display: block; border-radius: 3px; cursor: grab; border: 1px solid var(--border); transition: transform 160ms ease, border-color 160ms ease; }
+  .cmp-tray img:hover { transform: translateY(-2px); border-color: var(--red); }
+  .cmp-tray .none { font-size: 11.5px; color: var(--text3); }
+
+  /* ---- VIDEO DEL BANNER ---- */
+  .vid-list { display: flex; flex-direction: column; gap: 8px; }
+  .vid-row { display: grid; grid-template-columns: 132px 1fr auto; gap: 14px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+  .vid-row video { width: 132px; height: 74px; object-fit: cover; border-radius: 4px; background: #000; display: block; }
+  .vid-row .nm { font-size: 12.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vid-row .meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .vid-row .acts { display: flex; gap: 4px; }
+  .vid-row .acts button { padding: 5px 9px; }
+  .vid-empty { font-size: 12px; color: var(--text3); }
+  .vid-work { font-size: 12px; color: #fbbf24; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+
   /* ---- PHOTOS ---- */
   .photos-section {
     margin-top: 32px;
@@ -5272,6 +5336,46 @@
           <div style="color:var(--text3);font-size:12px;">Caricamento foto da GitHub…</div>
         </div>
       </div>
+
+      ${section === "art" ? `
+      <div class="photos-section" id="cmpSection">
+        <div class="photos-header">
+          <h3>Composizione della galleria</h3>
+        </div>
+        <p class="cmp-note">Trascina le foto dalla striscia in basso dentro il riquadro, poi spostale e ridimensionale dagli angoli. Si agganciano da sole alla griglia, al centro, ai bordi e alle altre foto: tieni premuto Alt per muoverle libere, Maiuscole sugli angoli per mantenere le proporzioni. Sul sito compaiono solo le foto messe qui; se il riquadro resta vuoto, il sito usa il mosaico automatico.</p>
+        <div class="cmp-bar">
+          <div class="cmp-rows" title="Altezza del riquadro">
+            <button type="button" id="cmpRowsMinus" aria-label="Togli una riga">−</button>
+            <span id="cmpRowsVal">6 righe</span>
+            <button type="button" id="cmpRowsPlus" aria-label="Aggiungi una riga">+</button>
+          </div>
+          <button type="button" class="ghost" id="cmpAuto">Disposizione di partenza</button>
+          <button type="button" class="ghost" id="cmpClear">Svuota</button>
+          <div class="sp"></div>
+          <div class="cmp-seg" role="group" aria-label="Vista">
+            <button type="button" class="on" id="cmpViewDesk">Computer</button>
+            <button type="button" id="cmpViewPhone">Telefono</button>
+          </div>
+        </div>
+        <div class="cmp-stage">
+          <div class="cmp-canvas" id="cmpCanvas" tabindex="0"></div>
+        </div>
+        <div class="cmp-sel-bar" id="cmpSelBar"></div>
+        <div class="cmp-tray-h" id="cmpTrayH">Foto non ancora nella composizione</div>
+        <div class="cmp-tray" id="cmpTray"></div>
+      </div>
+      ` : ""}
+
+      <div class="photos-section" id="vidSection">
+        <div class="photos-header">
+          <h3>Video del banner</h3>
+          <button type="button" id="vidAdd">Aggiungi video</button>
+        </div>
+        <p class="cmp-note">${section === "art" ? "I video della mostra scorrono uno dopo l'altro nel riquadro in alto, sotto il titolo." : "I video scorrono uno dopo l'altro nel riquadro in alto, sotto il titolo, al posto delle foto."} Prima di salvarlo, ogni video viene accorciato a 25 secondi, senza audio, e alleggerito. Se non ci sono video, il riquadro mostra le foto come sempre.</p>
+        <input type="file" id="vidInput" accept="video/*" multiple style="display:none;">
+        <div class="vid-list" id="vidList"></div>
+        <div id="vidWork"></div>
+      </div>
     `;
 
     // Wire fields
@@ -5385,6 +5489,10 @@
       uploadArea.classList.remove("drag");
       handleUpload(e.dataTransfer.files, key);
     };
+
+    // Composizione libera (solo Art) e video del banner
+    setupComposer(p, key);
+    setupBannerVideos(p, key);
 
     // Delete
     document.getElementById("btnDelete").onclick = async () => {
@@ -5836,6 +5944,480 @@
     });
   }
 
+  // ========== COMPOSIZIONE LIBERA (galleria Art) ==========
+  // Riquadro di 12 colonne a celle quadrate. Ogni foto ha posizione e misura
+  // in celle (anche frazioni): il sito usa gli stessi numeri in percentuale,
+  // quindi su telefono la composizione è identica, solo più piccola.
+  const CMP_COLS = 12;
+  const cmpR = (v) => Math.round(v * 100) / 100;
+  const cmpClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function cmpEnsure(p) {
+    if (!p.composizione || typeof p.composizione !== "object") p.composizione = { righe: 6, foto: [] };
+    if (!Array.isArray(p.composizione.foto)) p.composizione.foto = [];
+    if (!(p.composizione.righe >= 1)) p.composizione.righe = 6;
+    return p.composizione;
+  }
+  function cmpRatio(p, name) {
+    const d = p.dimensioni && p.dimensioni[name];
+    return d && d.w && d.h ? d.w / d.h : 1.5;
+  }
+  // Toglie dalla composizione le foto eliminate dal progetto
+  function cmpDropNames(p, names) {
+    if (!p || !p.composizione || !Array.isArray(p.composizione.foto)) return;
+    const set = new Set(names);
+    p.composizione.foto = p.composizione.foto.filter(it => !set.has(it.file));
+    if (window._updateComposer) window._updateComposer();
+  }
+
+  function setupComposer(p, key) {
+    const canvas = document.getElementById("cmpCanvas");
+    if (!canvas) { window._updateComposer = null; return; }
+    const tray = document.getElementById("cmpTray");
+    const trayH = document.getElementById("cmpTrayH");
+    const selBar = document.getElementById("cmpSelBar");
+    const rowsVal = document.getElementById("cmpRowsVal");
+    let sel = -1;
+
+    const comp = () => cmpEnsure(p);
+    const photoList = () => {
+      const photos = photosByProject[key] || [];
+      const ord = p.ordine || [];
+      return [...photos].sort((a, b) => {
+        const ia = ord.indexOf(a.name), ib = ord.indexOf(b.name);
+        return (ia < 0 ? 1e6 : ia) - (ib < 0 ? 1e6 : ib) || a.name.localeCompare(b.name);
+      });
+    };
+    const urlOf = (name) => { const ph = (photosByProject[key] || []).find(x => x.name === name); return ph ? ph.url : ""; };
+    const usedBottom = () => comp().foto.reduce((m, it) => Math.max(m, it.y + it.h), 0);
+    const minRows = () => Math.max(1, Math.ceil(usedBottom() - 0.001));
+
+    function place(el, it) {
+      const rows = comp().righe;
+      el.style.left = (it.x / CMP_COLS * 100) + "%";
+      el.style.top = (it.y / rows * 100) + "%";
+      el.style.width = (it.w / CMP_COLS * 100) + "%";
+      el.style.height = (it.h / rows * 100) + "%";
+    }
+
+    function render() {
+      const c = comp();
+      const known = new Set((photosByProject[key] || []).map(x => x.name));
+      // se le foto sono già caricate, scarta voci di file che non esistono più
+      if (known.size) c.foto = c.foto.filter(it => known.has(it.file));
+      if (c.righe < minRows()) c.righe = minRows();
+      const rows = c.righe;
+      rowsVal.textContent = rows === 1 ? "1 riga" : `${rows} righe`;
+      canvas.style.aspectRatio = `${CMP_COLS} / ${rows}`;
+      canvas.style.backgroundImage =
+        "linear-gradient(to right, rgba(0,0,0,0.09) 1px, transparent 1px)," +
+        "linear-gradient(to bottom, rgba(0,0,0,0.09) 1px, transparent 1px)";
+      canvas.style.backgroundSize = `calc(100% / ${CMP_COLS}) calc(100% / ${rows})`;
+
+      let html = `<div class="cmp-center v"></div><div class="cmp-center h" style="top:50%"></div>`;
+      // punti al centro di ogni cella
+      for (let r = 0; r < rows; r++) for (let k = 0; k < CMP_COLS; k++)
+        html += `<span class="cmp-dot" style="left:${(k + 0.5) / CMP_COLS * 100}%;top:${(r + 0.5) / rows * 100}%"></span>`;
+      if (!c.foto.length) html += `<div class="cmp-empty">Trascina qui le foto della striscia in basso, oppure premi “Disposizione di partenza”.</div>`;
+      c.foto.forEach((it, n) => {
+        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}${n === sel ? " sel" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
+          `<img src="${urlOf(it.file)}" alt="" draggable="false">` +
+          ["nw","n","ne","e","se","s","sw","w"].map(h => `<span class="cmp-h" data-h="${h}"></span>`).join("") +
+          `</div>`;
+      });
+      html += `<div class="cmp-size" id="cmpSize"></div>`;
+      canvas.innerHTML = html;
+      canvas.querySelectorAll(".cmp-item").forEach(el => place(el, c.foto[+el.dataset.n]));
+
+      // striscia delle foto non ancora usate
+      const used = new Set(c.foto.map(it => it.file));
+      const free = photoList().filter(ph => !used.has(ph.name));
+      trayH.textContent = free.length ? `Foto non ancora nella composizione (${free.length})` : "Tutte le foto sono nella composizione";
+      tray.innerHTML = free.length
+        ? free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro, o clicca per aggiungerla in fondo">`).join("")
+        : "";
+      renderSelBar();
+    }
+
+    function renderSelBar() {
+      const it = comp().foto[sel];
+      if (!it) {
+        selBar.innerHTML = `<span class="lbl">${comp().foto.length} foto nella composizione. Clicca una foto per modificarla.</span>`;
+        return;
+      }
+      const isContain = it.adatta === "contain";
+      selBar.innerHTML = `
+        <span class="lbl">${cmpR(it.w)} × ${cmpR(it.h)} celle</span>
+        <div class="cmp-seg" role="group" aria-label="Adattamento">
+          <button type="button" class="sm ${isContain ? "" : "on"}" data-a="cover">Riempi il riquadro</button>
+          <button type="button" class="sm ${isContain ? "on" : ""}" data-a="contain">Foto intera</button>
+        </div>
+        <button type="button" class="sm" data-a="ratio">Proporzioni della foto</button>
+        <button type="button" class="sm" data-a="front">Porta sopra</button>
+        <button type="button" class="sm" data-a="back">Porta sotto</button>
+        <button type="button" class="sm danger" data-a="remove">Togli</button>`;
+    }
+
+    selBar.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-a]");
+      const c = comp();
+      const it = c.foto[sel];
+      if (!b || !it) return;
+      const a = b.dataset.a;
+      if (a === "cover") delete it.adatta;
+      else if (a === "contain") it.adatta = "contain";
+      else if (a === "ratio") {
+        const h = cmpR(it.w / cmpRatio(p, it.file));
+        it.h = h;
+        if (it.y + it.h > c.righe) c.righe = Math.ceil(it.y + it.h - 0.001);
+      } else if (a === "front") { c.foto.splice(sel, 1); c.foto.push(it); sel = c.foto.length - 1; }
+      else if (a === "back") { c.foto.splice(sel, 1); c.foto.unshift(it); sel = 0; }
+      else if (a === "remove") { c.foto.splice(sel, 1); sel = -1; }
+      markDirty();
+      render();
+    });
+
+    // ---- calamita: griglia, centro, bordi, altre foto ----
+    function targets(axis, skip) {
+      const c = comp();
+      const max = axis === "x" ? CMP_COLS : c.righe;
+      const out = [];
+      for (let i = 0; i <= max; i++) out.push({ v: i, kind: (i === 0 || i === max) ? "edge" : "grid" });
+      out.push({ v: max / 2, kind: "center" });
+      c.foto.forEach((o, n) => {
+        if (n === skip) return;
+        const p0 = axis === "x" ? o.x : o.y, s = axis === "x" ? o.w : o.h;
+        out.push({ v: p0, kind: "item" }, { v: p0 + s / 2, kind: "item" }, { v: p0 + s, kind: "item" });
+      });
+      return out;
+    }
+    // anchors: posizioni del pezzo che si sta muovendo; ritorna lo spostamento migliore
+    function snap(anchors, tg, thr) {
+      let best = null;
+      const rank = { item: 0, center: 0, edge: 0, grid: 1 };
+      for (const a of anchors) for (const t of tg) {
+        const d = t.v - a;
+        if (Math.abs(d) > thr) continue;
+        if (!best || Math.abs(d) < Math.abs(best.d) - 1e-6 ||
+            (Math.abs(Math.abs(d) - Math.abs(best.d)) < 1e-6 && rank[t.kind] < rank[best.t.kind])) best = { d, t };
+      }
+      return best;
+    }
+    function showGuides(gs) {
+      canvas.querySelectorAll(".cmp-guide").forEach(g => g.remove());
+      const rows = comp().righe;
+      gs.forEach(g => {
+        const el = document.createElement("div");
+        el.className = `cmp-guide ${g.axis === "x" ? "v" : "h"}${g.kind === "grid" ? " grid" : ""}`;
+        if (g.axis === "x") el.style.left = (g.v / CMP_COLS * 100) + "%";
+        else el.style.top = (g.v / rows * 100) + "%";
+        canvas.appendChild(el);
+      });
+    }
+    function showSize(it) {
+      const box = document.getElementById("cmpSize");
+      if (!box) return;
+      if (!it) { box.style.display = "none"; return; }
+      box.style.display = "block";
+      box.textContent = `${cmpR(it.w)} × ${cmpR(it.h)}`;
+      box.style.left = ((it.x + it.w) / CMP_COLS * 100) + "%";
+      box.style.top = ((it.y + it.h) / comp().righe * 100) + "%";
+      box.style.transform = "translate(-100%, 6px)";
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      const itemEl = e.target.closest(".cmp-item");
+      if (!itemEl) {
+        if (sel !== -1) { sel = -1; render(); }
+        return;
+      }
+      e.preventDefault();
+      canvas.focus({ preventScroll: true });
+      const n = +itemEl.dataset.n;
+      if (sel !== n) {
+        sel = n;
+        canvas.querySelectorAll(".cmp-item.sel").forEach(x => x.classList.remove("sel"));
+        itemEl.classList.add("sel");
+        renderSelBar();
+      }
+      const c = comp();
+      const it = c.foto[n];
+      const handle = e.target.closest(".cmp-h") ? e.target.closest(".cmp-h").dataset.h : null;
+      const cell = canvas.getBoundingClientRect().width / CMP_COLS;
+      const st = { x: it.x, y: it.y, w: it.w, h: it.h, px: e.clientX, py: e.clientY };
+      const ratio = cmpRatio(p, it.file);
+      const MIN = 0.5;
+      let moved = false;
+      itemEl.setPointerCapture(e.pointerId);
+
+      const onMove = (ev) => {
+        const dx = (ev.clientX - st.px) / cell, dy = (ev.clientY - st.py) / cell;
+        if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
+        moved = true;
+        const rows = c.righe;
+        const thr = ev.altKey ? 0 : 9 / cell;
+        const guides = [];
+        if (!handle) {
+          let x = cmpClamp(st.x + dx, 0, CMP_COLS - st.w);
+          let y = cmpClamp(st.y + dy, 0, rows - st.h);
+          const sx = snap([x, x + st.w / 2, x + st.w], targets("x", n), thr);
+          if (sx) { x = cmpClamp(x + sx.d, 0, CMP_COLS - st.w); guides.push({ axis: "x", v: sx.t.v, kind: sx.t.kind }); }
+          const sy = snap([y, y + st.h / 2, y + st.h], targets("y", n), thr);
+          if (sy) { y = cmpClamp(y + sy.d, 0, rows - st.h); guides.push({ axis: "y", v: sy.t.v, kind: sy.t.kind }); }
+          it.x = x; it.y = y;
+        } else {
+          let l = st.x, t = st.y, r = st.x + st.w, b = st.y + st.h;
+          if (handle.includes("w")) l = cmpClamp(st.x + dx, 0, r - MIN);
+          if (handle.includes("e")) r = cmpClamp(r + dx, l + MIN, CMP_COLS);
+          if (handle.includes("n")) t = cmpClamp(st.y + dy, 0, b - MIN);
+          if (handle.includes("s")) b = cmpClamp(b + dy, t + MIN, rows);
+          const tx = targets("x", n), ty = targets("y", n);
+          if (handle.includes("w")) { const s = snap([l], tx, thr); if (s) { l = cmpClamp(l + s.d, 0, r - MIN); guides.push({ axis: "x", v: s.t.v, kind: s.t.kind }); } }
+          if (handle.includes("e")) { const s = snap([r], tx, thr); if (s) { r = cmpClamp(r + s.d, l + MIN, CMP_COLS); guides.push({ axis: "x", v: s.t.v, kind: s.t.kind }); } }
+          const corner = handle.length === 2;
+          if (ev.shiftKey && corner) {
+            // proporzioni della foto: l'altezza segue la larghezza
+            const h = (r - l) / ratio;
+            if (handle.includes("n")) t = Math.max(0, b - h); else b = Math.min(rows, t + h);
+          } else {
+            if (handle.includes("n")) { const s = snap([t], ty, thr); if (s) { t = cmpClamp(t + s.d, 0, b - MIN); guides.push({ axis: "y", v: s.t.v, kind: s.t.kind }); } }
+            if (handle.includes("s")) { const s = snap([b], ty, thr); if (s) { b = cmpClamp(b + s.d, t + MIN, rows); guides.push({ axis: "y", v: s.t.v, kind: s.t.kind }); } }
+          }
+          it.x = l; it.y = t; it.w = r - l; it.h = b - t;
+        }
+        place(itemEl, it);
+        showGuides(guides);
+        showSize(it);
+        if (sel === n) { const lbl = selBar.querySelector(".lbl"); if (lbl) lbl.textContent = `${cmpR(it.w)} × ${cmpR(it.h)} celle`; }
+      };
+      const onUp = () => {
+        itemEl.removeEventListener("pointermove", onMove);
+        itemEl.removeEventListener("pointerup", onUp);
+        itemEl.removeEventListener("pointercancel", onUp);
+        showGuides([]);
+        showSize(null);
+        if (!moved) return;
+        it.x = cmpR(it.x); it.y = cmpR(it.y); it.w = cmpR(it.w); it.h = cmpR(it.h);
+        markDirty();
+        render();
+      };
+      itemEl.addEventListener("pointermove", onMove);
+      itemEl.addEventListener("pointerup", onUp);
+      itemEl.addEventListener("pointercancel", onUp);
+    });
+
+    // tastiera: frecce spostano (Maiuscole = una cella intera), Canc toglie
+    canvas.addEventListener("keydown", (e) => {
+      const c = comp();
+      const it = c.foto[sel];
+      if (!it) return;
+      const step = e.shiftKey ? 1 : 0.25;
+      let used = true;
+      if (e.key === "ArrowLeft") it.x = cmpClamp(cmpR(it.x - step), 0, CMP_COLS - it.w);
+      else if (e.key === "ArrowRight") it.x = cmpClamp(cmpR(it.x + step), 0, CMP_COLS - it.w);
+      else if (e.key === "ArrowUp") it.y = cmpClamp(cmpR(it.y - step), 0, c.righe - it.h);
+      else if (e.key === "ArrowDown") it.y = cmpClamp(cmpR(it.y + step), 0, c.righe - it.h);
+      else if (e.key === "Backspace" || e.key === "Delete") { c.foto.splice(sel, 1); sel = -1; }
+      else if (e.key === "Escape") sel = -1;
+      else used = false;
+      if (!used) return;
+      e.preventDefault();
+      markDirty();
+      render();
+      canvas.focus({ preventScroll: true });
+    });
+
+    // ---- aggiunta foto: trascinandole dalla striscia o con un clic ----
+    function addPhoto(name, cx, cy) {
+      const c = comp();
+      if (c.foto.some(it => it.file === name)) return;
+      const ratio = cmpRatio(p, name);
+      const w = ratio >= 1 ? 4 : 3;
+      const h = cmpR(w / ratio);
+      let x, y;
+      if (cx == null) { x = 0; y = cmpR(usedBottom()); }
+      else {
+        x = Math.round(cmpClamp(cx - w / 2, 0, CMP_COLS - w));
+        y = Math.round(Math.max(0, cy - h / 2));
+      }
+      if (y + h > c.righe) c.righe = Math.ceil(y + h - 0.001);
+      c.foto.push({ file: name, x, y, w, h });
+      sel = c.foto.length - 1;
+      markDirty();
+      render();
+    }
+    tray.addEventListener("dragstart", (e) => {
+      const img = e.target.closest("img[data-name]");
+      if (!img) return;
+      e.dataTransfer.setData("text/plain", "cmp:" + img.dataset.name);
+      e.dataTransfer.effectAllowed = "copy";
+    });
+    tray.addEventListener("click", (e) => {
+      const img = e.target.closest("img[data-name]");
+      if (img) addPhoto(img.dataset.name);
+    });
+    canvas.addEventListener("dragover", (e) => { e.preventDefault(); canvas.classList.add("dropping"); });
+    canvas.addEventListener("dragleave", () => canvas.classList.remove("dropping"));
+    canvas.addEventListener("drop", (e) => {
+      e.preventDefault();
+      canvas.classList.remove("dropping");
+      const data = e.dataTransfer.getData("text/plain") || "";
+      if (!data.startsWith("cmp:")) return;
+      const rect = canvas.getBoundingClientRect();
+      const cell = rect.width / CMP_COLS;
+      addPhoto(data.slice(4), (e.clientX - rect.left) / cell, (e.clientY - rect.top) / cell);
+    });
+
+    // ---- comandi generali ----
+    document.getElementById("cmpRowsPlus").onclick = () => { comp().righe += 1; markDirty(); render(); };
+    document.getElementById("cmpRowsMinus").onclick = () => {
+      const c = comp();
+      if (c.righe - 1 < minRows()) { toast("Prima sposta più in alto le foto dell'ultima riga.", "err"); return; }
+      c.righe -= 1; markDirty(); render();
+    };
+    document.getElementById("cmpClear").onclick = async () => {
+      if (!comp().foto.length) return;
+      if (!await confirm("Svuotare la composizione?\n\nLe foto restano nel progetto: sul sito tornerà il mosaico automatico finché non ne crei una nuova.")) return;
+      comp().foto = []; comp().righe = 6; sel = -1; markDirty(); render();
+    };
+    // Disposizione di partenza: righe giustificate come il mosaico del sito,
+    // da cui poi spostare e ridimensionare a mano.
+    document.getElementById("cmpAuto").onclick = async () => {
+      const c = comp();
+      const list = photoList();
+      if (!list.length) { toast("Il progetto non ha ancora foto.", "err"); return; }
+      if (c.foto.length && !await confirm("Sostituire la composizione attuale con una disposizione di partenza?")) return;
+      const target = list.length <= 3 ? 6 : list.length <= 8 ? 4 : 3;
+      const out = [];
+      let y = 0, row = [];
+      const flush = (last) => {
+        if (!row.length) return;
+        const sum = row.reduce((s, r) => s + r.ratio, 0);
+        let h = CMP_COLS / sum;
+        let x = 0;
+        if (last && h > target * 1.3) { h = target; x = (CMP_COLS - sum * h) / 2; }
+        row.forEach(r => { out.push({ file: r.name, x: cmpR(x), y: cmpR(y), w: cmpR(r.ratio * h), h: cmpR(h) }); x += r.ratio * h; });
+        y += h; row = [];
+      };
+      list.forEach(ph => {
+        row.push({ name: ph.name, ratio: cmpRatio(p, ph.name) });
+        if (row.reduce((s, r) => s + r.ratio, 0) * target >= CMP_COLS) flush(false);
+      });
+      flush(true);
+      c.foto = out;
+      c.righe = Math.max(1, Math.ceil(y - 0.001));
+      sel = -1;
+      markDirty();
+      render();
+    };
+    const vDesk = document.getElementById("cmpViewDesk"), vPhone = document.getElementById("cmpViewPhone");
+    vDesk.onclick = () => { canvas.classList.remove("phone"); vDesk.classList.add("on"); vPhone.classList.remove("on"); };
+    vPhone.onclick = () => { canvas.classList.add("phone"); vPhone.classList.add("on"); vDesk.classList.remove("on"); };
+
+    window._updateComposer = (k) => { if (!k || k === key) render(); };
+    render();
+  }
+
+  // ========== VIDEO DEL BANNER ==========
+  // I file vanno in contenuti/<sezione>/<progetto>/video/. Il server del
+  // Manager li accorcia, toglie l'audio e li alleggerisce prima di salvarli.
+  function setupBannerVideos(p, key) {
+    const list = document.getElementById("vidList");
+    if (!list) return;
+    const [section, slug] = key.split("/");
+    const folder = `codice-sorgente/contenuti/${section}/${slug}`;
+    const work = document.getElementById("vidWork");
+    const input = document.getElementById("vidInput");
+    if (!Array.isArray(p.video)) p.video = [];
+
+    function render() {
+      if (!p.video.length) {
+        list.innerHTML = `<div class="vid-empty">Nessun video. Il riquadro in alto mostra le foto.</div>`;
+        return;
+      }
+      list.innerHTML = p.video.map((rel, i) => `
+        <div class="vid-row" data-i="${i}">
+          <video src="${localPhotoUrl(folder, rel).replace(/%2F/gi, "/")}" muted playsinline preload="metadata" loop></video>
+          <div style="min-width:0;">
+            <div class="nm">${escapeHtml(rel.replace(/^video\//, ""))}</div>
+            <div class="meta">${i === 0 ? "Primo della rotazione" : `${i + 1}° nella rotazione`}</div>
+          </div>
+          <div class="acts">
+            <button type="button" class="sm ghost" data-a="up" ${i === 0 ? "disabled" : ""} aria-label="Sposta prima">Su</button>
+            <button type="button" class="sm ghost" data-a="down" ${i === p.video.length - 1 ? "disabled" : ""} aria-label="Sposta dopo">Giù</button>
+            <button type="button" class="sm danger" data-a="del">Elimina</button>
+          </div>
+        </div>`).join("");
+      list.querySelectorAll("video").forEach(v => {
+        v.addEventListener("mouseenter", () => v.play().catch(() => {}));
+        v.addEventListener("mouseleave", () => v.pause());
+        v.addEventListener("loadedmetadata", () => {
+          const meta = v.closest(".vid-row").querySelector(".meta");
+          if (meta && v.duration) meta.textContent += ` · ${Math.round(v.duration)} secondi`;
+        });
+      });
+    }
+
+    list.addEventListener("click", async (e) => {
+      const b = e.target.closest("button[data-a]");
+      if (!b) return;
+      const i = +b.closest(".vid-row").dataset.i;
+      const a = b.dataset.a;
+      if (a === "up" && i > 0) [p.video[i - 1], p.video[i]] = [p.video[i], p.video[i - 1]];
+      else if (a === "down" && i < p.video.length - 1) [p.video[i + 1], p.video[i]] = [p.video[i], p.video[i + 1]];
+      else if (a === "del") {
+        const rel = p.video[i];
+        if (!await confirm(`Eliminare il video "${rel.replace(/^video\//, "")}"?`)) return;
+        try { await storageDeleteFile(`${folder}/${rel}`, null, `editor: delete ${key}/${rel}`); }
+        catch (err) { /* file già assente: basta toglierlo dall'elenco */ }
+        p.video.splice(i, 1);
+        toast("Video eliminato. Premi Salva per aggiornare il sito.", "ok");
+      } else return;
+      markDirty();
+      render();
+    });
+
+    async function upload(files) {
+      const arr = Array.from(files || []).filter(f => /^video\//.test(f.type) || /\.(mp4|mov|m4v|avi|mkv|webm)$/i.test(f.name));
+      if (!arr.length) return;
+      if (!await checkLocalServer()) {
+        toast("I video si possono aggiungere solo dall'app Manager sul Mac, con l'SSD collegato.", "err");
+        return;
+      }
+      for (const f of arr) {
+        work.innerHTML = `<div class="vid-work">Preparo “${escapeHtml(f.name)}”: lo accorcio e lo alleggerisco, può volerci un minuto…</div>`;
+        try {
+          const r = await fetch(`/upload-video?folder=${encodeURIComponent(folder)}&name=${encodeURIComponent(f.name)}`, { method: "POST", body: f });
+          const j = await r.json();
+          if (!r.ok || !j.job) throw new Error(j.error || "caricamento non riuscito");
+          let st;
+          for (;;) {
+            await new Promise(res => setTimeout(res, 1500));
+            st = await (await fetch(`/video-status?id=${encodeURIComponent(j.job)}`)).json();
+            if (st.state !== "working") break;
+          }
+          if (st.state !== "done") throw new Error(st.error || "compressione non riuscita");
+          p.video.push(st.saved);
+          markDirty();
+          render();
+          const mb = (st.size / 1048576).toFixed(1).replace(".", ",");
+          toast(`Video pronto: ${mb} MB. Premi Salva per pubblicarlo.`, "ok");
+        } catch (err) {
+          toast(`Video “${f.name}”: ${err.message}`, "err");
+        }
+      }
+      work.innerHTML = "";
+      storageGitSync(`auto: video del banner in ${key}`);
+    }
+
+    document.getElementById("vidAdd").onclick = () => input.click();
+    input.onchange = (e) => { upload(e.target.files); input.value = ""; };
+    const sec = document.getElementById("vidSection");
+    sec.addEventListener("dragover", (e) => { if (e.dataTransfer.types.includes("Files")) e.preventDefault(); });
+    sec.addEventListener("drop", (e) => { if (!e.dataTransfer.files.length) return; e.preventDefault(); upload(e.dataTransfer.files); });
+    render();
+  }
+
   // ========== PHOTOS ==========
   // Lista file locali via server Python (Manager app)
   async function localListFiles(folder) {
@@ -5861,6 +6443,7 @@
       if (currentKey === key) renderPhotosGrid(key);
       renderSidebar();
       if (window._updateFocalPointUI) window._updateFocalPointUI();
+      if (window._updateComposer) window._updateComposer(key);
     } catch(e) {
       document.getElementById("photosGrid").innerHTML =
         `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
@@ -5988,6 +6571,7 @@
         const nameSet = new Set(deletedNames);
         photosByProject[key] = sorted.filter(x => !nameSet.has(x.name));
         if (p.ordine) p.ordine = p.ordine.filter(n => !nameSet.has(n));
+        cmpDropNames(p, deletedNames);
         markDirty();
         toast(`${deletedNames.length} foto eliminate.`, "ok");
       }
@@ -6065,6 +6649,7 @@
                 await storageDeleteFile(fullPath, ph.sha, `editor: delete ${section}/${slug}/${name}`);
                 photosByProject[key] = photosByProject[key].filter(x => x.name !== name);
                 if (p.ordine) p.ordine = p.ordine.filter(n => n !== name);
+                cmpDropNames(p, [name]);
                 lightboxData.photos = lightboxData.photos.filter(x => x.name !== name);
                 markDirty();
                 selectedPhotos.clear();
@@ -6170,6 +6755,7 @@
           await storageDeleteFile(fullPath, photo.sha, `editor: delete ${section}/${slug}/${photo.name}`);
           photosByProject[key] = sorted.filter(x => x.name !== photo.name);
           if (p.ordine) p.ordine = p.ordine.filter(n => n !== photo.name);
+          cmpDropNames(p, [photo.name]);
           markDirty();
           selectedPhotos.clear();
           renderPhotosGrid(key);

@@ -5,7 +5,7 @@ var sa = Application.currentApplication();
 sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
-var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil
+var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil,tempfile,time,re,uuid
 _ROOTS=['/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI','/Users/enricoiacobucci/Desktop/Portfolio AEI']
 _root=next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
 if not _root:
@@ -23,6 +23,36 @@ def git_sync(msg="auto: media update"):
    if r.returncode!=0:sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n')
   except Exception as e:sys.stderr.write('git_sync error: '+str(e)+'\\n')
  threading.Thread(target=run,daemon=True).start()
+# ---- Video del banner: accorciati a 25 s, senza audio, alleggeriti ----
+_jobs={}
+def find_ffmpeg():
+ for p in [shutil.which('ffmpeg'),'/opt/homebrew/bin/ffmpeg','/usr/local/bin/ffmpeg']:
+  if p and os.path.isfile(p):return p
+ return None
+def compress_video(src,dst):
+ ff=find_ffmpeg()
+ if ff:
+  cmd=[ff,'-y','-i',src,'-t','25','-an','-vf','scale=min(1920\\\\,iw):-2,fps=30','-c:v','libx264','-preset','medium','-crf','27','-maxrate','2500k','-bufsize','5000k','-pix_fmt','yuv420p','-movflags','+faststart',dst]
+  r=subprocess.run(cmd,capture_output=True,timeout=900)
+  if r.returncode==0 and os.path.isfile(dst):return True,''
+  return False,'ffmpeg: '+r.stderr.decode(errors='replace')[-300:]
+ if os.path.isfile('/usr/bin/avconvert'):
+  r=subprocess.run(['/usr/bin/avconvert','--source',src,'--output',dst,'--preset','Preset1280x720','--duration','25','--replace'],capture_output=True,timeout=900)
+  if r.returncode==0 and os.path.isfile(dst):return True,''
+  return False,'avconvert: '+(r.stderr or r.stdout).decode(errors='replace')[-300:]
+ return False,'manca un programma per comprimere i video (ffmpeg)'
+def video_job(jid,src,dst,rel):
+ try:
+  ok,err=compress_video(src,dst)
+  if ok:_jobs[jid]={'state':'done','saved':rel,'size':os.path.getsize(dst)}
+  else:
+   _jobs[jid]={'state':'error','error':err}
+   try:os.remove(dst)
+   except Exception:pass
+ except Exception as e:_jobs[jid]={'state':'error','error':str(e)}
+ finally:
+  try:os.remove(src)
+  except Exception:pass
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
@@ -47,6 +77,11 @@ class H(http.server.SimpleHTTPRequestHandler):
       files.append(f)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps(files).encode())
+  elif self.path.startswith('/video-status?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   j=_jobs.get(q.get('id',[''])[0],{'state':'error','error':'lavoro non trovato'})
+   self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers()
+   self.wfile.write(json.dumps(j).encode())
   elif self.path.startswith('/local-photo/'):
    # Serve foto locali: /local-photo/codice-sorgente/contenuti/...
    rel=urllib.parse.unquote(self.path[len('/local-photo/'):])
@@ -57,8 +92,27 @@ class H(http.server.SimpleHTTPRequestHandler):
    ext=safe.rsplit('.',1)[-1].lower()
    ct={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif','mp4':'video/mp4','mov':'video/quicktime'}.get(ext,'application/octet-stream')
    fsize=os.path.getsize(safe)
-   self.send_response(200);self.send_header('Content-Type',ct);self.send_header('Content-Length',str(fsize));self.end_headers()
-   with open(safe,'rb') as fp:shutil.copyfileobj(fp,self.wfile,65536)
+   rng=self.headers.get('Range','')
+   start,end=0,fsize-1
+   if rng.startswith('bytes='):
+    try:
+     a,b=rng[6:].split(',')[0].split('-')
+     if a:start=int(a);end=int(b) if b else fsize-1
+     else:start=max(0,fsize-int(b))
+     end=min(end,fsize-1)
+    except Exception:start,end=0,fsize-1
+    self.send_response(206);self.send_header('Content-Range','bytes %d-%d/%d'%(start,end,fsize))
+   else:self.send_response(200)
+   n=max(0,end-start+1)
+   self.send_header('Content-Type',ct);self.send_header('Accept-Ranges','bytes');self.send_header('Content-Length',str(n));self.end_headers()
+   try:
+    with open(safe,'rb') as fp:
+     fp.seek(start)
+     while n>0:
+      chunk=fp.read(min(65536,n))
+      if not chunk:break
+      self.wfile.write(chunk);n-=len(chunk)
+   except (BrokenPipeError,ConnectionResetError):pass
   else:super().do_GET()
  def do_POST(self):
   if self.path=='/upload':
@@ -83,6 +137,30 @@ class H(http.server.SimpleHTTPRequestHandler):
     saved.append(name)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps({"saved":saved}).encode())
+  elif self.path.startswith('/upload-video?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   folder=q.get('folder',[''])[0];name=os.path.basename(q.get('name',['video'])[0])
+   safe=os.path.normpath(os.path.join(os.getcwd(),folder))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not folder or not safe.startswith(base+os.sep):
+    self.send_response(403);self.end_headers();self.wfile.write(b'{"error":"percorso non valido"}');return
+   length=int(self.headers.get('Content-Length',0))
+   ext=os.path.splitext(name)[1].lower() or '.mov'
+   fd,tmp=tempfile.mkstemp(suffix=ext)
+   with os.fdopen(fd,'wb') as fp:
+    left=length
+    while left>0:
+     chunk=self.rfile.read(min(1048576,left))
+     if not chunk:break
+     fp.write(chunk);left-=len(chunk)
+   stem=re.sub('[^a-z0-9]+','-',os.path.splitext(name)[0].lower()).strip('-')[:40] or 'video'
+   out=stem+'-'+time.strftime('%Y%m%d-%H%M%S')+'.mp4'
+   vdir=os.path.join(safe,'video');os.makedirs(vdir,exist_ok=True)
+   jid=uuid.uuid4().hex
+   _jobs[jid]={'state':'working'}
+   threading.Thread(target=video_job,args=(jid,tmp,os.path.join(vdir,out),'video/'+out),daemon=True).start()
+   self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers()
+   self.wfile.write(json.dumps({'job':jid}).encode())
   elif self.path=='/git-sync':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length)) if length else {}
@@ -111,8 +189,9 @@ class H(http.server.SimpleHTTPRequestHandler):
   self.send_header('Pragma','no-cache')
   self.send_header('Expires','0')
   super().end_headers()
-socketserver.TCPServer.allow_reuse_address=True
-httpd=socketserver.TCPServer(('127.0.0.1',8471),H)
+socketserver.ThreadingTCPServer.allow_reuse_address=True
+socketserver.ThreadingTCPServer.daemon_threads=True
+httpd=socketserver.ThreadingTCPServer(('127.0.0.1',8471),H)
 httpd.serve_forever()`;
 
 var task = $.NSTask.alloc.init;

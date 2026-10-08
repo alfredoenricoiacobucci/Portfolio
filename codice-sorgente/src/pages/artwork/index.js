@@ -11,6 +11,8 @@ import { fallbackToOriginal, preview } from "@/lib/images";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytics";
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
+const BannerVideo = dynamic(() => import("../../components/BannerVideo"), { ssr: false });
+import FreeGallery from "@/components/FreeGallery";
 
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
@@ -76,8 +78,53 @@ export async function getStaticProps() {
 
     // Posizione focale anteprima (default: center 33%)
     const anteprimaPosizione = data.anteprimaPosizione || { x: 50, y: 33 };
+    // Foto di anteprima (riga della home): resta valida anche quando la
+    // composizione libera mostra solo una parte delle foto.
+    const cover = images[anteprimaIndex] || images[0] || null;
 
-    return { id, name: title || id, titleExtra, datePlace, description, images, bannerStartIndex, anteprimaIndex, anteprimaPosizione, techData, esposizioni, section };
+    // Video del banner: file già compressi dal Manager in <progetto>/video/
+    const videos = (Array.isArray(data.video) ? data.video : [])
+      .map((v) => String(v || "").trim())
+      .filter((v) => /\.(mp4|m4v|mov|webm)$/i.test(v))
+      .map((v) => `/projects/${id}/${v}`);
+
+    // Composizione libera della galleria (griglia di 12 colonne, celle
+    // quadrate). In galleria compaiono solo le foto messe nella
+    // composizione, nell'ordine di lettura: dall'alto in basso, da sinistra.
+    let galleryImages = images;
+    let composition = null;
+    const comp = data.composizione;
+    if (comp && Array.isArray(comp.foto) && comp.foto.length) {
+      const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
+      const placed = comp.foto
+        .map((it) => {
+          const i = files.findIndex((f) => f === it.file);
+          if (i < 0) return null;
+          const w = Math.max(0.25, Math.min(12, num(it.w, 4)));
+          const h = Math.max(0.25, num(it.h, 3));
+          const x = Math.max(0, Math.min(12 - w, num(it.x, 0)));
+          const y = Math.max(0, num(it.y, 0));
+          return { i, x, y, w, h, fit: it.adatta === "contain" ? "contain" : "cover" };
+        })
+        .filter(Boolean);
+      if (placed.length) {
+        const reading = [...placed].sort((a, b) => a.y - b.y || a.x - b.x);
+        galleryImages = reading.map((it) => images[it.i]);
+        const bottom = Math.max(...placed.map((it) => it.y + it.h));
+        composition = {
+          rows: Math.max(1, Math.ceil(bottom - 0.001), Math.round(num(comp.righe, 6))),
+          // l'ordine dell'array resta quello del Manager: decide chi sta sopra
+          items: placed.map((it) => ({ idx: reading.indexOf(it), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit })),
+        };
+      }
+    }
+    if (composition) {
+      const bannerFile = images[bannerStartIndex]?.src;
+      const bi = galleryImages.findIndex((im) => im.src === bannerFile);
+      bannerStartIndex = bi >= 0 ? bi : 0;
+    }
+
+    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, composition, bannerStartIndex, anteprimaIndex, anteprimaPosizione, techData, esposizioni, section };
   });
 
   // ---- ABOUT: doppio (art + pro) con campi condivisibili ----
@@ -544,7 +591,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   const preloadAndScroll = useCallback((project) => {
     if (!preloadedSlugsRef.current.has(project.slug)) {
       preloadedSlugsRef.current.add(project.slug);
-      const bannerImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
+      const bannerImg = project.cover || project.images?.[0];
       if (bannerImg) { const i = new window.Image(); i.src = bannerImg.src; }
     }
     startBannerScroll(project.slug);
@@ -931,6 +978,14 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
         <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100svh - var(--header-h, 80px))', background: 'black', marginBottom: '-1px', borderTop: mode === "professional" ? `2.5px solid ${ASP.colorTextProfessional}` : `4px solid ${ASP.colorTextArtwork}` }}>
+          {selectedProject.videos?.length > 0 && !reducedMotion ? (
+            <BannerVideo
+              videos={selectedProject.videos}
+              poster={selectedProject.images[selectedProject.bannerStartIndex || 0] || selectedProject.images[0]}
+              alt={selectedProject.name || ""}
+              className="relative w-full h-full overflow-hidden bg-black"
+            />
+          ) : (
           <TopRotator
             images={selectedProject.images}
             alt={selectedProject.name || ""}
@@ -940,15 +995,14 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             zoomMs={7000}
             priorityFirst
           />
-          {/* Un solo gradiente, concentrato in basso dove serve leggibilità.
-              Prima erano due overlay sovrapposti (0.55→0.65→nero, più una
-              seconda sfumatura) che sommati annerivano del tutto il terzo
-              inferiore della fotografia. */}
+          )}
+          {/* Sfumatura nera su tutta l'altezza, dal bordo alto della foto
+              fino al nero pieno in fondo, sotto il titolo. */}
           <div
             className="pointer-events-none absolute inset-0 z-30"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 72%, rgba(0,0,0,0.92) 90%, #000 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.65) 50%, #000 100%)",
             }}
           />
           {/* Titolo — stessa posizione di About: items-end, mb-8 */}
@@ -1097,6 +1151,20 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           )}
           {/* Gallery — margini simmetrici sopra e sotto */}
           <div style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+            {selectedProject.composition ? (
+            <FreeGallery
+              composition={selectedProject.composition}
+              images={selectedProject.images || []}
+              altFor={viewerAlt}
+              onImageClick={(i) => {
+                setViewerIndex(i);
+                setViewerOpen(true);
+                if (selectedProject?.images?.[i]) {
+                  trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
+                }
+              }}
+            />
+            ) : (
             <JustifiedGallery
               images={selectedProject.images || []}
               altFor={viewerAlt}
@@ -1108,6 +1176,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 }
               }}
             />
+            )}
           </div>
           {/* Margine sotto la galleria — uguale al margine sopra */}
           <div style={{ height: ASP.galleriaMarginBottom + "rem" }} />
@@ -1140,7 +1209,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               className="pointer-events-none absolute inset-0 z-30"
               style={{
                 background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.55) 72%, rgba(0,0,0,0.92) 90%, #000 100%)",
+                  "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.65) 50%, #000 100%)",
               }}
             />
             <div className="absolute inset-0 z-40 flex items-end px-6 md:px-12">
@@ -1215,7 +1284,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           <div className="flex flex-col gap-0 p-0">
             {projectsWithSlug.map((project, index) => {
               const isReverse = mode === "artwork" ? (index % 2 === 1) : (index % 2 === 0);
-              const anteprimaImg = project.images?.[project.anteprimaIndex ?? project.bannerStartIndex ?? 0] || project.images?.[0];
+              const anteprimaImg = project.cover || project.images?.[0];
               const bannerSrc = anteprimaImg?.src || "";
               const isVertical = anteprimaImg && anteprimaImg.h > anteprimaImg.w;
               const aPos = project.anteprimaPosizione || { x: 50, y: 33 };
