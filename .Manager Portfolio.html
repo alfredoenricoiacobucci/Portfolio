@@ -449,13 +449,18 @@
   .cmp-seg button { border: 0; border-radius: 0; }
   .cmp-seg button.on { background: rgba(200,16,46,0.14); color: #fff; }
   .cmp-stage { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+  .cmp-page {
+    margin: 0 auto; box-sizing: border-box; position: relative;
+    background-color: #f8f4ed;
+    background-image: repeating-linear-gradient(135deg, rgba(0,0,0,0.045) 0 1px, transparent 1px 7px);
+    transition: width 260ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
   .cmp-canvas {
-    position: relative; width: 100%; margin: 0 auto; background-color: #f8f4ed;
+    position: relative; width: 100%; background-color: #f8f4ed;
     outline: none; user-select: none; -webkit-user-select: none;
     box-shadow: 0 0 0 1px rgba(200,16,46,0.75);
-    transition: max-width 260ms cubic-bezier(0.32, 0.72, 0, 1);
   }
-  .cmp-canvas.phone { max-width: 340px; }
+  .cmp-scale { font-size: 11px; color: var(--text3); margin-top: 12px; text-align: center; line-height: 1.5; }
   .cmp-canvas.dropping { box-shadow: 0 0 0 2px var(--red); }
   .cmp-center { position: absolute; pointer-events: none; z-index: 0; }
   .cmp-center.v { top: 0; bottom: 0; left: 50%; border-left: 1px dashed rgba(200,16,46,0.55); }
@@ -468,7 +473,13 @@
   .cmp-item.contain img { object-fit: contain; background: transparent; }
   .cmp-item.sel { outline: 2px solid var(--red); outline-offset: -1px; }
   .cmp-h { position: absolute; width: 10px; height: 10px; background: #fff; border: 2px solid var(--red); border-radius: 2px; display: none; z-index: 2; }
-  .cmp-item.sel .cmp-h { display: block; }
+  .cmp-item.only .cmp-h { display: block; }
+  .cmp-item.sel:not(.only) { outline-style: solid; outline-width: 1.5px; }
+  .cmp-item.ref::after { content: "riferimento"; position: absolute; left: 4px; top: 4px; background: var(--red); color: #fff; font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; padding: 1px 5px; border-radius: 2px; pointer-events: none; }
+  .cmp-gtag { position: absolute; right: 5px; top: 5px; width: 9px; height: 9px; border-radius: 50%; border: 2px solid #fff; background: var(--red); box-shadow: 0 0 0 1px rgba(0,0,0,0.25); pointer-events: none; }
+  .cmp-selbox { position: absolute; display: none; border: 1px dashed var(--red); pointer-events: none; z-index: 9998; }
+  .cmp-selbox .cmp-h { display: block; pointer-events: auto; }
+  .cmp-marquee { position: absolute; z-index: 9997; border: 1px solid var(--red); background: rgba(200,16,46,0.08); pointer-events: none; }
   .cmp-h[data-h="nw"] { left: -5px; top: -5px; cursor: nwse-resize; }
   .cmp-h[data-h="ne"] { right: -5px; top: -5px; cursor: nesw-resize; }
   .cmp-h[data-h="sw"] { left: -5px; bottom: -5px; cursor: nesw-resize; }
@@ -483,8 +494,14 @@
   .cmp-guide.grid.v { border-left-color: rgba(200,16,46,0.45); }
   .cmp-guide.grid.h { border-top-color: rgba(200,16,46,0.45); }
   .cmp-size { position: absolute; z-index: 10000; pointer-events: none; background: var(--red); color: #fff; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; display: none; }
-  .cmp-sel-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; min-height: 32px; }
-  .cmp-sel-bar .lbl { font-size: 11.5px; color: var(--text3); margin-right: 4px; }
+  .cmp-sel-bar { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; min-height: 32px; }
+  .cmp-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .cmp-tools .lbl { font-size: 11.5px; color: var(--text3); margin-right: 6px; min-width: 0; }
+  .cmp-tools .lbl.strong { color: var(--text2); font-variant-numeric: tabular-nums; }
+  .cmp-ibs { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-right: 4px; }
+  .cmp-ibs .cmp-ib { border: 0; border-radius: 0; padding: 6px 8px; color: var(--text2); }
+  .cmp-ibs .cmp-ib + .cmp-ib { border-left: 1px solid var(--border); }
+  .cmp-ibs .cmp-ib:hover:not(:disabled) { color: #fff; }
   .cmp-tray-h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 22px 0 10px; }
   .cmp-tray { display: flex; flex-wrap: wrap; gap: 6px; }
   .cmp-tray img { height: 64px; width: auto; display: block; border-radius: 3px; cursor: grab; border: 1px solid var(--border); transition: transform 160ms ease, border-color 160ms ease; }
@@ -501,6 +518,59 @@
   .vid-row .acts button { padding: 5px 9px; }
   .vid-empty { font-size: 12px; color: var(--text3); }
   .vid-work { font-size: 12px; color: #fbbf24; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+
+  /* ---- ANTEPRIMA NELLA HOME (striscia che scorre) ---- */
+  .ant-wrap { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .ant-editor { position: relative; overflow: hidden; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; user-select: none; -webkit-user-select: none; background: #000; }
+  .ant-editor img { display: block; max-width: 340px; max-height: 440px; pointer-events: none; }
+  .ant-range { position: absolute; left: 0; right: 0; background: rgba(200,16,46,0.10); pointer-events: none; }
+  .ant-win { position: absolute; left: 0; right: 0; box-sizing: border-box; }
+  .ant-win.play { box-shadow: 0 0 0 9999px rgba(0,0,0,0.58); pointer-events: none; transition: opacity 400ms ease; }
+  .ant-win.mark { border: 2px solid var(--red); cursor: ns-resize; touch-action: none; }
+  .ant-win.mark.end { border-style: dashed; }
+  .ant-win.mark span { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); background: var(--red); color: #fff; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 2px; pointer-events: none; white-space: nowrap; }
+  .ant-win.mark.end span { left: auto; right: 6px; }
+  .ant-win.mark.drag { background: rgba(200,16,46,0.12); }
+  .ant-side { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .ant-strip { position: relative; width: 100%; overflow: hidden; border-radius: 4px; border: 1px solid var(--border); background: #000; }
+  .ant-strip.phone { width: 190px; }
+  .ant-strip img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 400ms ease; }
+  .ant-strip-ov { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; overflow: hidden; }
+  .ant-strip-ov span { white-space: nowrap; color: #f8f4ed; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; padding-left: 6%; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+  .ant-info { font-size: 11.5px; color: var(--text3); line-height: 1.5; }
+
+  /* ---- VERSIONI ---- */
+  .ver-intro { font-size: 12.5px; color: var(--text2); line-height: 1.6; margin: -18px 0 28px; max-width: 640px; }
+  .ver-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 22px 24px; margin-bottom: 24px; }
+  .ver-card h3 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .ver-desc { font-size: 12px; color: var(--text3); line-height: 1.6; max-width: 640px; }
+  .ver-save { display: flex; gap: 8px; margin: 18px 0 4px; }
+  .ver-save input { flex: 1; min-width: 0; }
+  .ver-sub { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 24px 0 8px; }
+  .ver-list { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .ver-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 9px 12px 9px 14px; border-top: 1px solid var(--border); min-height: 48px; transition: background 150ms ease; }
+  .ver-row:first-child { border-top: 0; }
+  .ver-row:hover { background: rgba(255,255,255,0.025); }
+  .ver-date { font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+  .ver-name { font-size: 12.5px; color: var(--text); min-width: 0; }
+  .ver-t { display: flex; align-items: center; min-width: 0; }
+  .ver-t .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .ver-t .ver-badge { flex-shrink: 0; }
+  .ver-name small { display: block; color: var(--text3); font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ver-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 8px; letter-spacing: 0.02em; white-space: nowrap; }
+  .ver-badge.live { background: rgba(74,222,128,0.12); color: #4ade80; }
+  .ver-actions { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+  .ver-actions input { width: 220px; padding: 5px 8px; font-size: 12px; }
+  .ver-empty { font-size: 12px; color: var(--text3); padding: 14px; line-height: 1.5; }
+  .ver-more { margin-top: 8px; }
+
+  /* ---- AVVISO DI USCITA ---- */
+  .quit-bg { position: fixed; inset: 0; z-index: 99990; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; animation: quitIn 160ms ease-out; }
+  .quit-box { width: min(440px, calc(100vw - 40px)); background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 12px; padding: 22px 22px 18px; box-shadow: 0 24px 60px rgba(0,0,0,0.55); }
+  .quit-t { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .quit-d { font-size: 12.5px; color: var(--text2); line-height: 1.55; }
+  .quit-a { display: flex; gap: 8px; align-items: center; margin-top: 20px; }
+  @keyframes quitIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* ---- PHOTOS ---- */
   .photos-section {
@@ -1291,6 +1361,7 @@
     <nav class="topbar-nav" id="topbarNav">
       <button class="topbar-nav-btn active" data-section="contenuti">Contenuti</button>
       <button class="topbar-nav-btn" data-section="analytics">Analytics</button>
+      <button class="topbar-nav-btn" data-section="versioni">Versioni</button>
       <button class="topbar-nav-btn" data-section="impostazioni">Impostazioni</button>
     </nav>
   </div>
@@ -1365,6 +1436,11 @@
   <div id="analyticsContent" class="section-full-inner wide">
     <p style="color: var(--text3);">Caricamento...</p>
   </div>
+</div>
+
+<!-- SEZIONE VERSIONI (full width) -->
+<div id="sectionVersioni" class="section-full" style="display:none;">
+  <div id="versioniContent" class="section-full-inner"></div>
 </div>
 
 <!-- SEZIONE IMPOSTAZIONI (full width) -->
@@ -4996,8 +5072,8 @@
     document.querySelectorAll(".topbar-nav-btn").forEach(b => {
       b.classList.toggle("active", b.dataset.section === section);
     });
-    const ids = ["sectionContenuti","sectionAnalytics","sectionImpostazioni"];
-    const map = { contenuti: ids[0], analytics: ids[1], impostazioni: ids[2] };
+    const ids = ["sectionContenuti","sectionAnalytics","sectionImpostazioni","sectionVersioni"];
+    const map = { contenuti: ids[0], analytics: ids[1], impostazioni: ids[2], versioni: ids[3] };
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (id === map[section]) {
@@ -5013,6 +5089,7 @@
 
     if (section === "analytics") loadAndRenderAnalytics();
     if (section === "impostazioni") renderImpostazioni();
+    if (section === "versioni") renderVersioni();
   }
 
   document.querySelectorAll(".topbar-nav-btn").forEach(btn => {
@@ -5292,29 +5369,28 @@
       `}
 
       <div class="field" id="focalPointSection" style="display:none;">
-        <label>Punto focale anteprima <span id="focalCoords" style="font-weight:normal;color:var(--text3);font-size:11px;"></span></label>
-        <div class="focal-wrap">
-          <div class="focal-editor" id="focalEditor">
-            <img id="focalImg" src="" alt="">
-            <div class="focal-crossh" id="focalCrossH"></div>
-            <div class="focal-crossv" id="focalCrossV"></div>
-            <div class="focal-dot" id="focalDot"></div>
+        <label>Anteprima nella home</label>
+        <p class="cmp-note" style="margin:2px 0 12px;">Nella home, quando passi sopra il titolo del progetto, dietro la scritta compare una striscia di questa foto che scorre lentamente. Il riquadro luminoso è la parte che si vede: trascina “Inizio” e “Fine” per scegliere da dove parte e dove arriva lo scorrimento.</p>
+        <div class="ant-wrap">
+          <div class="ant-editor" id="antEditor">
+            <img id="antImg" src="" alt="" draggable="false">
+            <div class="ant-range" id="antRange"></div>
+            <div class="ant-win play" id="antPlay"></div>
+            <div class="ant-win mark start" id="antStart" data-k="da"><span>Inizio</span></div>
+            <div class="ant-win mark end" id="antEnd" data-k="a"><span>Fine</span></div>
           </div>
-          <div class="focal-preview">
-            <span class="focal-preview-label">Anteprima sul sito</span>
-            <div class="focal-preview-strip">
-              <img id="focalPreviewImg" src="" alt="">
-              <div class="fp-overlay">
-                <span class="fp-marquee" id="focalPreviewTitle"></span>
-              </div>
+          <div class="ant-side">
+            <div class="cmp-seg" role="group" aria-label="Schermo">
+              <button type="button" class="sm on" id="antDesk">Computer</button>
+              <button type="button" class="sm" id="antPhone">Telefono</button>
             </div>
-            <div class="focal-preview-strip" style="height:48px;border-radius:4px;">
-              <img id="focalPreviewImgSm" src="" alt="">
-              <div class="fp-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0.5) 100%);">
-                <span class="fp-marquee" style="font-size:9px;opacity:0.7;" id="focalPreviewTitleSm"></span>
-              </div>
+            <span class="focal-preview-label">Come appare nella home</span>
+            <div class="ant-strip" id="antStrip">
+              <img id="antStripImg" src="" alt="">
+              <div class="ant-strip-ov"><span id="antStripTitle"></span></div>
             </div>
-            <span style="font-size:10px;color:var(--text3);line-height:1.3;">Clicca sull'immagine per spostare il punto focale. Il banner sul sito verrà ritagliato centrandosi su questo punto.</span>
+            <div class="ant-info" id="antInfo"></div>
+            <div><button type="button" class="sm ghost" id="antReset">Ripristina scorrimento normale</button></div>
           </div>
         </div>
       </div>
@@ -5342,7 +5418,7 @@
         <div class="photos-header">
           <h3>Composizione della galleria</h3>
         </div>
-        <p class="cmp-note">Trascina le foto dalla striscia in basso dentro il riquadro, poi spostale e ridimensionale dagli angoli. Si agganciano da sole alla griglia, al centro, ai bordi e alle altre foto: tieni premuto Alt per muoverle libere, Maiuscole sugli angoli per mantenere le proporzioni. Sul sito compaiono solo le foto messe qui; se il riquadro resta vuoto, il sito usa il mosaico automatico.</p>
+        <p class="cmp-note">Il riquadro chiaro è esattamente lo spazio della galleria sul sito, in scala. Trascina dentro le foto della striscia in basso, poi spostale e ridimensionale dagli angoli: si agganciano alla griglia, al centro, ai bordi e alle altre foto (Alt per muoverle libere, Maiuscole sugli angoli per tenere le proporzioni). Con Maiuscole o Cmd scegli più foto, oppure trascina un rettangolo sul vuoto: puoi allinearle, dar loro la stessa misura e raggrupparle per spostarle insieme. Sul sito compaiono solo le foto messe qui; se il riquadro resta vuoto, il sito usa il mosaico automatico.</p>
         <div class="cmp-bar">
           <div class="cmp-rows" title="Altezza del riquadro">
             <button type="button" id="cmpRowsMinus" aria-label="Togli una riga">−</button>
@@ -5358,7 +5434,10 @@
           </div>
         </div>
         <div class="cmp-stage">
-          <div class="cmp-canvas" id="cmpCanvas" tabindex="0"></div>
+          <div class="cmp-page" id="cmpPage">
+            <div class="cmp-canvas" id="cmpCanvas" tabindex="0"></div>
+          </div>
+          <div class="cmp-scale" id="cmpScale"></div>
         </div>
         <div class="cmp-sel-bar" id="cmpSelBar"></div>
         <div class="cmp-tray-h" id="cmpTrayH">Foto non ancora nella composizione</div>
@@ -5430,52 +5509,8 @@
       });
     }
 
-    // Focal point editor
-    function updateFocalPointUI() {
-      const sec = document.getElementById("focalPointSection");
-      const img = document.getElementById("focalImg");
-      const dot = document.getElementById("focalDot");
-      const crossH = document.getElementById("focalCrossH");
-      const crossV = document.getElementById("focalCrossV");
-      const coords = document.getElementById("focalCoords");
-      const prevImg = document.getElementById("focalPreviewImg");
-      const prevImgSm = document.getElementById("focalPreviewImgSm");
-      const prevTitle = document.getElementById("focalPreviewTitle");
-      const prevTitleSm = document.getElementById("focalPreviewTitleSm");
-      if (!p.anteprima) { sec.style.display = "none"; return; }
-      // Find the anteprima photo URL
-      const photos = photosByProject[key] || [];
-      const antPhoto = photos.find(ph => ph.name === p.anteprima);
-      if (!antPhoto) { sec.style.display = "none"; return; }
-      sec.style.display = "";
-      img.src = antPhoto.url;
-      if (!p.anteprimaPosizione) p.anteprimaPosizione = { x: 50, y: 33 };
-      const pos = p.anteprimaPosizione;
-      dot.style.left = pos.x + "%";
-      dot.style.top = pos.y + "%";
-      crossH.style.top = pos.y + "%";
-      crossV.style.left = pos.x + "%";
-      coords.textContent = `(${Math.round(pos.x)}%, ${Math.round(pos.y)}%)`;
-      // Update live preview strips
-      const objPos = `${pos.x}% ${pos.y}%`;
-      prevImg.src = antPhoto.url;
-      prevImg.style.objectPosition = objPos;
-      prevImgSm.src = antPhoto.url;
-      prevImgSm.style.objectPosition = objPos;
-      const titleText = p.titolo ? p.titolo.split("\n")[0] : key;
-      prevTitle.textContent = titleText + "  —  " + titleText + "  —  " + titleText;
-      prevTitleSm.textContent = titleText;
-    }
-    document.getElementById("focalEditor").addEventListener("click", (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      p.anteprimaPosizione = { x: Math.round(x), y: Math.round(y) };
-      markDirty();
-      updateFocalPointUI();
-    });
-    // Will be called after photos load
-    window._updateFocalPointUI = updateFocalPointUI;
+    // Anteprima nella home: la striscia che scorre sulla foto
+    window._updateFocalPointUI = setupAnteprima(p, key);
 
     // Upload area — drag & drop foto
     const uploadArea = document.getElementById("uploadArea");
@@ -5891,6 +5926,7 @@
         const p = state.projects.find(x => x.section === sec && x.slug === sl);
         if (p) {
           p.anteprima = d.photos[d.index].name;
+          delete p.anteprimaScorrimento;
           markDirty();
           updateLightboxAnteprimaBtn();
           renderPhotosGrid(d.projectKey);
@@ -5945,9 +5981,11 @@
   }
 
   // ========== COMPOSIZIONE LIBERA (galleria Art) ==========
-  // Riquadro di 12 colonne a celle quadrate. Ogni foto ha posizione e misura
-  // in celle (anche frazioni): il sito usa gli stessi numeri in percentuale,
-  // quindi su telefono la composizione è identica, solo più piccola.
+  // Riquadro di 12 colonne a celle quadrate: è esattamente la larghezza della
+  // galleria sul sito (schermo meno i margini laterali). Ogni foto ha
+  // posizione e misura in celle (anche frazioni); il sito usa gli stessi
+  // numeri in percentuale, quindi su telefono la composizione è identica,
+  // solo più piccola.
   const CMP_COLS = 12;
   const cmpR = (v) => Math.round(v * 100) / 100;
   const cmpClamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -5970,16 +6008,57 @@
     if (window._updateComposer) window._updateComposer();
   }
 
+  // Icone dei comandi (SVG, niente emoji)
+  const CMP_ICO = {
+    "al-l": '<path d="M4 3v18"/><rect x="7" y="6" width="11" height="4" rx="1"/><rect x="7" y="14" width="7" height="4" rx="1"/>',
+    "al-hc": '<path d="M12 3v18"/><rect x="5" y="6" width="14" height="4" rx="1"/><rect x="8" y="14" width="8" height="4" rx="1"/>',
+    "al-r": '<path d="M20 3v18"/><rect x="6" y="6" width="11" height="4" rx="1"/><rect x="10" y="14" width="7" height="4" rx="1"/>',
+    "al-t": '<path d="M3 4h18"/><rect x="6" y="7" width="4" height="11" rx="1"/><rect x="14" y="7" width="4" height="7" rx="1"/>',
+    "al-vc": '<path d="M3 12h18"/><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="8" width="4" height="8" rx="1"/>',
+    "al-b": '<path d="M3 20h18"/><rect x="6" y="6" width="4" height="11" rx="1"/><rect x="14" y="10" width="4" height="7" rx="1"/>',
+    "dist-h": '<path d="M3 4v16M21 4v16"/><rect x="9" y="8" width="6" height="8" rx="1"/>',
+    "dist-v": '<path d="M4 3h16M4 21h16"/><rect x="8" y="9" width="8" height="6" rx="1"/>',
+    "join-h": '<rect x="3" y="7" width="8" height="10" rx="1"/><rect x="13" y="7" width="8" height="10" rx="1"/><path d="M12 4v16" stroke-dasharray="2 2"/>',
+    "join-v": '<rect x="7" y="3" width="10" height="8" rx="1"/><rect x="7" y="13" width="10" height="8" rx="1"/><path d="M4 12h16" stroke-dasharray="2 2"/>',
+  };
+  const cmpIcon = (k) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${CMP_ICO[k]}</svg>`;
+
   function setupComposer(p, key) {
     const canvas = document.getElementById("cmpCanvas");
     if (!canvas) { window._updateComposer = null; return; }
+    const page = document.getElementById("cmpPage");
     const tray = document.getElementById("cmpTray");
     const trayH = document.getElementById("cmpTrayH");
     const selBar = document.getElementById("cmpSelBar");
     const rowsVal = document.getElementById("cmpRowsVal");
-    let sel = -1;
+    const scaleInfo = document.getElementById("cmpScale");
+    const section = document.getElementById("cmpSection");
+    let sel = new Set();      // oggetti foto selezionati
+    let primary = null;       // la prima selezionata: fa da misura di riferimento
+    let phone = false;
+    const hist = [];
 
     const comp = () => cmpEnsure(p);
+    const selected = () => comp().foto.filter(it => sel.has(it));
+    const groupOf = (it) => it.gruppo ? comp().foto.filter(o => o.gruppo === it.gruppo) : [it];
+    const bbox = (items) => {
+      const l = Math.min(...items.map(i => i.x)), t = Math.min(...items.map(i => i.y));
+      const r = Math.max(...items.map(i => i.x + i.w)), b = Math.max(...items.map(i => i.y + i.h));
+      return { l, t, r, b, w: r - l, h: b - t };
+    };
+    // unità = una foto sola oppure un gruppo intero
+    const units = (items) => {
+      const map = new Map(), out = [];
+      items.forEach(it => {
+        if (it.gruppo) {
+          if (!map.has(it.gruppo)) { const u = { items: [] }; map.set(it.gruppo, u); out.push(u); }
+          map.get(it.gruppo).items.push(it);
+        } else out.push({ items: [it] });
+      });
+      out.forEach(u => Object.assign(u, bbox(u.items)));
+      return out;
+    };
+    const shift = (items, dx, dy) => items.forEach(it => { it.x = cmpR(it.x + dx); it.y = cmpR(it.y + dy); });
     const photoList = () => {
       const photos = photosByProject[key] || [];
       const ord = p.ordine || [];
@@ -5991,6 +6070,41 @@
     const urlOf = (name) => { const ph = (photosByProject[key] || []).find(x => x.name === name); return ph ? ph.url : ""; };
     const usedBottom = () => comp().foto.reduce((m, it) => Math.max(m, it.y + it.h), 0);
     const minRows = () => Math.max(1, Math.ceil(usedBottom() - 0.001));
+    const fitRows = () => { const c = comp(); if (c.righe < minRows()) c.righe = minRows(); };
+
+    function snapshot() { hist.push(JSON.stringify(comp())); if (hist.length > 80) hist.shift(); }
+    function undo() {
+      if (!hist.length) { toast("Non c'è niente da annullare.", ""); return; }
+      p.composizione = JSON.parse(hist.pop());
+      sel.clear(); primary = null;
+      markDirty(); render();
+    }
+
+    // ---- misura reale: il riquadro è la galleria del sito, in scala ----
+    function aspetto() {
+      const a = state.aspetto || {};
+      return {
+        ml: parseFloat(a.marginLaterale || 8),
+        top: parseFloat(a.galleriaMarginTop || 3),
+        bot: parseFloat(a.galleriaMarginBottom || 3),
+      };
+    }
+    function layoutPage() {
+      const a = aspetto();
+      const screenW = phone ? 390 : (screen.width || window.innerWidth);
+      page.classList.toggle("phone", phone);
+      page.style.width = phone ? "360px" : "100%";
+      const pageW = page.getBoundingClientRect().width || 1;
+      const k = pageW / screenW;                       // scala pagina
+      page.style.paddingLeft = page.style.paddingRight = a.ml + "%";
+      page.style.paddingTop = Math.round(a.top * 16 * k) + "px";
+      page.style.paddingBottom = Math.round(a.bot * 16 * k) + "px";
+      const galleryW = screenW * (1 - 2 * a.ml / 100);
+      const pct = Math.round(k * 100);
+      scaleInfo.textContent = phone
+        ? `Telefono largo 390 px: la galleria è larga ${Math.round(galleryW)} px, qui la vedi al ${pct}%. Le zone a righe sono i margini del sito.`
+        : `Il tuo schermo è largo ${screenW} px: sul sito la galleria è larga ${Math.round(galleryW)} px, qui la vedi al ${pct}%. Le zone a righe sono i margini del sito.`;
+    }
 
     function place(el, it) {
       const rows = comp().righe;
@@ -6003,9 +6117,10 @@
     function render() {
       const c = comp();
       const known = new Set((photosByProject[key] || []).map(x => x.name));
-      // se le foto sono già caricate, scarta voci di file che non esistono più
       if (known.size) c.foto = c.foto.filter(it => known.has(it.file));
-      if (c.righe < minRows()) c.righe = minRows();
+      sel = new Set([...sel].filter(it => c.foto.includes(it)));
+      if (primary && !sel.has(primary)) primary = selected()[0] || null;
+      fitRows();
       const rows = c.righe;
       rowsVal.textContent = rows === 1 ? "1 riga" : `${rows} righe`;
       canvas.style.aspectRatio = `${CMP_COLS} / ${rows}`;
@@ -6015,66 +6130,177 @@
       canvas.style.backgroundSize = `calc(100% / ${CMP_COLS}) calc(100% / ${rows})`;
 
       let html = `<div class="cmp-center v"></div><div class="cmp-center h" style="top:50%"></div>`;
-      // punti al centro di ogni cella
       for (let r = 0; r < rows; r++) for (let k = 0; k < CMP_COLS; k++)
         html += `<span class="cmp-dot" style="left:${(k + 0.5) / CMP_COLS * 100}%;top:${(r + 0.5) / rows * 100}%"></span>`;
       if (!c.foto.length) html += `<div class="cmp-empty">Trascina qui le foto della striscia in basso, oppure premi “Disposizione di partenza”.</div>`;
       c.foto.forEach((it, n) => {
-        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}${n === sel ? " sel" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
+        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
           `<img src="${urlOf(it.file)}" alt="" draggable="false">` +
+          (it.gruppo ? `<span class="cmp-gtag" title="Fa parte di un gruppo"></span>` : "") +
           ["nw","n","ne","e","se","s","sw","w"].map(h => `<span class="cmp-h" data-h="${h}"></span>`).join("") +
           `</div>`;
       });
+      html += `<div class="cmp-selbox" id="cmpSelBox">${["nw","ne","sw","se"].map(h => `<span class="cmp-h" data-h="${h}" data-box="1"></span>`).join("")}</div>`;
       html += `<div class="cmp-size" id="cmpSize"></div>`;
       canvas.innerHTML = html;
       canvas.querySelectorAll(".cmp-item").forEach(el => place(el, c.foto[+el.dataset.n]));
 
-      // striscia delle foto non ancora usate
       const used = new Set(c.foto.map(it => it.file));
       const free = photoList().filter(ph => !used.has(ph.name));
       trayH.textContent = free.length ? `Foto non ancora nella composizione (${free.length})` : "Tutte le foto sono nella composizione";
-      tray.innerHTML = free.length
-        ? free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro, o clicca per aggiungerla in fondo">`).join("")
-        : "";
+      tray.innerHTML = free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro, o clicca per aggiungerla in fondo">`).join("");
+      layoutPage();
+      paintSel();
+    }
+
+    // Aggiorna solo l'aspetto della selezione, senza ricostruire il riquadro
+    function paintSel() {
+      const c = comp();
+      const only = sel.size === 1;
+      canvas.querySelectorAll(".cmp-item").forEach(el => {
+        const it = c.foto[+el.dataset.n];
+        el.classList.toggle("sel", sel.has(it));
+        el.classList.toggle("only", only && sel.has(it));
+        el.classList.toggle("ref", sel.size > 1 && it === primary);
+      });
+      updateSelBox();
       renderSelBar();
     }
-
-    function renderSelBar() {
-      const it = comp().foto[sel];
-      if (!it) {
-        selBar.innerHTML = `<span class="lbl">${comp().foto.length} foto nella composizione. Clicca una foto per modificarla.</span>`;
-        return;
-      }
-      const isContain = it.adatta === "contain";
-      selBar.innerHTML = `
-        <span class="lbl">${cmpR(it.w)} × ${cmpR(it.h)} celle</span>
-        <div class="cmp-seg" role="group" aria-label="Adattamento">
-          <button type="button" class="sm ${isContain ? "" : "on"}" data-a="cover">Riempi il riquadro</button>
-          <button type="button" class="sm ${isContain ? "on" : ""}" data-a="contain">Foto intera</button>
-        </div>
-        <button type="button" class="sm" data-a="ratio">Proporzioni della foto</button>
-        <button type="button" class="sm" data-a="front">Porta sopra</button>
-        <button type="button" class="sm" data-a="back">Porta sotto</button>
-        <button type="button" class="sm danger" data-a="remove">Togli</button>`;
+    function updateSelBox() {
+      const box = document.getElementById("cmpSelBox");
+      if (!box) return;
+      const items = selected();
+      if (items.length < 2) { box.style.display = "none"; return; }
+      const bb = bbox(items), rows = comp().righe;
+      box.style.display = "block";
+      box.style.left = (bb.l / CMP_COLS * 100) + "%";
+      box.style.top = (bb.t / rows * 100) + "%";
+      box.style.width = (bb.w / CMP_COLS * 100) + "%";
+      box.style.height = (bb.h / rows * 100) + "%";
     }
 
-    selBar.addEventListener("click", (e) => {
-      const b = e.target.closest("button[data-a]");
+    const tb = (a, label, extra = "") => `<button type="button" class="sm" data-a="${a}" ${extra}>${label}</button>`;
+    const ib = (a, title, dis) => `<button type="button" class="sm cmp-ib" data-a="${a}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(a)}</button>`;
+    function renderSelBar() {
+      const items = selected();
+      const n = items.length;
+      if (!n) {
+        selBar.innerHTML = `<div class="cmp-tools"><span class="lbl">${comp().foto.length} foto nella composizione. Clicca una foto per modificarla; con Maiuscole o Cmd ne scegli più di una, oppure trascina un rettangolo sul vuoto.</span>
+          ${comp().foto.length ? tb("all", "Seleziona tutte") : ""}${hist.length ? tb("undo", "Annulla") : ""}</div>`;
+        return;
+      }
+      const U = units(items);
+      const grouped = items.some(it => it.gruppo);
+      const allContain = items.every(it => it.adatta === "contain");
+      const allCover = items.every(it => it.adatta !== "contain");
+      const one = items[0];
+      const what = n === 1 ? `1 foto · ${cmpR(one.w)} × ${cmpR(one.h)} celle`
+        : `${n} foto${U.length < n ? ` (${U.length === 1 ? "un gruppo" : U.length + " elementi"})` : ""}`;
+      const alignTo = U.length === 1 ? "al riquadro" : "tra loro";
+      selBar.innerHTML = `
+        <div class="cmp-tools"><span class="lbl strong">${what}</span>
+          <div class="cmp-seg" role="group" aria-label="Adattamento">
+            <button type="button" class="sm ${allCover ? "on" : ""}" data-a="cover">Riempi il riquadro</button>
+            <button type="button" class="sm ${allContain ? "on" : ""}" data-a="contain">Foto intera</button>
+          </div>
+          ${tb("ratio", "Proporzioni della foto")}
+        </div>
+        ${n > 1 ? `<div class="cmp-tools"><span class="lbl">Stessa misura della foto di riferimento</span>
+          ${tb("same-long", "Stesso lato lungo", 'title="Orizzontali e verticali hanno lo stesso lato più lungo: sembrano grandi uguali"')}
+          ${tb("same-h", "Stessa altezza")}
+          ${tb("same-w", "Stessa larghezza")}
+          ${tb("same-box", "Stesso riquadro", 'title="Riquadro identico: la foto viene ritagliata"')}
+        </div>` : ""}
+        <div class="cmp-tools"><span class="lbl">Allinea ${alignTo}</span>
+          <div class="cmp-ibs">${ib("al-l", "A sinistra")}${ib("al-hc", "Al centro, in orizzontale")}${ib("al-r", "A destra")}</div>
+          <div class="cmp-ibs">${ib("al-t", "In alto")}${ib("al-vc", "Al centro, in verticale")}${ib("al-b", "In basso")}</div>
+          <div class="cmp-ibs">${ib("dist-h", "Spazi uguali in orizzontale (almeno 3)", U.length < 3)}${ib("dist-v", "Spazi uguali in verticale (almeno 3)", U.length < 3)}</div>
+          <div class="cmp-ibs">${ib("join-h", "Accosta in orizzontale", U.length < 2)}${ib("join-v", "Accosta in verticale", U.length < 2)}</div>
+        </div>
+        <div class="cmp-tools"><span class="lbl">Disponi</span>
+          ${n > 1 && !(U.length === 1 && grouped) ? tb("group", "Raggruppa") : ""}
+          ${grouped ? tb("ungroup", "Separa il gruppo") : ""}
+          ${tb("front", "Porta sopra")}${tb("back", "Porta sotto")}
+          ${hist.length ? tb("undo", "Annulla") : ""}
+          <button type="button" class="sm danger" data-a="remove">Togli</button>
+        </div>`;
+    }
+
+    // ---- comandi della barra ----
+    function clampAll() {
       const c = comp();
-      const it = c.foto[sel];
-      if (!b || !it) return;
-      const a = b.dataset.a;
-      if (a === "cover") delete it.adatta;
-      else if (a === "contain") it.adatta = "contain";
-      else if (a === "ratio") {
-        const h = cmpR(it.w / cmpRatio(p, it.file));
-        it.h = h;
-        if (it.y + it.h > c.righe) c.righe = Math.ceil(it.y + it.h - 0.001);
-      } else if (a === "front") { c.foto.splice(sel, 1); c.foto.push(it); sel = c.foto.length - 1; }
-      else if (a === "back") { c.foto.splice(sel, 1); c.foto.unshift(it); sel = 0; }
-      else if (a === "remove") { c.foto.splice(sel, 1); sel = -1; }
+      c.foto.forEach(it => {
+        it.w = cmpR(Math.min(it.w, CMP_COLS)); it.h = cmpR(Math.max(0.25, it.h));
+        it.x = cmpR(cmpClamp(it.x, 0, CMP_COLS - it.w)); it.y = cmpR(Math.max(0, it.y));
+      });
+      fitRows();
+    }
+    function act(a) {
+      const c = comp();
+      const items = selected();
+      if (a === "undo") { undo(); return; }
+      if (a === "all") { sel = new Set(c.foto); primary = c.foto[0] || null; paintSel(); return; }
+      if (!items.length) return;
+      snapshot();
+      const U = units(items);
+      const ref = primary && sel.has(primary) ? primary : items[0];
+      const others = items.filter(it => it !== ref);
+      const setByRatio = (it, w, h) => { it.w = cmpR(w); it.h = cmpR(h); };
+      switch (a) {
+        case "cover": items.forEach(it => delete it.adatta); break;
+        case "contain": items.forEach(it => it.adatta = "contain"); break;
+        case "ratio": items.forEach(it => { it.h = cmpR(it.w / cmpRatio(p, it.file)); }); break;
+        case "same-long": {
+          const L = Math.max(ref.w, ref.h);
+          others.forEach(it => { const r = cmpRatio(p, it.file); r >= 1 ? setByRatio(it, L, L / r) : setByRatio(it, L * r, L); });
+          break;
+        }
+        case "same-h": others.forEach(it => setByRatio(it, ref.h * cmpRatio(p, it.file), ref.h)); break;
+        case "same-w": others.forEach(it => setByRatio(it, ref.w, ref.w / cmpRatio(p, it.file))); break;
+        case "same-box": others.forEach(it => setByRatio(it, ref.w, ref.h)); break;
+        case "al-l": case "al-hc": case "al-r": case "al-t": case "al-vc": case "al-b": {
+          const B = U.length === 1 ? { l: 0, r: CMP_COLS, t: 0, b: c.righe } : bbox(items);
+          U.forEach(u => {
+            let dx = 0, dy = 0;
+            if (a === "al-l") dx = B.l - u.l;
+            if (a === "al-r") dx = B.r - u.r;
+            if (a === "al-hc") dx = (B.l + B.r) / 2 - (u.l + u.r) / 2;
+            if (a === "al-t") dy = B.t - u.t;
+            if (a === "al-b") dy = B.b - u.b;
+            if (a === "al-vc") dy = (B.t + B.b) / 2 - (u.t + u.b) / 2;
+            shift(u.items, dx, dy);
+          });
+          break;
+        }
+        case "dist-h": case "dist-v": case "join-h": case "join-v": {
+          const hz = a.endsWith("h");
+          const S = [...U].sort((m, n) => hz ? m.l - n.l : m.t - n.t);
+          if (S.length < 2) break;
+          const size = (u) => hz ? u.w : u.h;
+          const start = (u) => hz ? u.l : u.t;
+          let gap = 0;
+          if (a.startsWith("dist")) {
+            if (S.length < 3) break;
+            const span = (hz ? S[S.length - 1].r : S[S.length - 1].b) - start(S[0]);
+            gap = (span - S.reduce((s, u) => s + size(u), 0)) / (S.length - 1);
+          }
+          let cur = start(S[0]);
+          S.forEach(u => { const d = cur - start(u); shift(u.items, hz ? d : 0, hz ? 0 : d); cur += size(u) + gap; });
+          break;
+        }
+        case "group": { const id = "g" + Date.now().toString(36); items.forEach(it => it.gruppo = id); break; }
+        case "ungroup": items.forEach(it => delete it.gruppo); break;
+        case "front": c.foto = c.foto.filter(it => !sel.has(it)).concat(items); break;
+        case "back": c.foto = items.concat(c.foto.filter(it => !sel.has(it))); break;
+        case "remove": c.foto = c.foto.filter(it => !sel.has(it)); sel.clear(); primary = null; break;
+      }
+      clampAll();
       markDirty();
       render();
+    }
+    selBar.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-a]");
+      if (b && !b.disabled) act(b.dataset.a);
     });
 
     // ---- calamita: griglia, centro, bordi, altre foto ----
@@ -6084,14 +6310,13 @@
       const out = [];
       for (let i = 0; i <= max; i++) out.push({ v: i, kind: (i === 0 || i === max) ? "edge" : "grid" });
       out.push({ v: max / 2, kind: "center" });
-      c.foto.forEach((o, n) => {
-        if (n === skip) return;
+      c.foto.forEach(o => {
+        if (skip.has(o)) return;
         const p0 = axis === "x" ? o.x : o.y, s = axis === "x" ? o.w : o.h;
         out.push({ v: p0, kind: "item" }, { v: p0 + s / 2, kind: "item" }, { v: p0 + s, kind: "item" });
       });
       return out;
     }
-    // anchors: posizioni del pezzo che si sta muovendo; ritorna lo spostamento migliore
     function snap(anchors, tg, thr) {
       let best = null;
       const rank = { item: 0, center: 0, edge: 0, grid: 1 };
@@ -6114,123 +6339,221 @@
         canvas.appendChild(el);
       });
     }
-    function showSize(it) {
+    function showSize(bb) {
       const box = document.getElementById("cmpSize");
       if (!box) return;
-      if (!it) { box.style.display = "none"; return; }
+      if (!bb) { box.style.display = "none"; return; }
       box.style.display = "block";
-      box.textContent = `${cmpR(it.w)} × ${cmpR(it.h)}`;
-      box.style.left = ((it.x + it.w) / CMP_COLS * 100) + "%";
-      box.style.top = ((it.y + it.h) / comp().righe * 100) + "%";
+      box.textContent = `${cmpR(bb.w)} × ${cmpR(bb.h)}`;
+      box.style.left = ((bb.l + bb.w) / CMP_COLS * 100) + "%";
+      box.style.top = ((bb.t + bb.h) / comp().righe * 100) + "%";
       box.style.transform = "translate(-100%, 6px)";
+    }
+    const placeAll = (items) => items.forEach(it => {
+      const el = canvas.querySelector(`.cmp-item[data-n="${comp().foto.indexOf(it)}"]`);
+      if (el) place(el, it);
+    });
+
+    // trascinamento con il puntatore: gli handler stanno sulla finestra,
+    // così il movimento continua anche fuori dal riquadro
+    function track(e, onMove, onEnd) {
+      const move = (ev) => onMove(ev);
+      const up = (ev) => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", up);
+        onEnd(ev);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", up);
     }
 
     canvas.addEventListener("pointerdown", (e) => {
-      const itemEl = e.target.closest(".cmp-item");
-      if (!itemEl) {
-        if (sel !== -1) { sel = -1; render(); }
-        return;
-      }
+      if (e.button !== 0) return;
       e.preventDefault();
       canvas.focus({ preventScroll: true });
-      const n = +itemEl.dataset.n;
-      if (sel !== n) {
-        sel = n;
-        canvas.querySelectorAll(".cmp-item.sel").forEach(x => x.classList.remove("sel"));
-        itemEl.classList.add("sel");
-        renderSelBar();
-      }
       const c = comp();
-      const it = c.foto[n];
-      const handle = e.target.closest(".cmp-h") ? e.target.closest(".cmp-h").dataset.h : null;
-      const cell = canvas.getBoundingClientRect().width / CMP_COLS;
-      const st = { x: it.x, y: it.y, w: it.w, h: it.h, px: e.clientX, py: e.clientY };
-      const ratio = cmpRatio(p, it.file);
+      const rect = canvas.getBoundingClientRect();
+      const cell = rect.width / CMP_COLS;
       const MIN = 0.5;
-      let moved = false;
-      itemEl.setPointerCapture(e.pointerId);
+      const hEl = e.target.closest(".cmp-h");
+      const itemEl = e.target.closest(".cmp-item");
 
-      const onMove = (ev) => {
-        const dx = (ev.clientX - st.px) / cell, dy = (ev.clientY - st.py) / cell;
-        if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
-        moved = true;
-        const rows = c.righe;
-        const thr = ev.altKey ? 0 : 9 / cell;
-        const guides = [];
-        if (!handle) {
-          let x = cmpClamp(st.x + dx, 0, CMP_COLS - st.w);
-          let y = cmpClamp(st.y + dy, 0, rows - st.h);
-          const sx = snap([x, x + st.w / 2, x + st.w], targets("x", n), thr);
-          if (sx) { x = cmpClamp(x + sx.d, 0, CMP_COLS - st.w); guides.push({ axis: "x", v: sx.t.v, kind: sx.t.kind }); }
-          const sy = snap([y, y + st.h / 2, y + st.h], targets("y", n), thr);
-          if (sy) { y = cmpClamp(y + sy.d, 0, rows - st.h); guides.push({ axis: "y", v: sy.t.v, kind: sy.t.kind }); }
-          it.x = x; it.y = y;
-        } else {
+      // --- ridimensionare più foto insieme (angoli del riquadro di selezione) ---
+      if (hEl && hEl.dataset.box) {
+        const items = selected();
+        const bb0 = bbox(items);
+        const h = hEl.dataset.h;
+        const ax = h.includes("w") ? bb0.r : bb0.l, ay = h.includes("n") ? bb0.b : bb0.t;
+        const start = items.map(it => ({ it, x: it.x, y: it.y, w: it.w, h: it.h }));
+        const minS = Math.max(...items.map(it => MIN / Math.min(it.w, it.h)));
+        let moved = false;
+        track(e, (ev) => {
+          const dx = (ev.clientX - e.clientX) / cell;
+          if (!moved && Math.abs(dx) < 0.04) return;
+          if (!moved) { snapshot(); moved = true; }
+          let newW = h.includes("w") ? bb0.w - dx : bb0.w + dx;
+          let s = Math.max(minS, newW / bb0.w);
+          const maxW = h.includes("w") ? ax : CMP_COLS - ax;
+          s = Math.min(s, maxW / bb0.w);
+          if (h.includes("n")) s = Math.min(s, ay / bb0.h); else s = Math.min(s, (c.righe - ay) / bb0.h);
+          start.forEach(o => {
+            o.it.x = ax + (o.x - ax) * s; o.it.y = ay + (o.y - ay) * s;
+            o.it.w = o.w * s; o.it.h = o.h * s;
+          });
+          placeAll(items); updateSelBox(); showSize(bbox(items));
+        }, () => {
+          showSize(null);
+          if (!moved) return;
+          items.forEach(it => { it.x = cmpR(it.x); it.y = cmpR(it.y); it.w = cmpR(it.w); it.h = cmpR(it.h); });
+          markDirty(); render();
+        });
+        return;
+      }
+
+      // --- rettangolo di selezione sul vuoto ---
+      if (!itemEl) {
+        const additive = e.shiftKey || e.metaKey;
+        const base = additive ? new Set(sel) : new Set();
+        if (!additive) { sel = new Set(); primary = null; paintSel(); }
+        const x0 = (e.clientX - rect.left) / cell, y0 = (e.clientY - rect.top) / cell;
+        const mq = document.createElement("div");
+        mq.className = "cmp-marquee";
+        canvas.appendChild(mq);
+        track(e, (ev) => {
+          const x1 = (ev.clientX - rect.left) / cell, y1 = (ev.clientY - rect.top) / cell;
+          const l = Math.min(x0, x1), r = Math.max(x0, x1), t = Math.min(y0, y1), b = Math.max(y0, y1);
+          mq.style.left = (l / CMP_COLS * 100) + "%"; mq.style.width = ((r - l) / CMP_COLS * 100) + "%";
+          mq.style.top = (t / c.righe * 100) + "%"; mq.style.height = ((b - t) / c.righe * 100) + "%";
+          const hit = new Set(base);
+          c.foto.forEach(it => {
+            if (it.x < r && it.x + it.w > l && it.y < b && it.y + it.h > t) groupOf(it).forEach(m => hit.add(m));
+          });
+          sel = hit;
+          if (!primary || !sel.has(primary)) primary = selected()[0] || null;
+          paintSel();
+        }, () => { mq.remove(); });
+        return;
+      }
+
+      const it = c.foto[+itemEl.dataset.n];
+      const members = groupOf(it);
+
+      // --- Maiuscole o Cmd: aggiunge o toglie dalla selezione ---
+      if (e.shiftKey || e.metaKey) {
+        const allIn = members.every(m => sel.has(m));
+        members.forEach(m => allIn ? sel.delete(m) : sel.add(m));
+        if (!allIn && (!primary || !sel.has(primary))) primary = it;
+        if (primary && !sel.has(primary)) primary = selected()[0] || null;
+        paintSel();
+        return;
+      }
+      if (!sel.has(it)) { sel = new Set(members); primary = it; paintSel(); }
+
+      // --- ridimensionare una foto sola ---
+      if (hEl && sel.size === 1) {
+        const handle = hEl.dataset.h;
+        const st = { x: it.x, y: it.y, w: it.w, h: it.h };
+        const ratio = cmpRatio(p, it.file);
+        const skip = new Set([it]);
+        let moved = false;
+        track(e, (ev) => {
+          const dx = (ev.clientX - e.clientX) / cell, dy = (ev.clientY - e.clientY) / cell;
+          if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
+          if (!moved) { snapshot(); moved = true; }
+          const rows = c.righe;
+          const thr = ev.altKey ? 0 : 9 / cell;
+          const guides = [];
           let l = st.x, t = st.y, r = st.x + st.w, b = st.y + st.h;
           if (handle.includes("w")) l = cmpClamp(st.x + dx, 0, r - MIN);
           if (handle.includes("e")) r = cmpClamp(r + dx, l + MIN, CMP_COLS);
           if (handle.includes("n")) t = cmpClamp(st.y + dy, 0, b - MIN);
           if (handle.includes("s")) b = cmpClamp(b + dy, t + MIN, rows);
-          const tx = targets("x", n), ty = targets("y", n);
+          const tx = targets("x", skip), ty = targets("y", skip);
           if (handle.includes("w")) { const s = snap([l], tx, thr); if (s) { l = cmpClamp(l + s.d, 0, r - MIN); guides.push({ axis: "x", v: s.t.v, kind: s.t.kind }); } }
           if (handle.includes("e")) { const s = snap([r], tx, thr); if (s) { r = cmpClamp(r + s.d, l + MIN, CMP_COLS); guides.push({ axis: "x", v: s.t.v, kind: s.t.kind }); } }
-          const corner = handle.length === 2;
-          if (ev.shiftKey && corner) {
-            // proporzioni della foto: l'altezza segue la larghezza
-            const h = (r - l) / ratio;
-            if (handle.includes("n")) t = Math.max(0, b - h); else b = Math.min(rows, t + h);
+          if (ev.shiftKey && handle.length === 2) {
+            const hh = (r - l) / ratio;
+            if (handle.includes("n")) t = Math.max(0, b - hh); else b = Math.min(rows, t + hh);
           } else {
             if (handle.includes("n")) { const s = snap([t], ty, thr); if (s) { t = cmpClamp(t + s.d, 0, b - MIN); guides.push({ axis: "y", v: s.t.v, kind: s.t.kind }); } }
             if (handle.includes("s")) { const s = snap([b], ty, thr); if (s) { b = cmpClamp(b + s.d, t + MIN, rows); guides.push({ axis: "y", v: s.t.v, kind: s.t.kind }); } }
           }
           it.x = l; it.y = t; it.w = r - l; it.h = b - t;
-        }
-        place(itemEl, it);
-        showGuides(guides);
-        showSize(it);
-        if (sel === n) { const lbl = selBar.querySelector(".lbl"); if (lbl) lbl.textContent = `${cmpR(it.w)} × ${cmpR(it.h)} celle`; }
-      };
-      const onUp = () => {
-        itemEl.removeEventListener("pointermove", onMove);
-        itemEl.removeEventListener("pointerup", onUp);
-        itemEl.removeEventListener("pointercancel", onUp);
-        showGuides([]);
-        showSize(null);
+          place(itemEl, it); showGuides(guides); showSize(bbox([it]));
+          const lbl = selBar.querySelector(".lbl.strong"); if (lbl) lbl.textContent = `1 foto · ${cmpR(it.w)} × ${cmpR(it.h)} celle`;
+        }, () => {
+          showGuides([]); showSize(null);
+          if (!moved) return;
+          it.x = cmpR(it.x); it.y = cmpR(it.y); it.w = cmpR(it.w); it.h = cmpR(it.h);
+          markDirty(); render();
+        });
+        return;
+      }
+
+      // --- spostare la selezione (una foto, un gruppo o più foto insieme) ---
+      const moving = selected();
+      const start = moving.map(m => ({ m, x: m.x, y: m.y }));
+      const bb0 = bbox(moving);
+      const skip = new Set(moving);
+      let moved = false;
+      track(e, (ev) => {
+        const dx = (ev.clientX - e.clientX) / cell, dy = (ev.clientY - e.clientY) / cell;
+        if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
+        if (!moved) { snapshot(); moved = true; }
+        const rows = c.righe;
+        const thr = ev.altKey ? 0 : 9 / cell;
+        const guides = [];
+        let l = cmpClamp(bb0.l + dx, 0, CMP_COLS - bb0.w);
+        let t = cmpClamp(bb0.t + dy, 0, rows - bb0.h);
+        const sx = snap([l, l + bb0.w / 2, l + bb0.w], targets("x", skip), thr);
+        if (sx) { l = cmpClamp(l + sx.d, 0, CMP_COLS - bb0.w); guides.push({ axis: "x", v: sx.t.v, kind: sx.t.kind }); }
+        const sy = snap([t, t + bb0.h / 2, t + bb0.h], targets("y", skip), thr);
+        if (sy) { t = cmpClamp(t + sy.d, 0, rows - bb0.h); guides.push({ axis: "y", v: sy.t.v, kind: sy.t.kind }); }
+        start.forEach(o => { o.m.x = o.x + (l - bb0.l); o.m.y = o.y + (t - bb0.t); });
+        placeAll(moving); updateSelBox(); showGuides(guides); showSize(bbox(moving));
+      }, () => {
+        showGuides([]); showSize(null);
         if (!moved) return;
-        it.x = cmpR(it.x); it.y = cmpR(it.y); it.w = cmpR(it.w); it.h = cmpR(it.h);
-        markDirty();
-        render();
-      };
-      itemEl.addEventListener("pointermove", onMove);
-      itemEl.addEventListener("pointerup", onUp);
-      itemEl.addEventListener("pointercancel", onUp);
+        moving.forEach(m => { m.x = cmpR(m.x); m.y = cmpR(m.y); });
+        markDirty(); render();
+      });
     });
 
-    // tastiera: frecce spostano (Maiuscole = una cella intera), Canc toglie
+    // tastiera: frecce spostano (Maiuscole = una cella intera), Canc toglie,
+    // Cmd+G raggruppa, Maiuscole+Cmd+G separa, Cmd+A seleziona tutto, Cmd+Z annulla
     canvas.addEventListener("keydown", (e) => {
       const c = comp();
-      const it = c.foto[sel];
-      if (!it) return;
+      const cmd = e.metaKey || e.ctrlKey;
+      const k = e.key.toLowerCase();
+      if (cmd && k === "z") { e.preventDefault(); undo(); return; }
+      if (cmd && k === "a") { e.preventDefault(); act("all"); return; }
+      if (cmd && k === "g") { e.preventDefault(); act(e.shiftKey ? "ungroup" : "group"); return; }
+      const items = selected();
+      if (!items.length) return;
+      if (e.key === "Escape") { sel.clear(); primary = null; paintSel(); return; }
+      if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); act("remove"); return; }
       const step = e.shiftKey ? 1 : 0.25;
-      let used = true;
-      if (e.key === "ArrowLeft") it.x = cmpClamp(cmpR(it.x - step), 0, CMP_COLS - it.w);
-      else if (e.key === "ArrowRight") it.x = cmpClamp(cmpR(it.x + step), 0, CMP_COLS - it.w);
-      else if (e.key === "ArrowUp") it.y = cmpClamp(cmpR(it.y - step), 0, c.righe - it.h);
-      else if (e.key === "ArrowDown") it.y = cmpClamp(cmpR(it.y + step), 0, c.righe - it.h);
-      else if (e.key === "Backspace" || e.key === "Delete") { c.foto.splice(sel, 1); sel = -1; }
-      else if (e.key === "Escape") sel = -1;
-      else used = false;
-      if (!used) return;
+      const bb = bbox(items);
+      let dx = 0, dy = 0;
+      if (e.key === "ArrowLeft") dx = -Math.min(step, bb.l);
+      else if (e.key === "ArrowRight") dx = Math.min(step, CMP_COLS - bb.r);
+      else if (e.key === "ArrowUp") dy = -Math.min(step, bb.t);
+      else if (e.key === "ArrowDown") dy = Math.min(step, c.righe - bb.b);
+      else return;
       e.preventDefault();
+      snapshot();
+      shift(items, dx, dy);
       markDirty();
-      render();
-      canvas.focus({ preventScroll: true });
+      placeAll(items); updateSelBox(); renderSelBar();
     });
 
     // ---- aggiunta foto: trascinandole dalla striscia o con un clic ----
     function addPhoto(name, cx, cy) {
       const c = comp();
       if (c.foto.some(it => it.file === name)) return;
+      snapshot();
       const ratio = cmpRatio(p, name);
       const w = ratio >= 1 ? 4 : 3;
       const h = cmpR(w / ratio);
@@ -6241,8 +6564,9 @@
         y = Math.round(Math.max(0, cy - h / 2));
       }
       if (y + h > c.righe) c.righe = Math.ceil(y + h - 0.001);
-      c.foto.push({ file: name, x, y, w, h });
-      sel = c.foto.length - 1;
+      const it = { file: name, x, y, w, h };
+      c.foto.push(it);
+      sel = new Set([it]); primary = it;
       markDirty();
       render();
     }
@@ -6269,24 +6593,24 @@
     });
 
     // ---- comandi generali ----
-    document.getElementById("cmpRowsPlus").onclick = () => { comp().righe += 1; markDirty(); render(); };
+    document.getElementById("cmpRowsPlus").onclick = () => { snapshot(); comp().righe += 1; markDirty(); render(); };
     document.getElementById("cmpRowsMinus").onclick = () => {
       const c = comp();
       if (c.righe - 1 < minRows()) { toast("Prima sposta più in alto le foto dell'ultima riga.", "err"); return; }
-      c.righe -= 1; markDirty(); render();
+      snapshot(); c.righe -= 1; markDirty(); render();
     };
     document.getElementById("cmpClear").onclick = async () => {
       if (!comp().foto.length) return;
-      if (!await confirm("Svuotare la composizione?\n\nLe foto restano nel progetto: sul sito tornerà il mosaico automatico finché non ne crei una nuova.")) return;
-      comp().foto = []; comp().righe = 6; sel = -1; markDirty(); render();
+      if (!await confirm("Svuotare la composizione?\n\nLe foto restano nel progetto: sul sito tornerà il mosaico automatico finché non ne crei una nuova. Puoi sempre tornare indietro con Annulla.")) return;
+      snapshot(); comp().foto = []; comp().righe = 6; sel.clear(); primary = null; markDirty(); render();
     };
-    // Disposizione di partenza: righe giustificate come il mosaico del sito,
-    // da cui poi spostare e ridimensionare a mano.
+    // Disposizione di partenza: righe giustificate come il mosaico del sito
     document.getElementById("cmpAuto").onclick = async () => {
       const c = comp();
       const list = photoList();
       if (!list.length) { toast("Il progetto non ha ancora foto.", "err"); return; }
-      if (c.foto.length && !await confirm("Sostituire la composizione attuale con una disposizione di partenza?")) return;
+      if (c.foto.length && !await confirm("Sostituire la composizione attuale con una disposizione di partenza?\n\nPuoi sempre tornare indietro con Annulla.")) return;
+      snapshot();
       const target = list.length <= 3 ? 6 : list.length <= 8 ? 4 : 3;
       const out = [];
       let y = 0, row = [];
@@ -6306,13 +6630,21 @@
       flush(true);
       c.foto = out;
       c.righe = Math.max(1, Math.ceil(y - 0.001));
-      sel = -1;
+      sel.clear(); primary = null;
       markDirty();
       render();
     };
     const vDesk = document.getElementById("cmpViewDesk"), vPhone = document.getElementById("cmpViewPhone");
-    vDesk.onclick = () => { canvas.classList.remove("phone"); vDesk.classList.add("on"); vPhone.classList.remove("on"); };
-    vPhone.onclick = () => { canvas.classList.add("phone"); vPhone.classList.add("on"); vDesk.classList.remove("on"); };
+    vDesk.onclick = () => { phone = false; vDesk.classList.add("on"); vPhone.classList.remove("on"); layoutPage(); };
+    vPhone.onclick = () => { phone = true; vPhone.classList.add("on"); vDesk.classList.remove("on"); layoutPage(); };
+    // clic fuori dal riquadro (ma dentro la sezione): deseleziona
+    section.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("#cmpCanvas, #cmpSelBar, .cmp-bar, #cmpTray")) return;
+      if (sel.size) { sel.clear(); primary = null; paintSel(); }
+    });
+    if (window._cmpResizeObs) window._cmpResizeObs.disconnect();
+    window._cmpResizeObs = new ResizeObserver(() => { if (document.body.contains(page)) layoutPage(); });
+    window._cmpResizeObs.observe(page.parentElement);
 
     window._updateComposer = (k) => { if (!k || k === key) render(); };
     render();
@@ -6417,6 +6749,437 @@
     sec.addEventListener("drop", (e) => { if (!e.dataTransfer.files.length) return; e.preventDefault(); upload(e.dataTransfer.files); });
     render();
   }
+
+  // ========== ANTEPRIMA NELLA HOME ==========
+  // Sul sito, al passaggio del mouse sulla riga del progetto, dietro la scritta
+  // compare una striscia larga quanto lo schermo e alta 312 px (sul telefono
+  // 390 × 248) che scorre in verticale sulla foto: object-position da "da" ad
+  // "a" (in %), in 12 secondi, poi una breve dissolvenza e ricomincia.
+  const ANT_DESK_H = 312, ANT_PHONE = { w: 390, h: 248 }, ANT_MS = 12000, ANT_FADE = 400;
+  const antDefaults = (isVert) => ({ da: isVert ? 40 : 33, a: 66 });
+
+  function setupAnteprima(p, key) {
+    const sec = document.getElementById("focalPointSection");
+    if (!sec) return null;
+    const $ = (id) => document.getElementById(id);
+    const ed = $("antEditor"), img = $("antImg"), range = $("antRange"), play = $("antPlay");
+    const mStart = $("antStart"), mEnd = $("antEnd");
+    const strip = $("antStrip"), stripImg = $("antStripImg"), title = $("antStripTitle"), info = $("antInfo");
+    let phone = false, iw = 0, ih = 0, dragging = false, t0 = performance.now(), auto = false;
+
+    const stripDims = () => phone ? ANT_PHONE : { w: screen.width || 1440, h: ANT_DESK_H };
+    const cur = () => p.anteprimaScorrimento || antDefaults(ih > iw);
+    const posX = () => (p.anteprimaPosizione && Number.isFinite(p.anteprimaPosizione.x)) ? p.anteprimaPosizione.x : 50;
+    // parte dell'altezza della foto visibile nella striscia (1 = tutta)
+    const hf = () => { const s = stripDims(); return Math.min(1, (s.h / s.w) * (iw / ih)); };
+    const topPct = (pos) => pos / 100 * (1 - hf()) * 100;
+
+    function pickPhoto() {
+      const photos = photosByProject[key] || [];
+      const want = p.anteprima || p.banner || (p.ordine || [])[0];
+      auto = !p.anteprima;
+      return photos.find(ph => ph.name === want) || photos[0] || null;
+    }
+
+    function paint() {
+      if (!iw) return;
+      const f = hf(), v = cur(), s = stripDims();
+      const scrolls = f < 0.995;
+      strip.classList.toggle("phone", phone);
+      strip.style.aspectRatio = `${s.w} / ${s.h}`;
+      const sh = strip.getBoundingClientRect().width * s.h / s.w;
+      title.style.fontSize = Math.max(8, Math.round(sh * (phone ? 0.23 : 0.36))) + "px";
+      [mStart, mEnd, range].forEach(el => el.style.display = scrolls ? "" : "none");
+      if (scrolls) {
+        play.style.left = "0"; play.style.width = "100%";
+        play.style.height = mStart.style.height = mEnd.style.height = (f * 100) + "%";
+        mStart.style.top = topPct(v.da) + "%";
+        mEnd.style.top = topPct(v.a) + "%";
+        const top = Math.min(topPct(v.da), topPct(v.a));
+        range.style.top = top + "%";
+        range.style.height = (Math.abs(topPct(v.a) - topPct(v.da)) + f * 100) + "%";
+        info.textContent = `La striscia parte dal ${Math.round(v.da)}% e arriva al ${Math.round(v.a)}% dell'altezza della foto in 12 secondi, poi ricomincia.` +
+          (auto ? " Foto scelta in automatico: per usarne un'altra, aprila tra le foto del progetto e premi «Anteprima»." : "");
+      } else {
+        // foto più larga della striscia: si vede tutta in altezza e non scorre
+        const wf = (s.w / s.h) * (ih / iw);
+        play.style.top = "0"; play.style.height = "100%";
+        play.style.width = (wf * 100) + "%";
+        play.style.left = ((posX() / 100) * (1 - wf) * 100) + "%";
+        info.textContent = "Questa foto è più larga della striscia: si vede tutta in altezza e non scorre.";
+      }
+    }
+
+    // animazione continua, uguale al sito
+    if (window._antRaf) cancelAnimationFrame(window._antRaf);
+    const frame = (now) => {
+      if (!document.body.contains(sec)) return;   // progetto cambiato
+      window._antRaf = requestAnimationFrame(frame);
+      if (!iw || dragging || sec.style.display === "none") return;
+      const v = cur();
+      const el = (now - t0) % (ANT_MS + ANT_FADE * 2);
+      const t = Math.min(1, el / ANT_MS);
+      const pos = v.da + (v.a - v.da) * t;
+      if (hf() < 0.995) play.style.top = topPct(pos) + "%";
+      stripImg.style.objectPosition = `${posX()}% ${pos}%`;
+      stripImg.style.opacity = el > ANT_MS ? "0" : "1";
+    };
+    window._antRaf = requestAnimationFrame(frame);
+
+    // trascinare "Inizio" e "Fine"
+    [mStart, mEnd].forEach(m => m.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const k = m.dataset.k;
+      const v = { ...cur() };
+      const H = ed.getBoundingClientRect().height;
+      const travel = (1 - hf()) * H;
+      if (travel <= 0) return;
+      const startTop = v[k] / 100 * travel;
+      dragging = true;
+      m.classList.add("drag");
+      const move = (ev) => {
+        const top = cmpClamp(startTop + (ev.clientY - e.clientY), 0, travel);
+        v[k] = Math.round(top / travel * 1000) / 10;
+        p.anteprimaScorrimento = { da: v.da, a: v.a };
+        paint();
+        play.style.top = topPct(v[k]) + "%";
+        stripImg.style.opacity = "1";
+        stripImg.style.objectPosition = `${posX()}% ${v[k]}%`;
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", up);
+        m.classList.remove("drag");
+        dragging = false;
+        t0 = performance.now();
+        markDirty();
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", up);
+    }));
+
+    $("antDesk").onclick = () => { phone = false; $("antDesk").classList.add("on"); $("antPhone").classList.remove("on"); paint(); };
+    $("antPhone").onclick = () => { phone = true; $("antPhone").classList.add("on"); $("antDesk").classList.remove("on"); paint(); };
+    $("antReset").onclick = () => { delete p.anteprimaScorrimento; t0 = performance.now(); markDirty(); paint(); };
+    img.onload = () => {
+      const d = p.dimensioni && p.dimensioni[img.dataset.name];
+      iw = img.naturalWidth || (d && d.w) || 3; ih = img.naturalHeight || (d && d.h) || 2;
+      t0 = performance.now();
+      paint();
+    };
+
+    function update() {
+      const ph = pickPhoto();
+      if (!ph) { sec.style.display = "none"; return; }
+      sec.style.display = "";
+      if (img.dataset.name !== ph.name) {
+        iw = 0;
+        img.dataset.name = ph.name;
+        img.src = ph.url;
+        stripImg.src = ph.url;
+      }
+      const t = (p.titolo || "").split("\n").map(s => s.trim()).filter(Boolean).join(" - ") || key;
+      title.textContent = `${t} | ${t} |`;
+      paint();
+    }
+    update();
+    return update;
+  }
+
+  // ========== VERSIONI ==========
+  // Due tipi di versione, salvate nel progetto sul Mac (cartella versioni/)
+  // e nella storia di GitHub:
+  //  - contenuti: contenuti.json (testi, foto, composizioni, video, aspetto)
+  //  - grafica del sito: il codice del sito (src, scripts, configurazioni)
+  const verFmt = (iso) => {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso || "";
+    return d.toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" }) + ", " +
+      d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  };
+  const verMsg = (m) => {
+    const s = String(m || "").replace(/^(feat|fix|chore|refactor|style)(\([^)]*\))?:\s*/i, "");
+    if (/^editor: aggiorna contenuti\.json/.test(s)) return "Pubblicazione dal Manager";
+    if (/^Merge /.test(s)) return "Unione di modifiche";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+  let verShowAll = { pub: false, sito: false };
+
+  // Chiede un nome dentro la riga, senza finestre: ritorna il testo o null
+  function verAskName(row, initial, okLabel) {
+    return new Promise((resolve) => {
+      const acts = row.querySelector(".ver-actions");
+      const prev = acts.innerHTML;
+      acts.innerHTML = `<input type="text" maxlength="80" placeholder="Nome" value="${escapeHtml(initial || "")}"><button type="button" class="sm primary" data-v="ok">${okLabel || "Salva"}</button><button type="button" class="sm ghost" data-v="no">Annulla</button>`;
+      const inp = acts.querySelector("input");
+      inp.focus(); inp.select();
+      const done = (v) => { acts.innerHTML = prev; resolve(v); };
+      acts.querySelector('[data-v="ok"]').onclick = (e) => { e.stopPropagation(); done(inp.value.trim()); };
+      acts.querySelector('[data-v="no"]').onclick = (e) => { e.stopPropagation(); done(null); };
+      inp.onkeydown = (e) => { if (e.key === "Enter") done(inp.value.trim()); if (e.key === "Escape") done(null); };
+    });
+  }
+
+  // Dopo aver caricato una versione vecchia: toglie foto e video che nel
+  // frattempo sono stati eliminati dalle cartelle, così il sito non ha buchi.
+  async function verPruneMissing() {
+    let n = 0;
+    for (const p of state.projects) {
+      const folder = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
+      let files;
+      try { files = new Set(await localListFiles(folder)); } catch { continue; }
+      if (!files.size) continue;
+      const has = (f) => files.has(f);
+      if (Array.isArray(p.ordine)) { const b = p.ordine.length; p.ordine = p.ordine.filter(has); n += b - p.ordine.length; }
+      if (p.composizione && Array.isArray(p.composizione.foto)) p.composizione.foto = p.composizione.foto.filter(it => has(it.file));
+      if (p.banner && !has(p.banner)) p.banner = "";
+      if (p.anteprima && !has(p.anteprima)) { p.anteprima = ""; delete p.anteprimaScorrimento; }
+      if (Array.isArray(p.video) && p.video.length) {
+        try {
+          const vf = new Set((await localListFiles(folder + "/video")).map(x => "video/" + x));
+          const b = p.video.length; p.video = p.video.filter(v => vf.has(v)); n += b - p.video.length;
+        } catch { /* lascia com'è */ }
+      }
+    }
+    return n;
+  }
+
+  async function verLoadContenuti(query, label) {
+    if (dirty && !await confirm("Hai modifiche non salvate: verranno sostituite da questa versione.\n\nSe vuoi tenerle, prima salvale con un nome.")) return;
+    let data;
+    try {
+      const r = await fetch("/versioni/contenuti?" + query);
+      data = await r.json();
+      if (!r.ok || !data || !Array.isArray(data.projects)) throw new Error((data && data.error) || "versione non leggibile");
+    } catch (e) { toast("Non riesco ad aprire questa versione: " + e.message, "err"); return; }
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, JSON.parse(JSON.stringify(data)));
+    state.projects = state.projects || [];
+    state.aboutArt = state.aboutArt || { text: "", quote: "", photo: "", video: "" };
+    state.aboutPro = state.aboutPro || { text: "", quote: "", photo: "", video: "" };
+    state.aboutShared = state.aboutShared || { text: true, quote: true, photo: true, video: true };
+    state.landing = state.landing || { artworkImages: [], professionalImages: [] };
+    const tolti = await verPruneMissing();
+    markDirty();
+    currentKey = null;
+    renderSidebar();
+    const content = document.getElementById("content");
+    content.className = "content empty-state";
+    content.innerHTML = "Seleziona un progetto dalla lista a sinistra.";
+    switchSection("contenuti");
+    toast(`Caricata «${label}». Controlla e premi «Salva e pubblica» per metterla online.` +
+      (tolti ? ` Tolti ${tolti} file che non ci sono più.` : ""), "ok");
+  }
+
+  async function renderVersioni() {
+    const box = document.getElementById("versioniContent");
+    if (!box) return;
+    const head = `<h2 style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:32px;">Versioni</h2>
+      <p class="ver-intro">Qui salvi le configurazioni del sito e torni a quelle vecchie, anche dopo averlo pubblicato. Ripristinare non cancella niente: le versioni più recenti restano nell'elenco e puoi tornarci quando vuoi.</p>`;
+    if (!box.innerHTML.trim()) box.innerHTML = head + `<div class="ver-empty">Caricamento…</div>`;
+    if (!await checkLocalServer()) {
+      box.innerHTML = head + `<div class="ver-card"><div class="ver-empty">Le versioni funzionano solo dall'app Manager sul Mac, con l'SSD collegato.</div></div>`;
+      return;
+    }
+    let d;
+    try { d = await (await fetch("/versioni/elenco", { cache: "no-store" })).json(); }
+    catch (e) { box.innerHTML = head + `<div class="ver-card"><div class="ver-empty">Non riesco a leggere le versioni: ${escapeHtml(e.message)}</div></div>`; return; }
+
+    const salvate = (d.contenuti && d.contenuti.salvate) || [];
+    const pub = (d.contenuti && d.contenuti.pubblicate) || [];
+    const sito = (d.sito && d.sito.storia) || [];
+    const cut = (arr, k) => verShowAll[k] ? arr : arr.slice(0, 10);
+    const more = (arr, k) => arr.length > 10 ? `<button type="button" class="sm ghost ver-more" data-more="${k}">${verShowAll[k] ? "Mostra meno" : `Mostra tutte (${arr.length})`}</button>` : "";
+
+    box.innerHTML = head + `
+      <div class="ver-card">
+        <h3>Contenuti</h3>
+        <p class="ver-desc">Testi, ordine delle foto, composizioni delle gallerie, video, anteprime della home, colori e margini: tutto quello che cambi nella sezione Contenuti. «Carica» apre la versione nel Manager: la controlli e poi premi «Salva e pubblica».</p>
+        <div class="ver-save">
+          <input type="text" id="verNome" maxlength="80" placeholder="Nome, ad esempio «Prima della mostra di Jesi»">
+          <button type="button" class="primary" id="verSalva">Salva la configurazione attuale</button>
+        </div>
+        <div class="ver-sub">Salvate da te</div>
+        ${salvate.length ? `<div class="ver-list">${salvate.map(v => `
+          <div class="ver-row" data-id="${escapeHtml(v.id)}" data-nome="${escapeHtml(v.nome)}">
+            <div class="ver-date">${verFmt(v.data)}</div>
+            <div class="ver-name"><div class="ver-t"><span class="t">${escapeHtml(v.nome)}</span></div><small>${v.progetti} progetti</small></div>
+            <div class="ver-actions">
+              <button type="button" class="sm" data-a="load-saved">Carica</button>
+              <button type="button" class="sm ghost danger" data-a="del-saved">Elimina</button>
+            </div>
+          </div>`).join("")}</div>` : `<div class="ver-list"><div class="ver-empty">Non hai ancora salvato configurazioni. Scrivi un nome qui sopra e premi «Salva la configurazione attuale».</div></div>`}
+        <div class="ver-sub">Pubblicate sul sito</div>
+        ${pub.length ? `<div class="ver-list">${cut(pub, "pub").map((v, i) => `
+          <div class="ver-row" data-sha="${v.sha}" data-data="${escapeHtml(v.data)}">
+            <div class="ver-date">${verFmt(v.data)}</div>
+            <div class="ver-name"><div class="ver-t"><span class="t">${escapeHtml(verMsg(v.msg))}</span>${i === 0 ? `<span class="ver-badge live">Online adesso</span>` : ""}</div></div>
+            <div class="ver-actions">
+              <button type="button" class="sm" data-a="load-pub">Carica</button>
+              <button type="button" class="sm ghost" data-a="name-pub">Salva con un nome</button>
+            </div>
+          </div>`).join("")}</div>${more(pub, "pub")}` : `<div class="ver-list"><div class="ver-empty">Nessuna pubblicazione trovata.</div></div>`}
+      </div>
+
+      <div class="ver-card">
+        <h3>Grafica del sito</h3>
+        <p class="ver-desc">L'aspetto e il funzionamento del sito: ogni voce è una modifica al design fatta insieme a Claude. «Ripristina» rimette online quella grafica in pochi minuti; i contenuti non cambiano. Con una grafica vecchia, le funzioni arrivate dopo (per esempio la composizione libera o i video nel banner) sul sito non si vedono finché non torni avanti.</p>
+        ${sito.length ? `<div class="ver-list" style="margin-top:18px;">${cut(sito, "sito").map(v => `
+          <div class="ver-row" data-sha="${v.sha}" data-data="${escapeHtml(v.data)}" data-nome="${escapeHtml(v.nome || "")}">
+            <div class="ver-date">${verFmt(v.data)}</div>
+            <div class="ver-name"><div class="ver-t"><span class="t">${escapeHtml(v.nome || verMsg(v.msg))}</span>${v.inUso ? `<span class="ver-badge live">In uso</span>` : ""}</div>${v.nome ? `<small>${escapeHtml(verMsg(v.msg))}</small>` : ""}</div>
+            <div class="ver-actions">
+              ${v.inUso ? "" : `<button type="button" class="sm" data-a="restore-site">Ripristina</button>`}
+              <button type="button" class="sm ghost" data-a="name-site">${v.nome ? "Rinomina" : "Dai un nome"}</button>
+            </div>
+          </div>`).join("")}</div>${more(sito, "sito")}` : `<div class="ver-list" style="margin-top:18px;"><div class="ver-empty">Nessuna versione trovata.</div></div>`}
+      </div>`;
+
+    document.getElementById("verSalva").onclick = async () => {
+      const inp = document.getElementById("verNome");
+      const nome = inp.value.trim();
+      if (!nome) { inp.focus(); toast("Scrivi prima un nome per riconoscerla.", "err"); return; }
+      const r = await fetch("/versioni/salva", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nome, contenuti: state }) });
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) { toast("Salvataggio non riuscito: " + (j.error || r.status), "err"); return; }
+      toast(`Salvata «${nome}».`, "ok");
+      renderVersioni();
+    };
+    document.getElementById("verNome").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("verSalva").click(); };
+  }
+
+  document.getElementById("versioniContent").addEventListener("click", async (e) => {
+    const m = e.target.closest("[data-more]");
+    if (m) { verShowAll[m.dataset.more] = !verShowAll[m.dataset.more]; renderVersioni(); return; }
+    const b = e.target.closest("button[data-a]");
+    if (!b) return;
+    const row = b.closest(".ver-row");
+    const a = b.dataset.a;
+    const post = async (url, body) => {
+      const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      return r.json().catch(() => ({ ok: false, error: "risposta non valida" }));
+    };
+    if (a === "load-saved") verLoadContenuti("id=" + encodeURIComponent(row.dataset.id), row.dataset.nome);
+    else if (a === "load-pub") verLoadContenuti("sha=" + row.dataset.sha, "la versione del " + verFmt(row.dataset.data));
+    else if (a === "del-saved") {
+      if (!await confirm(`Eliminare la configurazione «${row.dataset.nome}»?`)) return;
+      const j = await post("/versioni/elimina", { id: row.dataset.id });
+      toast(j.ok ? "Configurazione eliminata." : "Non riesco a eliminarla.", j.ok ? "ok" : "err");
+      renderVersioni();
+    } else if (a === "name-pub") {
+      const nome = await verAskName(row, "Versione del " + verFmt(row.dataset.data), "Salva");
+      if (!nome) return;
+      const r = await fetch("/versioni/contenuti?sha=" + row.dataset.sha);
+      const c = await r.json().catch(() => null);
+      if (!r.ok || !c) { toast("Non riesco ad aprire questa versione.", "err"); return; }
+      const j = await post("/versioni/salva", { nome, contenuti: c });
+      toast(j.ok ? `Salvata «${nome}».` : "Salvataggio non riuscito.", j.ok ? "ok" : "err");
+      renderVersioni();
+    } else if (a === "name-site") {
+      const nome = await verAskName(row, row.dataset.nome, "Salva");
+      if (nome === null) return;
+      const j = await post("/versioni/nome-sito", { sha: row.dataset.sha, nome });
+      if (!j.ok) toast("Non riesco a salvare il nome.", "err");
+      renderVersioni();
+    } else if (a === "restore-site") {
+      if (!await confirm(`Rimettere online la grafica del ${verFmt(row.dataset.data)}?\n\nIl sito si aggiorna in pochi minuti. I contenuti non cambiano, e le versioni più recenti restano nell'elenco: puoi tornarci quando vuoi.`)) return;
+      b.disabled = true;
+      b.innerHTML = '<span class="btn-spinner"></span> Ripristino…';
+      const j = await post("/versioni/ripristina-sito", { sha: row.dataset.sha });
+      if (!j.ok) toast("Ripristino non riuscito: " + (j.error || ""), "err");
+      else if (j.uguale) toast("Il sito ha già questa grafica.", "");
+      else {
+        toast("Grafica ripristinata: il sito si aggiorna in pochi minuti.", "ok");
+        if (getToken() && j.sha) trackDeploy(j.sha);
+      }
+      renderVersioni();
+    }
+  });
+
+  // ========== USCITA CON MODIFICHE NON SALVATE ==========
+  // L'app (manager.js) non chiude più da sola: chiede qui. Se ci sono
+  // modifiche non salvate compare l'avviso, altrimenti si esce subito.
+  function mpQuitApp() {
+    try { window.webkit.messageHandlers.mp.postMessage("quit"); }
+    catch (e) { fetch("/quit-app").catch(() => toast("Chiusura non disponibile fuori dall'app.", "err")); }
+  }
+  function askUnsaved() {
+    return new Promise((resolve) => {
+      const bg = document.createElement("div");
+      bg.className = "quit-bg";
+      bg.innerHTML = `
+        <div class="quit-box" role="alertdialog" aria-modal="true" aria-labelledby="quitT">
+          <div class="quit-t" id="quitT">Vuoi salvare le modifiche prima di uscire?</div>
+          <div class="quit-d">Se esci senza salvare, le modifiche fatte dall'ultimo salvataggio andranno perse.</div>
+          <div class="quit-a">
+            <button type="button" data-q="discard">Non salvare</button>
+            <span style="flex:1"></span>
+            <button type="button" data-q="cancel">Annulla</button>
+            <button type="button" class="primary" data-q="save">Salva ed esci</button>
+          </div>
+        </div>`;
+      const done = (v) => { document.removeEventListener("keydown", onKey, true); bg.remove(); resolve(v); };
+      const onKey = (e) => {
+        if (e.key === "Escape") { e.preventDefault(); done("cancel"); }
+        else if (e.key === "Enter") { e.preventDefault(); done("save"); }
+      };
+      bg.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-q]");
+        if (b) done(b.dataset.q);
+      });
+      document.addEventListener("keydown", onKey, true);
+      document.body.appendChild(bg);
+      bg.querySelector('[data-q="save"]').focus();
+    });
+  }
+  // Salva e aspetta che la pubblicazione su GitHub sia finita: chiudendo
+  // l'app si spegne anche il server che la esegue.
+  async function saveBeforeQuit() {
+    const veil = document.createElement("div");
+    veil.className = "quit-bg";
+    veil.innerHTML = `<div class="quit-box"><div class="quit-t">Salvo e pubblico le modifiche…</div><div class="quit-d">L'app si chiude da sola appena ha finito.</div></div>`;
+    document.body.appendChild(veil);
+    try {
+      if (await checkLocalServer()) {
+        const newJson = JSON.stringify(state, null, 2) + "\n";
+        const b64 = btoa(unescape(encodeURIComponent(newJson)));
+        const r = await fetch("/upload", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folder: "codice-sorgente/contenuti", files: [{ name: "contenuti.json", data: b64 }] })
+        });
+        if (!r.ok) throw new Error("salvataggio non riuscito");
+        clearDirty();
+        embeddedEl.textContent = newJson;
+        const g = await fetch("/git-sync", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "editor: aggiorna contenuti.json", wait: true }) });
+        const gj = await g.json().catch(() => ({}));
+        if (gj.ok === false) throw new Error("salvato sul disco, ma la pubblicazione non è riuscita");
+      } else {
+        const btn = document.getElementById("btnSave");
+        btn.click();
+        for (let i = 0; i < 300 && (btn.disabled || dirty); i++) await new Promise(r => setTimeout(r, 200));
+        if (dirty) throw new Error("salvataggio non riuscito");
+      }
+      return true;
+    } catch (e) {
+      veil.remove();
+      toast("Non ho chiuso l'app: " + e.message + ".", "err");
+      return false;
+    }
+  }
+  let quitAsking = false;
+  window.__mpRequestQuit = async () => {
+    if (!dirty) { mpQuitApp(); return; }
+    if (quitAsking) return;
+    quitAsking = true;
+    const choice = await askUnsaved();
+    quitAsking = false;
+    if (choice === "cancel") return;
+    if (choice === "discard") { clearDirty(); mpQuitApp(); return; }
+    if (await saveBeforeQuit()) mpQuitApp();
+  };
 
   // ========== PHOTOS ==========
   // Lista file locali via server Python (Manager app)
@@ -6744,6 +7507,7 @@
       card.querySelector('[data-act="anteprima"]').onclick = (e) => {
         e.stopPropagation();
         p.anteprima = photo.name;
+        delete p.anteprimaScorrimento;
         markDirty();
         renderPhotosGrid(key);
         if (window._updateFocalPointUI) window._updateFocalPointUI();

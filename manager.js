@@ -5,24 +5,31 @@ var sa = Application.currentApplication();
 sa.includeStandardAdditions = true;
 try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch(e) {}
 
-var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil,tempfile,time,re,uuid
+var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil,tempfile,time,re,uuid,hashlib,datetime
 _ROOTS=['/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI','/Users/enricoiacobucci/Desktop/Portfolio AEI']
 _root=next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
 if not _root:
  sys.stderr.write('Cartella progetto non trovata. Collega l SSD "Alfredo Enrico Iacobucci".\\n');sys.exit(1)
 os.chdir(_root)
-def git_sync(msg="auto: media update"):
+_git_lock=threading.Lock()
+def git_sync(msg="auto: media update",wait=False):
  def run():
-  try:
-   cwd=os.path.join(os.getcwd(),'codice-sorgente')
-   subprocess.run(['git','add','-A'],cwd=cwd,capture_output=True,timeout=10)
-   subprocess.run(['git','commit','-m',msg],cwd=cwd,capture_output=True,timeout=10)
-   r=subprocess.run(['git','pull','--rebase'],cwd=cwd,capture_output=True,timeout=30)
-   if r.returncode!=0:sys.stderr.write('git pull failed: '+r.stderr.decode(errors='replace')+'\\n')
-   r=subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
-   if r.returncode!=0:sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n')
-  except Exception as e:sys.stderr.write('git_sync error: '+str(e)+'\\n')
+  with _git_lock:
+   try:
+    cwd=os.path.join(os.getcwd(),'codice-sorgente')
+    subprocess.run(['git','add','-A'],cwd=cwd,capture_output=True,timeout=10)
+    subprocess.run(['git','commit','-m',msg],cwd=cwd,capture_output=True,timeout=10)
+    r=subprocess.run(['git','pull','--rebase','--autostash'],cwd=cwd,capture_output=True,timeout=30)
+    if r.returncode!=0:sys.stderr.write('git pull failed: '+r.stderr.decode(errors='replace')+'\\n')
+    r=subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
+    if r.returncode!=0:
+     sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n');return False
+    return True
+   except Exception as e:
+    sys.stderr.write('git_sync error: '+str(e)+'\\n');return False
+ if wait:return run()
  threading.Thread(target=run,daemon=True).start()
+ return True
 # ---- Video del banner: accorciati a 25 s, senza audio, alleggeriti ----
 _jobs={}
 def find_ffmpeg():
@@ -53,6 +60,97 @@ def video_job(jid,src,dst,rel):
  finally:
   try:os.remove(src)
   except Exception:pass
+# ---- Versioni: configurazioni dei contenuti e grafica del sito ----
+SITE_PATHS=['codice-sorgente/src','codice-sorgente/scripts','codice-sorgente/public','codice-sorgente/package.json','codice-sorgente/next.config.js','codice-sorgente/tailwind.config.js','codice-sorgente/postcss.config.js','codice-sorgente/jsconfig.json','vercel.json']
+CONT_PATH='codice-sorgente/contenuti/contenuti.json'
+VDIR=os.path.join('versioni','contenuti')
+VNAMES=os.path.join('versioni','sito.json')
+def _git(args,timeout=30):
+ return subprocess.run(['git']+args,cwd=os.getcwd(),capture_output=True,timeout=timeout)
+def _is_sha(s):
+ return bool(re.fullmatch('[0-9a-f]{7,40}',s or ''))
+def _log(paths,n=80):
+ r=_git(['log','-n',str(n),'--format=%H%x09%cI%x09%s','--']+paths)
+ out=[]
+ for line in r.stdout.decode(errors='replace').splitlines():
+  parts=line.split(chr(9),2)
+  if len(parts)==3:out.append({'sha':parts[0],'data':parts[1],'msg':parts[2]})
+ return out
+def _site_fp(sha):
+ r=_git(['ls-tree','-r',sha,'--']+SITE_PATHS)
+ return hashlib.sha1(r.stdout).hexdigest()
+def _site_names():
+ try:
+  with open(VNAMES,encoding='utf-8') as fp:return json.load(fp)
+ except Exception:return {}
+def versioni_elenco():
+ salvate=[]
+ if os.path.isdir(VDIR):
+  for f in os.listdir(VDIR):
+   if not f.endswith('.json'):continue
+   try:
+    with open(os.path.join(VDIR,f),encoding='utf-8') as fp:d=json.load(fp)
+    c=d.get('contenuti') or {}
+    salvate.append({'id':f[:-5],'nome':d.get('nome',''),'data':d.get('data',''),'progetti':len(c.get('projects') or [])})
+   except Exception:pass
+ salvate.sort(key=lambda x:x['data'],reverse=True)
+ pubblicate=_log([CONT_PATH])
+ storia=_log(SITE_PATHS,60)
+ names=_site_names()
+ cur=_site_fp('HEAD')
+ for s in storia:
+  s['nome']=names.get(s['sha'],'')
+  s['inUso']=(_site_fp(s['sha'])==cur)
+ return {'contenuti':{'salvate':salvate,'pubblicate':pubblicate},'sito':{'storia':storia}}
+def versioni_leggi(vid,sha):
+ if vid:
+  if not re.fullmatch('[A-Za-z0-9_-]+',vid):return None
+  with open(os.path.join(VDIR,vid+'.json'),encoding='utf-8') as fp:return json.load(fp).get('contenuti')
+ if _is_sha(sha):
+  r=_git(['show',sha+':'+CONT_PATH])
+  if r.returncode==0:return json.loads(r.stdout.decode('utf-8'))
+ return None
+def versioni_salva(nome,contenuti):
+ os.makedirs(VDIR,exist_ok=True)
+ vid=time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:4]
+ with open(os.path.join(VDIR,vid+'.json'),'w',encoding='utf-8') as fp:
+  json.dump({'nome':nome,'data':datetime.datetime.now().astimezone().isoformat(timespec='seconds'),'contenuti':contenuti},fp,ensure_ascii=False,indent=1)
+ git_sync('versioni: salvata "'+nome[:60]+'"')
+ return vid
+def versioni_elimina(vid):
+ if not re.fullmatch('[A-Za-z0-9_-]+',vid or ''):return False
+ p=os.path.join(VDIR,vid+'.json')
+ if os.path.isfile(p):os.remove(p)
+ git_sync('versioni: eliminata '+vid)
+ return True
+def versioni_nome_sito(sha,nome):
+ if not _is_sha(sha):return False
+ names=_site_names()
+ if nome:names[sha]=nome[:80]
+ else:names.pop(sha,None)
+ os.makedirs('versioni',exist_ok=True)
+ with open(VNAMES,'w',encoding='utf-8') as fp:json.dump(names,fp,ensure_ascii=False,indent=1)
+ git_sync('versioni: nome alla grafica '+sha[:7])
+ return True
+def versioni_ripristina_sito(sha):
+ if not _is_sha(sha):return {'ok':False,'error':'versione non valida'}
+ with _git_lock:
+  r=_git(['pull','--rebase','--autostash'],60)
+  if r.returncode!=0:return {'ok':False,'error':'non riesco ad aggiornare dal server: '+r.stderr.decode(errors='replace')[-200:]}
+  # file nati dopo quella versione: vanno tolti, il resto torna com'era
+  r=_git(['diff','--name-only','--diff-filter=A',sha,'HEAD','--']+SITE_PATHS)
+  nuovi=[l for l in r.stdout.decode(errors='replace').splitlines() if l.strip()]
+  if nuovi:_git(['rm','-q','--']+nuovi)
+  esistenti=[p for p in SITE_PATHS if _git(['cat-file','-e',sha+':'+p]).returncode==0]
+  r=_git(['checkout',sha,'--']+esistenti)
+  if r.returncode!=0:return {'ok':False,'error':r.stderr.decode(errors='replace')[-200:]}
+  d=_git(['log','-1','--format=%cd','--date=format:%d/%m/%Y %H:%M',sha]).stdout.decode().strip()
+  r=_git(['commit','-m','Ripristinata la grafica del sito alla versione del '+d+' ('+sha[:7]+')'])
+  if r.returncode!=0:return {'ok':True,'uguale':True}
+  r=_git(['push'],60)
+  if r.returncode!=0:return {'ok':False,'error':'ripristinato sul Mac ma non pubblicato: '+r.stderr.decode(errors='replace')[-200:]}
+  head=_git(['rev-parse','HEAD']).stdout.decode().strip()
+  return {'ok':True,'sha':head}
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
@@ -77,6 +175,23 @@ class H(http.server.SimpleHTTPRequestHandler):
       files.append(f)
    self.send_response(200);self.end_headers()
    self.wfile.write(json.dumps(files).encode())
+  elif self.path=='/versioni/elenco':
+   self._json(versioni_elenco())
+  elif self.path.startswith('/versioni/contenuti?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   try:c=versioni_leggi(q.get('id',[''])[0],q.get('sha',[''])[0])
+   except Exception as e:c=None
+   if c is None:self._json({'error':'versione non trovata'},404)
+   else:self._json(c)
+  elif self.path=='/quit-app':
+   # riserva: se la pagina non riesce a parlare con l'app, la chiude da qui
+   self.send_response(200);self.end_headers();self.wfile.write(b'ok')
+   def bye():
+    time.sleep(0.3)
+    try:os.kill(os.getppid(),signal.SIGTERM)
+    except Exception:pass
+    os._exit(0)
+   threading.Thread(target=bye,daemon=True).start()
   elif self.path.startswith('/video-status?'):
    q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
    j=_jobs.get(q.get('id',[''])[0],{'state':'error','error':'lavoro non trovato'})
@@ -161,13 +276,25 @@ class H(http.server.SimpleHTTPRequestHandler):
    threading.Thread(target=video_job,args=(jid,tmp,os.path.join(vdir,out),'video/'+out),daemon=True).start()
    self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers()
    self.wfile.write(json.dumps({'job':jid}).encode())
+  elif self.path.startswith('/versioni/'):
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length)) if length else {}
+   try:
+    if self.path=='/versioni/salva':
+     nome=str(body.get('nome','')).strip()[:80] or 'Senza nome'
+     self._json({'ok':True,'id':versioni_salva(nome,body.get('contenuti') or {})})
+    elif self.path=='/versioni/elimina':self._json({'ok':versioni_elimina(body.get('id',''))})
+    elif self.path=='/versioni/nome-sito':self._json({'ok':versioni_nome_sito(body.get('sha',''),str(body.get('nome','')).strip())})
+    elif self.path=='/versioni/ripristina-sito':self._json(versioni_ripristina_sito(body.get('sha','')))
+    else:self._json({'error':'sconosciuto'},404)
+   except Exception as e:self._json({'ok':False,'error':str(e)},500)
   elif self.path=='/git-sync':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length)) if length else {}
    msg=body.get('message','auto: media update')
-   git_sync(msg)
+   ok=git_sync(msg,bool(body.get('wait')))
    self.send_response(200);self.end_headers()
-   self.wfile.write(b'{"ok":true}')
+   self.wfile.write(json.dumps({'ok':bool(ok)}).encode())
   elif self.path=='/delete-file':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
@@ -183,6 +310,10 @@ class H(http.server.SimpleHTTPRequestHandler):
    git_sync("auto: delete "+fname)
   else:
    self.send_response(404);self.end_headers()
+ def _json(self,obj,code=200):
+  data=json.dumps(obj,ensure_ascii=False).encode('utf-8')
+  self.send_response(code);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers()
+  self.wfile.write(data)
  def log_message(self,*a):pass
  def end_headers(self):
   self.send_header('Cache-Control','no-store, no-cache, must-revalidate, max-age=0')
@@ -219,15 +350,32 @@ function mpQuitNow() {
   try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch (e) {}
   $.exit(0);
 }
+// Chiedere di uscire passa dalla pagina: se ci sono modifiche non salvate
+// la pagina mostra l'avviso e poi risponde con il messaggio "quit".
+var wv = null;
+var mpQuitAsks = [];
+function mpRequestQuit() {
+  if (mpQuitting) return;
+  if (!wv || wv.isLoading) { mpQuitNow(); return; }
+  // via di fuga: tre richieste in 4 secondi (es. pagina bloccata) chiudono comunque
+  var now = Date.now();
+  mpQuitAsks = mpQuitAsks.filter(function (t) { return now - t < 4000; });
+  mpQuitAsks.push(now);
+  if (mpQuitAsks.length >= 3) { mpQuitNow(); return; }
+  try {
+    wv.evaluateJavaScriptCompletionHandler("window.__mpRequestQuit ? (window.__mpRequestQuit(), 1) : window.webkit.messageHandlers.mp.postMessage('quit')", null);
+  } catch (e) { mpQuitNow(); }
+}
 var AE_CORE = 0x61657674; // 'aevt'
 var AE_QUIT = 0x71756974; // 'quit'
 ObjC.registerSubclass({
   name:"MPDel9",superclass:"NSObject",protocols:["NSApplicationDelegate","NSWindowDelegate"],
   methods:{
     "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
+    "windowShouldClose:":{types:["bool",["id"]],implementation:function(w){ mpRequestQuit(); return false; }},
     "windowWillClose:":{types:["void",["id"]],implementation:function(n){ mpQuitNow(); }},
-    "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpQuitNow(); }},
-    "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpQuitNow(); }},
+    "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpRequestQuit(); }},
+    "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpRequestQuit(); }},
     "mpInstallQuit:":{types:["void",["id"]],implementation:function(t){ mpInstallQuitHandler(); }}
   }
 });
@@ -279,7 +427,20 @@ var injectCode = "(function(){var s=document.createElement('style');s.textConten
 var userScript = $.WKUserScript.alloc.initWithSourceInjectionTimeForMainFrameOnly(injectCode, $.WKUserScriptInjectionTimeAtDocumentStart, true);
 cfg.userContentController.addUserScript(userScript);
 
-var wv = $.WKWebView.alloc.initWithFrameConfiguration(win.contentView.bounds,cfg);
+// Messaggi dalla pagina: "quit" = l'utente ha confermato l'uscita
+ObjC.registerSubclass({
+  name:"MPMsg2",superclass:"NSObject",protocols:["WKScriptMessageHandler"],
+  methods:{
+    "userContentController:didReceiveScriptMessage:":{types:["void",["id","id"]],implementation:function(ucc,msg){
+      var body = "";
+      try { body = ObjC.unwrap(msg.body); } catch (e) {}
+      if (body === "quit") mpQuitNow();
+    }}
+  }
+});
+cfg.userContentController.addScriptMessageHandlerName($.MPMsg2.alloc.init, "mp");
+
+wv = $.WKWebView.alloc.initWithFrameConfiguration(win.contentView.bounds,cfg);
 wv.setOpaque(false);
 wv.autoresizingMask = $.NSViewWidthSizable|$.NSViewHeightSizable;
 win.contentView.addSubview(wv);

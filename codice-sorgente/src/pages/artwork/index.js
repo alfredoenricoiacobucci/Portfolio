@@ -78,6 +78,12 @@ export async function getStaticProps() {
 
     // Posizione focale anteprima (default: center 33%)
     const anteprimaPosizione = data.anteprimaPosizione || { x: 50, y: 33 };
+    // Scorrimento della striscia di anteprima nella home (object-position
+    // verticale in %, scelto nel Manager). null = valori normali.
+    const sc = data.anteprimaScorrimento;
+    const pct = (v) => Math.max(0, Math.min(100, Number(v)));
+    const anteprimaScorrimento = sc && Number.isFinite(Number(sc.da)) && Number.isFinite(Number(sc.a))
+      ? { da: pct(sc.da), a: pct(sc.a) } : null;
     // Foto di anteprima (riga della home): resta valida anche quando la
     // composizione libera mostra solo una parte delle foto.
     const cover = images[anteprimaIndex] || images[0] || null;
@@ -124,7 +130,7 @@ export async function getStaticProps() {
       bannerStartIndex = bi >= 0 ? bi : 0;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, composition, bannerStartIndex, anteprimaIndex, anteprimaPosizione, techData, esposizioni, section };
+    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, composition, bannerStartIndex, anteprimaIndex, anteprimaPosizione, anteprimaScorrimento, techData, esposizioni, section };
   });
 
   // ---- ABOUT: doppio (art + pro) con campi condivisibili ----
@@ -539,14 +545,23 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     // Determina start/end dal data attribute (verticale vs orizzontale)
     const el = document.querySelector(`[data-banner-slug="${slug}"]`);
     const isVert = el?.dataset.bannerVertical === "1";
-    const START_POS = isVert ? 40 : 33;
-    const END_POS = 66; // Rimane nel secondo terzo
+    // Inizio e fine scelti nel Manager; altrimenti il secondo terzo della foto
+    const from = Number(el?.dataset.bannerFrom), to = Number(el?.dataset.bannerTo);
+    const START_POS = Number.isFinite(from) && el?.dataset.bannerFrom !== "" ? from : (isVert ? 40 : 33);
+    const END_POS = Number.isFinite(to) && el?.dataset.bannerTo !== "" ? to : 66;
+    const POS_X = el?.dataset.bannerX || "50";
     const state = bannerScrollRef.current[slug] || { position: START_POS, leaveTime: 0 };
     if (state.leaveTime && Date.now() - state.leaveTime > 5000) state.position = START_POS;
     bannerScrollRef.current[slug] = state;
     let lastTime = performance.now();
     const RANGE = END_POS - START_POS;
-    const SPEED = RANGE / 12; // Percorre il range in 12s
+    const SPEED = RANGE / 12; // Percorre il range in 12s (anche all'indietro)
+    const reached = (pos) => (RANGE >= 0 ? pos >= END_POS : pos <= END_POS);
+    if (Math.abs(RANGE) < 0.5) {
+      // inizio e fine coincidono: striscia ferma
+      if (el) el.style.objectPosition = `${POS_X}% ${START_POS}%`;
+      return;
+    }
     let fading = false;
     const animate = (time) => {
       if (activeBannerSlugRef.current !== slug) return;
@@ -556,7 +571,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       const imgEl = document.querySelector(`[data-banner-slug="${slug}"]`);
       // Scorre sempre, anche durante la dissolvenza
       s.position += SPEED * dt;
-      if (s.position >= END_POS && !fading) {
+      if (reached(s.position) && !fading) {
         // Dissolvenza: fade out → reset position → fade in (scroll continua)
         fading = true;
         if (imgEl) {
@@ -566,13 +581,13 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         setTimeout(() => {
           s.position = START_POS;
           if (imgEl) {
-            imgEl.style.objectPosition = `center ${START_POS}%`;
+            imgEl.style.objectPosition = `${POS_X}% ${START_POS}%`;
             imgEl.style.opacity = "1";
           }
           setTimeout(() => { fading = false; if (imgEl) imgEl.style.transition = ""; }, 400);
         }, 400);
       }
-      if (imgEl && !fading) imgEl.style.objectPosition = `center ${s.position}%`;
+      if (imgEl && !fading) imgEl.style.objectPosition = `${POS_X}% ${s.position}%`;
       bannerRafRef.current = requestAnimationFrame(animate);
     };
     bannerRafRef.current = requestAnimationFrame(animate);
@@ -1288,6 +1303,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               const bannerSrc = anteprimaImg?.src || "";
               const isVertical = anteprimaImg && anteprimaImg.h > anteprimaImg.w;
               const aPos = project.anteprimaPosizione || { x: 50, y: 33 };
+              const aScroll = project.anteprimaScorrimento;
               const marqueeText = Array(4).fill(`${[project.name, ...(project.titleExtra || []), project.datePlace].filter(Boolean).join(" - ")} |`).join(" ");
 
               return (
@@ -1317,7 +1333,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                             l'originale a piena risoluzione, fino a 17 MB,
                             per riempire una striscia sotto un overlay nero
                             al 45%. */}
-                        <img src={preview(bannerSrc)} onError={fallbackToOriginal(bannerSrc)} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} loading="lazy" decoding="async" style={{ objectPosition: `${aPos.x}% ${aPos.y}%` }} />
+                        <img src={preview(bannerSrc)} onError={fallbackToOriginal(bannerSrc)} alt="" className="marquee-row__banner-img" data-banner-slug={project.slug} data-banner-vertical={isVertical ? "1" : "0"} data-banner-from={aScroll ? aScroll.da : ""} data-banner-to={aScroll ? aScroll.a : ""} data-banner-x={aPos.x ?? 50} loading="lazy" decoding="async" style={{ objectPosition: `${aPos.x ?? 50}% ${aScroll ? aScroll.da : (isVertical ? 40 : 33)}%` }} />
                         <div className="marquee-row__banner-overlay" />
                       </div>
                     )}
