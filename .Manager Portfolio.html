@@ -103,6 +103,7 @@
     background: rgba(200,16,46,0.08);
   }
   .status-badge.ok { border-color: #1e4620; color: #4ade80; }
+  .status-badge.idle { border-color: var(--border-hi); color: var(--text2); background: transparent; }
   .status-badge.err { border-color: #4a1f1f; color: #f87171; }
   .status-badge.work { border-color: #3a3a1a; color: #fbbf24; }
 
@@ -540,30 +541,36 @@
   .ant-info { font-size: 11.5px; color: var(--text3); line-height: 1.5; }
 
   /* ---- VERSIONI ---- */
-  #versioniContent { max-width: 820px; }
+  #versioniContent { max-width: 840px; }
   .ver-h { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 22px; }
-  .ver-tabs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); margin-bottom: 22px; }
+  .ver-tabs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); margin-bottom: 26px; }
   .ver-tab { border: 0; border-radius: 6px; padding: 7px 16px; font-size: 12.5px; color: var(--text2); display: inline-flex; align-items: center; gap: 8px; }
   .ver-tab span { font-size: 10.5px; color: var(--text3); font-variant-numeric: tabular-nums; }
   .ver-tab:hover { background: rgba(255,255,255,0.04); border-color: transparent; }
   .ver-tab.on { background: rgba(200,16,46,0.14); color: #fff; }
   .ver-tab.on span { color: rgba(255,255,255,0.6); }
-  .ver-save { display: flex; gap: 8px; margin-bottom: 26px; }
+  .ver-save { display: flex; gap: 8px; margin-bottom: 10px; }
   .ver-save input { flex: 1; min-width: 0; }
   .ver-sub { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 0 0 8px; display: flex; gap: 8px; }
-  .ver-sub span { color: var(--text3); opacity: 0.7; font-variant-numeric: tabular-nums; }
-  .ver-list + .ver-sub, .ver-more + .ver-sub { margin-top: 26px; }
+  .ver-sub span { opacity: 0.7; font-variant-numeric: tabular-nums; }
+  .ver-list + .ver-sub, .ver-more + .ver-sub { margin-top: 30px; }
   .ver-list { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
-  .ver-row { display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 8px 10px 8px 14px; border-top: 1px solid var(--border); min-height: 46px; position: relative; transition: background 150ms ease; }
-  .ver-row:first-child { border-top: 0; }
+  .ver-item { border-top: 1px solid var(--border); position: relative; }
+  .ver-item:first-child { border-top: 0; }
+  .ver-item.current::before { content: ""; position: absolute; left: 0; top: 10px; height: 26px; width: 2px; border-radius: 2px; background: #4ade80; }
+  .ver-row { display: grid; grid-template-columns: 18px 118px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 10px 8px 12px; min-height: 46px; transition: background 150ms ease; }
   .ver-row:hover { background: rgba(255,255,255,0.025); }
-  .ver-row.current::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: #4ade80; }
+  .ver-row [data-a="toggle"] { cursor: pointer; }
+  .ver-tog { color: var(--text3); display: flex; align-items: center; justify-content: center; transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1); }
+  .ver-item.open .ver-tog { transform: rotate(90deg); color: var(--text); }
+  .ver-item.open > .ver-row { background: rgba(255,255,255,0.03); }
   .ver-date { font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .ver-name { font-size: 12.5px; color: var(--text); min-width: 0; }
   .ver-t { display: flex; align-items: center; min-width: 0; }
   .ver-t .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .ver-name small { display: block; color: var(--text3); font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ver-badge { flex-shrink: 0; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 8px; white-space: nowrap; background: rgba(74,222,128,0.12); color: #4ade80; }
+  .ver-badge.warn { background: rgba(251,191,36,0.12); color: #fbbf24; }
   .ver-actions { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
   .ver-actions > button:not(.ver-ib) { min-width: 86px; }
   .ver-ph { display: inline-block; width: 86px; }
@@ -573,6 +580,28 @@
   .ver-actions input { width: 220px; padding: 5px 8px; font-size: 12px; }
   .ver-empty { font-size: 12px; color: var(--text3); padding: 14px; line-height: 1.5; }
   .ver-more { margin-top: 8px; }
+  .ver-changes { border-top: 1px solid var(--border); background: rgba(0,0,0,0.18); padding: 6px 10px 10px 42px; }
+  .ver-chg { list-style: none; margin: 0; padding: 0; counter-reset: chg; }
+  .ver-chg li { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .ver-chg li:last-child { border-bottom: 0; }
+  .ver-chg:not(.plain) li::before { counter-increment: chg; content: counter(chg); font-size: 10.5px; color: var(--text3); min-width: 18px; font-variant-numeric: tabular-nums; }
+  .ver-chg.plain li { padding: 6px 0; font-size: 12px; color: var(--text2); }
+  .ver-chg.plain li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--text3); margin-right: 8px; flex-shrink: 0; }
+  .ver-chg-go { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; border: 0; border-radius: 4px; padding: 7px 8px; background: transparent; }
+  .ver-chg-go:hover { background: rgba(255,255,255,0.04); }
+  .ver-chg-go .l { font-size: 12.5px; color: var(--text); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ver-chg-go .dt { font-size: 11px; color: var(--text3); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ver-chg-foot { margin-top: 6px; }
+  .ver-files { font-size: 11px; color: var(--text3); margin-top: 6px; line-height: 1.5; }
+  @keyframes verFlash { 0% { box-shadow: 0 0 0 2px rgba(200,16,46,0.9); } 100% { box-shadow: 0 0 0 2px rgba(200,16,46,0); } }
+  .ver-flash { animation: verFlash 1.6s ease-out; border-radius: 8px; }
+  #verNavBar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 9000; display: flex; align-items: center; gap: 6px; max-width: min(760px, calc(100vw - 40px)); padding: 6px 8px; background: #1b1b1b; border: 1px solid #2f2f2f; border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.5); }
+  #verNavBar .vn-ib { border: 0; padding: 6px 8px; color: var(--text2); display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+  #verNavBar .vn-ib:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  #verNavBar .vn-ib[data-n="list"] { max-width: 160px; overflow: hidden; text-overflow: ellipsis; color: var(--text3); }
+  #verNavBar .vn-rev { color: #fbbf24; }
+  #verNavBar .vn-count { font-size: 11px; color: var(--text3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #verNavBar .vn-label { font-size: 12.5px; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
   /* ---- AVVISO DI USCITA ---- */
   .quit-bg { position: fixed; inset: 0; z-index: 99990; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; animation: quitIn 160ms ease-out; }
@@ -1376,8 +1405,9 @@
     </nav>
   </div>
   <div class="topbar-right">
-    <span id="dirtyBadge" class="status-badge" style="display:none;">Modifiche non salvate</span>
-    <button id="btnSave" class="primary" title="⌘S">Salva e pubblica</button>
+    <span id="dirtyBadge" class="status-badge" style="display:none;">Non salvato</span>
+    <button id="btnSave" title="⌘S" disabled>Salva</button>
+    <button id="btnPublish" class="primary" disabled>Pubblica</button>
     <button onclick="location.reload()" class="topbar-icon-btn" title="Ricarica" aria-label="Ricarica"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
   </div>
 </div>
@@ -5042,15 +5072,108 @@
   function markDirty() {
     dirty = true;
     localStorage.setItem(STORAGE_DRAFT, JSON.stringify(state));
-    document.getElementById("dirtyBadge").style.display = "inline-block";
-    document.getElementById("dirtyBadge").className = "status-badge work";
-    document.getElementById("dirtyBadge").textContent = "Modifiche non salvate";
+    updateStatusBadge();
+    undoRecord();
   }
   function clearDirty() {
     dirty = false;
     localStorage.removeItem(STORAGE_DRAFT);
-    document.getElementById("dirtyBadge").style.display = "none";
+    updateStatusBadge();
   }
+  // Salvato sull'SSD ma non ancora online
+  let unpublished = false;
+  function setUnpublished(v) { unpublished = !!v; updateStatusBadge(); if (activeSection === "versioni") renderVersioni(); }
+  function updateStatusBadge() {
+    const b = document.getElementById("dirtyBadge");
+    if (!b) return;
+    if (dirty) { b.style.display = "inline-block"; b.className = "status-badge work"; b.textContent = "Non salvato"; }
+    else if (unpublished) { b.style.display = "inline-block"; b.className = "status-badge idle"; b.textContent = "Salvato, non pubblicato"; }
+    else b.style.display = "none";
+    const s = document.getElementById("btnSave"), p = document.getElementById("btnPublish");
+    if (s && !s.querySelector(".btn-spinner")) s.disabled = !dirty;
+    if (p && !p.querySelector(".btn-spinner")) p.disabled = !(dirty || unpublished);
+  }
+
+  // ========== ANNULLA / RIPETI (Cmd+Z, Maiuscole+Cmd+Z) ==========
+  // Ogni modifica ai contenuti lascia una fotografia dello stato: Cmd+Z torna
+  // a quella prima. Dentro un campo di testo vale l'annulla del testo.
+  const undoStack = [], redoStack = [];
+  let undoLast = null, undoTimer = null, undoApplying = false;
+  function undoReset() { undoStack.length = 0; redoStack.length = 0; undoLast = JSON.stringify(state); clearTimeout(undoTimer); undoTimer = null; }
+  function undoFlush() {
+    if (!undoTimer) return;
+    clearTimeout(undoTimer); undoTimer = null;
+    const now = JSON.stringify(state);
+    if (undoLast !== null && now !== undoLast) { undoStack.push(undoLast); if (undoStack.length > 150) undoStack.shift(); redoStack.length = 0; }
+    undoLast = now;
+  }
+  function undoRecord() {
+    if (undoApplying) return;
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(() => { undoTimer = 1; undoFlush(); }, 400);
+  }
+  function refreshView() {
+    const y = window.scrollY;
+    renderSidebar();
+    if (activeSection === "contenuti" && currentKey) {
+      const isProj = currentKey !== "landing" && currentKey !== "aboutArt" && currentKey !== "aboutPro";
+      if (isProj && !state.projects.some(p => `${p.section}/${p.slug}` === currentKey)) {
+        currentKey = null;
+        const content = document.getElementById("content");
+        content.className = "content empty-state";
+        content.innerHTML = "Seleziona un progetto dalla lista a sinistra.";
+      } else if (currentKey === "landing") renderLanding();
+      else if (!isProj) renderAbout(currentKey);
+      else {
+        renderProject(currentKey);
+        syncSiteWidths();
+        if (photosByProject[currentKey]) {
+          renderPhotosGrid(currentKey);
+          if (window._updateFocalPointUI) window._updateFocalPointUI();
+          if (window._updateComposer) window._updateComposer(currentKey);
+        } else fetchPhotos(currentKey);
+      }
+    }
+    if (activeSection === "versioni") renderVersioni();
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }
+  function undoApply(json) {
+    undoApplying = true;
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, JSON.parse(json));
+    undoLast = json;
+    markDirty();
+    undoApplying = false;
+    refreshView();
+  }
+  function isTextField(el) {
+    return el && (el.tagName === "TEXTAREA" || el.isContentEditable ||
+      (el.tagName === "INPUT" && /^(text|search|url|email|number|tel|password)$/i.test(el.type || "text")));
+  }
+  window.__mpUndo = () => {
+    if (isTextField(document.activeElement)) { document.execCommand("undo"); return; }
+    undoFlush();
+    if (!undoStack.length) { toast("Niente da annullare.", ""); return; }
+    redoStack.push(JSON.stringify(state));
+    undoApply(undoStack.pop());
+    toast("Annullato.", "");
+  };
+  window.__mpRedo = () => {
+    if (isTextField(document.activeElement)) { document.execCommand("redo"); return; }
+    undoFlush();
+    if (!redoStack.length) { toast("Niente da ripetere.", ""); return; }
+    undoStack.push(JSON.stringify(state));
+    undoApply(redoStack.pop());
+    toast("Ripetuto.", "");
+  };
+  // Fuori dall'app (browser normale) le scorciatoie le gestisce la pagina stessa
+  document.addEventListener("keydown", (e) => {
+    if (window.__mpKeysInjected) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      if (e.shiftKey) window.__mpRedo(); else window.__mpUndo();
+    }
+  }, true);
 
   // ========== TOAST ==========
   let _toastTimer = null;
@@ -6083,12 +6206,8 @@
     const fitRows = () => { const c = comp(); if (c.righe < minRows()) c.righe = minRows(); };
 
     function snapshot() { hist.push(JSON.stringify(comp())); if (hist.length > 80) hist.shift(); }
-    function undo() {
-      if (!hist.length) { toast("Non c'è niente da annullare.", ""); return; }
-      p.composizione = JSON.parse(hist.pop());
-      sel.clear(); primary = null;
-      markDirty(); render();
-    }
+    // l'annulla della composizione è quello generale del Manager (Cmd+Z)
+    function undo() { if (window.__mpUndo) window.__mpUndo(); }
 
     // ---- misura reale: il riquadro è la galleria del sito, in scala ----
     function aspetto() {
@@ -6537,7 +6656,6 @@
       const c = comp();
       const cmd = e.metaKey || e.ctrlKey;
       const k = e.key.toLowerCase();
-      if (cmd && k === "z") { e.preventDefault(); undo(); return; }
       if (cmd && k === "a") { e.preventDefault(); act("all"); return; }
       if (cmd && k === "g") { e.preventDefault(); act(e.shiftKey ? "ungroup" : "group"); return; }
       const items = selected();
@@ -6713,7 +6831,7 @@
         try { await storageDeleteFile(`${folder}/${rel}`, null, `editor: delete ${key}/${rel}`); }
         catch (err) { /* file già assente: basta toglierlo dall'elenco */ }
         p.video.splice(i, 1);
-        toast("Video eliminato. Premi Salva per aggiornare il sito.", "ok");
+        toast("Video eliminato. Salva e poi Pubblica per aggiornare il sito.", "ok");
       } else return;
       markDirty();
       render();
@@ -6743,7 +6861,7 @@
           markDirty();
           render();
           const mb = (st.size / 1048576).toFixed(1).replace(".", ",");
-          toast(`Video pronto: ${mb} MB. Premi Salva per pubblicarlo.`, "ok");
+          toast(`Video pronto: ${mb} MB. Salva e poi Pubblica per metterlo online.`, "ok");
         } catch (err) {
           toast(`Video “${f.name}”: ${err.message}`, "err");
         }
@@ -6899,10 +7017,9 @@
   }
 
   // ========== VERSIONI ==========
-  // Tre elenchi separati:
-  //  - contenuti: contenuti.json (salvati con un nome o pubblicati)
-  //  - sito: il codice del sito (src, scripts, configurazioni)
-  //  - manager: questa app (.Manager Portfolio.html, manager.js, ...)
+  // Tre schede: Contenuti (salvati / pubblicati), Sito, Manager.
+  // Cliccando una versione si apre l'elenco delle modifiche che contiene:
+  // ognuna porta al punto giusto del Manager e si può togliere.
   const VER_MESI = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"];
   const verFmt = (iso) => {
     const d = new Date(iso);
@@ -6925,11 +7042,193 @@
     trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
     pen: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
     bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>',
+    undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    prev: '<path d="M15 18l-6-6 6-6"/>',
+    next: '<path d="M9 6l6 6-6 6"/>',
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
   };
-  const verIcon = (k) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${VER_ICO[k]}</svg>`;
+  const verIcon = (k, size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${VER_ICO[k]}</svg>`;
   let verTab = "contenuti";
   let verShowAll = {};
   let verData = null;
+  const verOpen = new Set();          // righe aperte
+  const verChangeCache = new Map();   // id riga -> elenco modifiche
+  const verJsonCache = new Map();     // sha/id -> contenuti
+
+  // ---------- confronto tra due versioni dei contenuti ----------
+  const VER_FIELD = {
+    titolo: "Titolo", descrizione: "Descrizione", camera: "Camera", ottica: "Ottica", luce: "Luce",
+    esposizioni: "Esposizioni", banner: "Foto del banner", anteprima: "Foto di anteprima",
+    anteprimaPosizione: "Punto dell'anteprima", anteprimaScorrimento: "Scorrimento dell'anteprima",
+    composizione: "Composizione della galleria", video: "Video del banner", ordine: "Ordine delle foto",
+  };
+  const VER_ABOUT = { text: "Testo", quote: "Citazione", photo: "Foto", video: "Video" };
+  const verProjName = (p) => ((p && p.titolo) || "").split("\n")[0].trim() || (p && p.slug) || "";
+  const verShort = (v) => {
+    if (v === undefined || v === null || v === "") return "vuoto";
+    if (typeof v !== "string") return "";
+    const t = v.replace(/\s+/g, " ").trim();
+    return "«" + (t.length > 38 ? t.slice(0, 38) + "…" : t) + "»";
+  };
+  // vuoto = assente: aprire un progetto aggiunge campi vuoti (composizione,
+  // video) che non sono modifiche vere
+  const verNorm = (v) => (v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length) ||
+    (v && typeof v === "object" && !Array.isArray(v) && Array.isArray(v.foto) && !v.foto.length)) ? null : v;
+  const verEq = (x, y) => JSON.stringify(verNorm(x)) === JSON.stringify(verNorm(y));
+  const verClone = (v) => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
+
+  function verDiff(a, b) {
+    a = a || {}; b = b || {};
+    const out = [];
+    const key = (p) => p.section + "/" + p.slug;
+    const pa = a.projects || [], pb = b.projects || [];
+    const A = new Map(pa.map(p => [key(p), p])), B = new Map(pb.map(p => [key(p), p]));
+    for (const [k, p] of B) if (!A.has(k)) out.push({ kind: "add-project", k, label: `Nuovo progetto «${verProjName(p)}»` });
+    for (const [k, p] of A) if (!B.has(k)) out.push({ kind: "del-project", k, label: `Progetto eliminato «${verProjName(p)}»`, before: p, idx: pa.indexOf(p) });
+    for (const [k, nb] of B) {
+      const na = A.get(k);
+      if (!na) continue;
+      const fields = new Set([...Object.keys(na), ...Object.keys(nb)]);
+      for (const f of fields) {
+        if (f === "dimensioni" || f === "section" || f === "slug" || verEq(na[f], nb[f])) continue;
+        let what = VER_FIELD[f] || f, detail = "";
+        if (f === "ordine") {
+          const sa = new Set(na.ordine || []), sb = new Set(nb.ordine || []);
+          const add = [...sb].filter(x => !sa.has(x)).length, rem = [...sa].filter(x => !sb.has(x)).length;
+          if (add || rem) what = [add ? `${add} foto aggiunte` : "", rem ? `${rem} foto tolte` : ""].filter(Boolean).join(", ");
+        } else if (typeof na[f] === "string" || typeof nb[f] === "string") {
+          detail = verShort(na[f]) + " → " + verShort(nb[f]);
+        }
+        out.push({ kind: "field", k, f, label: `«${verProjName(nb)}» · ${what}`, detail, before: na[f] });
+      }
+    }
+    for (const sec of ["art", "pro"]) {
+      const oa = pa.filter(p => p.section === sec).map(key).filter(k => B.has(k));
+      const ob = pb.filter(p => p.section === sec).map(key).filter(k => A.has(k));
+      if (!verEq(oa, ob)) out.push({ kind: "order", sec, label: `Ordine dei progetti ${sec === "art" ? "Artwork" : "Professional"}`, before: oa });
+    }
+    for (const ab of ["aboutArt", "aboutPro"]) {
+      const xa = a[ab] || {}, xb = b[ab] || {};
+      for (const f of new Set([...Object.keys(xa), ...Object.keys(xb)])) {
+        if (verEq(xa[f], xb[f])) continue;
+        out.push({ kind: "obj", o: ab, f, label: `${ab === "aboutArt" ? "About Artwork" : "About Professional"} · ${VER_ABOUT[f] || f}`,
+          detail: (typeof xa[f] === "string" || typeof xb[f] === "string") ? verShort(xa[f]) + " → " + verShort(xb[f]) : "", before: xa[f] });
+      }
+    }
+    if (!verEq(a.aboutShared, b.aboutShared)) out.push({ kind: "top", o: "aboutShared", label: "About · parti in comune tra Artwork e Professional", before: a.aboutShared });
+    const la = a.landing || {}, lb = b.landing || {};
+    for (const f of new Set([...Object.keys(la), ...Object.keys(lb)])) {
+      if (verEq(la[f], lb[f])) continue;
+      out.push({ kind: "obj", o: "landing", f, label: `Pagina iniziale · ${f === "artworkImages" ? "foto Artwork" : f === "professionalImages" ? "foto Professional" : f}`, before: la[f] });
+    }
+    const xa = a.aspetto || {}, xb = b.aspetto || {};
+    for (const f of new Set([...Object.keys(xa), ...Object.keys(xb)])) {
+      if (verEq(xa[f], xb[f])) continue;
+      out.push({ kind: "obj", o: "aspetto", f, label: `Aspetto · ${f}`, detail: verShort(String(xa[f] ?? "")) + " → " + verShort(String(xb[f] ?? "")), before: xa[f] });
+    }
+    return out;
+  }
+
+  // Toglie una modifica: rimette nello stato attuale il valore di prima
+  async function verRevert(c) {
+    const find = (k) => state.projects.find(p => `${p.section}/${p.slug}` === k);
+    if (c.kind === "add-project") {
+      if (!await confirm("Togliere questo progetto dal Manager? Le sue foto restano nella cartella.")) return false;
+      state.projects = state.projects.filter(p => `${p.section}/${p.slug}` !== c.k);
+    } else if (c.kind === "del-project") {
+      if (find(c.k)) { toast("Il progetto c'è già.", ""); return false; }
+      state.projects.splice(Math.min(c.idx, state.projects.length), 0, verClone(c.before));
+    } else if (c.kind === "field") {
+      const p = find(c.k);
+      if (!p) { toast("Il progetto non esiste più.", "err"); return false; }
+      if (c.before === undefined) delete p[c.f]; else p[c.f] = verClone(c.before);
+    } else if (c.kind === "order") {
+      const pos = new Map(c.before.map((k, i) => [k, i]));
+      const secItems = state.projects.filter(p => p.section === c.sec);
+      const sorted = [...secItems].sort((x, y) => (pos.get(`${x.section}/${x.slug}`) ?? 1e6) - (pos.get(`${y.section}/${y.slug}`) ?? 1e6));
+      let i = 0;
+      state.projects = state.projects.map(p => p.section === c.sec ? sorted[i++] : p);
+    } else if (c.kind === "obj") {
+      state[c.o] = state[c.o] || {};
+      if (c.before === undefined) delete state[c.o][c.f]; else state[c.o][c.f] = verClone(c.before);
+    } else if (c.kind === "top") {
+      state[c.o] = verClone(c.before);
+    }
+    if (await checkLocalServer()) await verPruneMissing();
+    markDirty();
+    refreshView();
+    return true;
+  }
+
+  // Porta al punto del Manager dove sta la modifica
+  const VER_TARGET = {
+    titolo: "f_titolo", descrizione: "f_descrizione", camera: "f_camera", ottica: "f_ottica", luce: "f_luce",
+    esposizioni: "esposizioniList", composizione: "cmpSection", video: "vidSection",
+    anteprima: "focalPointSection", anteprimaPosizione: "focalPointSection", anteprimaScorrimento: "focalPointSection",
+    ordine: "photosGrid", banner: "photosGrid",
+  };
+  function verGoto(c) {
+    if (c.o === "aspetto") { switchSection("impostazioni"); return; }
+    switchSection("contenuti");
+    let key = null, target = null;
+    if (c.kind === "field" || c.kind === "add-project") { key = c.k; target = VER_TARGET[c.f]; }
+    else if (c.o === "aboutArt" || c.o === "aboutPro") key = c.o;
+    else if (c.o === "aboutShared") key = "aboutArt";
+    else if (c.o === "landing") key = "landing";
+    if (key && (key === "landing" || key.startsWith("about") || state.projects.some(p => `${p.section}/${p.slug}` === key))) selectProject(key);
+    setTimeout(() => {
+      const el = target && document.getElementById(target);
+      const box = el ? (el.closest(".field, .photos-section") || el) : null;
+      if (box) {
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
+        box.classList.remove("ver-flash"); void box.offsetWidth; box.classList.add("ver-flash");
+      } else window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 350);
+  }
+
+  // Barra in basso per scorrere le modifiche di una versione senza tornare qui
+  let verNav = null; // { list, i, title }
+  function verNavShow() {
+    let bar = document.getElementById("verNavBar");
+    if (!verNav || !verNav.list.length) { if (bar) bar.remove(); verNav = null; return; }
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "verNavBar";
+      document.body.appendChild(bar);
+      bar.addEventListener("click", async (e) => {
+        const b = e.target.closest("button[data-n]");
+        if (!b || !verNav) return;
+        const a = b.dataset.n;
+        if (a === "close") { verNav = null; verNavShow(); return; }
+        if (a === "list") { verNav = null; verNavShow(); switchSection("versioni"); return; }
+        if (a === "prev" || a === "next") {
+          verNav.i = (verNav.i + (a === "next" ? 1 : -1) + verNav.list.length) % verNav.list.length;
+          verGoto(verNav.list[verNav.i]); verNavShow(); return;
+        }
+        if (a === "revert") {
+          const c = verNav.list[verNav.i];
+          if (await verRevert(c)) {
+            toast("Modifica tolta. Ricordati di salvare.", "ok");
+            verNav.list.splice(verNav.i, 1);
+            verChangeCache.clear();
+            if (verNav.i >= verNav.list.length) verNav.i = 0;
+            verNavShow();
+            if (verNav) verGoto(verNav.list[verNav.i]);
+          }
+        }
+      });
+    }
+    const c = verNav.list[verNav.i];
+    bar.innerHTML = `
+      <button type="button" class="vn-ib" data-n="list" title="Torna all'elenco">${verNav.title}</button>
+      <span class="vn-count">${verNav.i + 1} di ${verNav.list.length}</span>
+      <button type="button" class="vn-ib" data-n="prev" aria-label="Modifica precedente">${verIcon("prev", 16)}</button>
+      <span class="vn-label" title="${escapeHtml(c.label)}">${escapeHtml(c.label)}</span>
+      <button type="button" class="vn-ib" data-n="next" aria-label="Modifica successiva">${verIcon("next", 16)}</button>
+      <button type="button" class="vn-ib vn-rev" data-n="revert">${verIcon("undo", 14)}<span>Togli</span></button>
+      <button type="button" class="vn-ib" data-n="close" aria-label="Chiudi">${verIcon("x", 14)}</button>`;
+  }
 
   // Chiede un nome dentro la riga, senza finestre: ritorna il testo o null
   function verAskName(row, initial) {
@@ -6942,7 +7241,8 @@
       const done = (v) => { acts.innerHTML = prev; resolve(v); };
       acts.querySelector('[data-v="ok"]').onclick = (e) => { e.stopPropagation(); done(inp.value.trim()); };
       acts.querySelector('[data-v="no"]').onclick = (e) => { e.stopPropagation(); done(null); };
-      inp.onkeydown = (e) => { if (e.key === "Enter") done(inp.value.trim()); if (e.key === "Escape") done(null); };
+      inp.onclick = (e) => e.stopPropagation();
+      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter") done(inp.value.trim()); if (e.key === "Escape") done(null); };
     });
   }
 
@@ -6970,14 +7270,20 @@
     return n;
   }
 
+  async function verGetJson(q) {
+    if (verJsonCache.has(q)) return verJsonCache.get(q);
+    const r = await fetch("/versioni/contenuti?" + q);
+    const j = await r.json();
+    if (!r.ok || !j || !Array.isArray(j.projects)) throw new Error((j && j.error) || "versione non leggibile");
+    verJsonCache.set(q, j);
+    return j;
+  }
+
   async function verLoadContenuti(query, label) {
     if (dirty && !await confirm("Le modifiche non salvate verranno sostituite. Continuare?")) return;
     let data;
-    try {
-      const r = await fetch("/versioni/contenuti?" + query);
-      data = await r.json();
-      if (!r.ok || !data || !Array.isArray(data.projects)) throw new Error((data && data.error) || "versione non leggibile");
-    } catch (e) { toast("Non riesco ad aprire questa versione: " + e.message, "err"); return; }
+    try { data = await verGetJson(query); }
+    catch (e) { toast("Non riesco ad aprire questa versione: " + e.message, "err"); return; }
     Object.keys(state).forEach(k => delete state[k]);
     Object.assign(state, JSON.parse(JSON.stringify(data)));
     state.projects = state.projects || [];
@@ -6993,19 +7299,61 @@
     content.className = "content empty-state";
     content.innerHTML = "Seleziona un progetto dalla lista a sinistra.";
     switchSection("contenuti");
-    toast(`Ripristinata «${label}». Premi «Salva e pubblica» per metterla online.` +
+    toast(`Ripristinata «${label}». Salva per tenerla, Pubblica per metterla online.` +
       (tolti ? ` Tolti ${tolti} file che non esistono più.` : ""), "ok");
   }
 
+  // Elenco modifiche di una riga: confronto con la versione precedente
+  async function verChangesFor(id) {
+    if (verChangeCache.has(id)) return verChangeCache.get(id);
+    const d = verData.contenuti;
+    const pub = d.pubblicate || [];
+    let list;
+    if (id === "unpub") {
+      list = verDiff(pub[0] ? await verGetJson("sha=" + pub[0].sha) : {}, state);
+    } else if (id.startsWith("pub:")) {
+      const i = pub.findIndex(v => v.sha === id.slice(4));
+      const cur = await verGetJson("sha=" + pub[i].sha);
+      const prev = pub[i + 1] ? await verGetJson("sha=" + pub[i + 1].sha) : {};
+      list = verDiff(prev, cur);
+    } else if (id.startsWith("saved:")) {
+      const v = (d.salvate || []).find(x => x.id === id.slice(6));
+      const cur = await verGetJson("id=" + encodeURIComponent(v.id));
+      const t = new Date(v.data).getTime();
+      const base = pub.find(p => new Date(p.data).getTime() <= t);
+      list = verDiff(base ? await verGetJson("sha=" + base.sha) : {}, cur);
+    } else list = [];
+    verChangeCache.set(id, list);
+    return list;
+  }
+
+  async function verDetailsFor(kind, sha) {
+    const id = kind + ":" + sha;
+    if (verChangeCache.has(id)) return verChangeCache.get(id);
+    const j = await (await fetch(`/versioni/dettaglio?tipo=${kind}&sha=${sha}`)).json();
+    const lines = String(j.body || "").split("\n").map(l => l.trim())
+      .filter(l => l && !/^Co-Authored-By|^Claude-Session/i.test(l))
+      .map(l => l.replace(/^[-*]\s*/, ""));
+    const files = (j.files || []).map(f => f.split("/").pop());
+    const res = { lines, files };
+    verChangeCache.set(id, res);
+    return res;
+  }
+
   function verRow(o) {
-    // o: { attrs, date, title, sub, badge, current, actions }
-    return `<div class="ver-row${o.current ? " current" : ""}" ${o.attrs}>
-      <div class="ver-date">${o.date}</div>
-      <div class="ver-name" title="${escapeHtml(o.full || o.title)}">
-        <div class="ver-t"><span class="t">${escapeHtml(o.title)}</span>${o.badge ? `<span class="ver-badge">${o.badge}</span>` : ""}</div>
-        ${o.sub ? `<small>${escapeHtml(o.sub)}</small>` : ""}
+    // o: { id, attrs, date, title, sub, badge, badgeCls, current, actions, expandable }
+    const open = verOpen.has(o.id);
+    return `<div class="ver-item${open ? " open" : ""}${o.current ? " current" : ""}" data-id="${escapeHtml(o.id)}">
+      <div class="ver-row" ${o.attrs || ""}>
+        <div class="ver-tog" data-a="toggle">${verIcon("chev", 13)}</div>
+        <div class="ver-date" data-a="toggle">${o.date}</div>
+        <div class="ver-name" data-a="toggle" title="${escapeHtml(o.full || o.title)}">
+          <div class="ver-t"><span class="t">${escapeHtml(o.title)}</span>${o.badge ? `<span class="ver-badge ${o.badgeCls || ""}">${o.badge}</span>` : ""}</div>
+          ${o.sub ? `<small>${escapeHtml(o.sub)}</small>` : ""}
+        </div>
+        <div class="ver-actions">${o.actions}</div>
       </div>
-      <div class="ver-actions">${o.actions}</div>
+      ${open ? `<div class="ver-changes" data-for="${escapeHtml(o.id)}"><div class="ver-empty">Caricamento…</div></div>` : ""}
     </div>`;
   }
   const verList = (rows, key, empty) => {
@@ -7021,28 +7369,36 @@
     const d = verData;
     if (verTab === "contenuti") {
       const salvate = d.contenuti.salvate || [], pub = d.contenuti.pubblicate || [];
+      const pending = dirty || unpublished;
       return `
-        <div class="ver-save">
-          <input type="text" id="verNome" maxlength="80" placeholder="Nome della versione">
-          <button type="button" class="primary" id="verSalva">Salva versione attuale</button>
-        </div>
-        <div class="ver-sub">Salvate <span>${salvate.length}</span></div>
-        ${verList(salvate.map(v => verRow({
-          attrs: `data-id="${escapeHtml(v.id)}" data-nome="${escapeHtml(v.nome)}"`,
-          date: verFmt(v.data), title: v.nome,
-          actions: verBtn("load-saved", "Ripristina") + verIco("del-saved", "trash", "Elimina", "del"),
-        })), "salvate", "Nessuna versione salvata.")}
+        ${pending ? `<div class="ver-sub">Da pubblicare</div>
+        <div class="ver-list">${verRow({
+          id: "unpub", date: dirty ? "Adesso" : "Salvate",
+          title: dirty ? "Modifiche non ancora salvate" : "Modifiche salvate, non ancora online",
+          badge: dirty ? "Non salvato" : "Da pubblicare", badgeCls: "warn",
+          actions: (dirty ? verBtn("save-now", "Salva") : "") + verBtn("publish-now", "Pubblica", "primary"),
+        })}</div>` : ""}
         <div class="ver-sub">Pubblicate <span>${pub.length}</span></div>
         ${verList(pub.map((v, i) => verRow({
-          attrs: `data-sha="${v.sha}" data-data="${escapeHtml(v.data)}"`,
+          id: "pub:" + v.sha, attrs: `data-sha="${v.sha}" data-data="${escapeHtml(v.data)}"`,
           date: verFmt(v.data), title: verMsg(v.msg), badge: i === 0 ? "Online" : "", current: i === 0,
           actions: (i === 0 ? `<span class="ver-ph"></span>` : verBtn("load-pub", "Ripristina")) + verIco("name-pub", "bookmark", "Salva con un nome"),
-        })), "pub", "Nessuna pubblicazione.")}`;
+        })), "pub", "Nessuna pubblicazione.")}
+        <div class="ver-sub">Salvate con un nome <span>${salvate.length}</span></div>
+        <div class="ver-save">
+          <input type="text" id="verNome" maxlength="80" placeholder="Nome della versione attuale">
+          <button type="button" id="verSalva">Salva con questo nome</button>
+        </div>
+        ${verList(salvate.map(v => verRow({
+          id: "saved:" + v.id, attrs: `data-vid="${escapeHtml(v.id)}" data-nome="${escapeHtml(v.nome)}"`,
+          date: verFmt(v.data), title: v.nome,
+          actions: verBtn("load-saved", "Ripristina") + verIco("del-saved", "trash", "Elimina", "del"),
+        })), "salvate", "Nessuna versione con un nome.")}`;
     }
     const kind = verTab;
     const list = (d[kind] && d[kind].storia) || [];
     return verList(list.map(v => verRow({
-      attrs: `data-sha="${v.sha}" data-data="${escapeHtml(v.data)}" data-nome="${escapeHtml(v.nome || "")}"`,
+      id: kind + ":" + v.sha, attrs: `data-sha="${v.sha}" data-data="${escapeHtml(v.data)}" data-nome="${escapeHtml(v.nome || "")}"`,
       date: verFmt(v.data), title: v.nome || verMsg(v.msg), full: verMsg(v.msg), sub: v.nome ? verMsg(v.msg) : "",
       badge: v.inUso ? "In uso" : "", current: v.inUso,
       actions: (v.inUso ? `<span class="ver-ph"></span>`
@@ -7052,9 +7408,37 @@
     })), kind, "Nessuna versione.");
   }
 
+  async function verFillChanges() {
+    for (const box of document.querySelectorAll(".ver-changes[data-for]")) {
+      const id = box.dataset.for;
+      try {
+        if (verTab === "contenuti") {
+          const list = await verChangesFor(id);
+          if (box.dataset.for !== id || !document.body.contains(box)) continue;
+          box.innerHTML = list.length ? `<ol class="ver-chg">${list.map((c, i) => `
+            <li data-i="${i}">
+              <button type="button" class="ver-chg-go" data-c="go" title="Vai a questa modifica">
+                <span class="l">${escapeHtml(c.label)}</span>${c.detail ? `<span class="dt">${escapeHtml(c.detail)}</span>` : ""}
+              </button>
+              <button type="button" class="sm ghost ver-ib" data-c="rev" title="Togli questa modifica" aria-label="Togli questa modifica">${verIcon("undo")}</button>
+            </li>`).join("")}</ol>
+            <div class="ver-chg-foot"><button type="button" class="sm ghost" data-c="nav">Scorri le modifiche una per una</button></div>`
+            : `<div class="ver-empty">Nessuna differenza nei contenuti.</div>`;
+        } else {
+          const [kind, sha] = id.split(":");
+          const det = await verDetailsFor(kind, sha);
+          box.innerHTML = `${det.lines.length ? `<ul class="ver-chg plain">${det.lines.map(l => `<li><span class="l">${escapeHtml(l)}</span></li>`).join("")}</ul>` : ""}
+            ${det.files.length ? `<div class="ver-files">File cambiati: ${det.files.map(f => escapeHtml(f)).join(", ")}</div>` : `<div class="ver-empty">Nessun dettaglio.</div>`}`;
+        }
+      } catch (e) {
+        box.innerHTML = `<div class="ver-empty">Non riesco a leggere le modifiche.</div>`;
+      }
+    }
+  }
+
   function verPaint() {
     const box = document.getElementById("versioniContent");
-    const n = { contenuti: (verData.contenuti.salvate || []).length + (verData.contenuti.pubblicate || []).length,
+    const n = { contenuti: (verData.contenuti.pubblicate || []).length + (verData.contenuti.salvate || []).length,
       sito: (verData.sito.storia || []).length, manager: ((verData.manager || {}).storia || []).length };
     box.innerHTML = `
       <h2 class="ver-h">Versioni</h2>
@@ -7077,6 +7461,7 @@
       };
       inp.onkeydown = (e) => { if (e.key === "Enter") salva.click(); };
     }
+    verFillChanges();
   }
 
   async function renderVersioni() {
@@ -7090,6 +7475,7 @@
     try { verData = await (await fetch("/versioni/elenco", { cache: "no-store" })).json(); }
     catch (e) { box.innerHTML = `<h2 class="ver-h">Versioni</h2><div class="ver-list"><div class="ver-empty">Non riesco a leggere le versioni.</div></div>`; return; }
     verData.manager = verData.manager || { storia: [] };
+    verChangeCache.delete("unpub");
     verPaint();
   }
 
@@ -7098,27 +7484,51 @@
     if (t) { verTab = t.dataset.tab; verPaint(); return; }
     const m = e.target.closest("[data-more]");
     if (m) { verShowAll[m.dataset.more] = !verShowAll[m.dataset.more]; verPaint(); return; }
-    const b = e.target.closest("button[data-a]");
+    const item = e.target.closest(".ver-item");
+
+    // elenco delle modifiche dentro una riga aperta
+    const cb = e.target.closest("[data-c]");
+    if (cb && item) {
+      const list = await verChangesFor(item.dataset.id);
+      const li = cb.closest("li");
+      const i = li ? +li.dataset.i : 0;
+      const title = escapeHtml(item.querySelector(".ver-t .t").textContent);
+      if (cb.dataset.c === "go") { verNav = { list: [...list], i, title }; verNavShow(); verGoto(list[i]); }
+      else if (cb.dataset.c === "nav") { verNav = { list: [...list], i: 0, title }; verNavShow(); verGoto(list[0]); }
+      else if (cb.dataset.c === "rev") {
+        if (await verRevert(list[i])) { toast("Modifica tolta. Ricordati di salvare.", "ok"); verChangeCache.clear(); renderVersioni(); }
+      }
+      return;
+    }
+
+    const b = e.target.closest("[data-a]");
     if (!b || b.disabled) return;
     const row = b.closest(".ver-row");
     const a = b.dataset.a;
+    if (a === "toggle") {
+      const id = item.dataset.id;
+      if (verOpen.has(id)) verOpen.delete(id); else verOpen.add(id);
+      verPaint();
+      return;
+    }
     const post = async (url, body) => {
       const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       return r.json().catch(() => ({ ok: false, error: "risposta non valida" }));
     };
-    if (a === "load-saved") verLoadContenuti("id=" + encodeURIComponent(row.dataset.id), row.dataset.nome);
+    if (a === "save-now") { if (await saveLocal(false)) renderVersioni(); }
+    else if (a === "publish-now") { await publish(); renderVersioni(); }
+    else if (a === "load-saved") verLoadContenuti("id=" + encodeURIComponent(row.dataset.vid), row.dataset.nome);
     else if (a === "load-pub") verLoadContenuti("sha=" + row.dataset.sha, "la versione di " + verFmt(row.dataset.data).toLowerCase());
     else if (a === "del-saved") {
       if (!await confirm(`Eliminare «${row.dataset.nome}»?`)) return;
-      const j = await post("/versioni/elimina", { id: row.dataset.id });
+      const j = await post("/versioni/elimina", { id: row.dataset.vid });
       toast(j.ok ? "Eliminata." : "Non riesco a eliminarla.", j.ok ? "ok" : "err");
       renderVersioni();
     } else if (a === "name-pub") {
       const nome = await verAskName(row, "");
       if (!nome) return;
-      const r = await fetch("/versioni/contenuti?sha=" + row.dataset.sha);
-      const c = await r.json().catch(() => null);
-      if (!r.ok || !c) { toast("Non riesco ad aprire questa versione.", "err"); return; }
+      let c;
+      try { c = await verGetJson("sha=" + row.dataset.sha); } catch (err) { toast("Non riesco ad aprire questa versione.", "err"); return; }
       const j = await post("/versioni/salva", { nome, contenuti: c });
       toast(j.ok ? `Salvata «${nome}».` : "Salvataggio non riuscito.", j.ok ? "ok" : "err");
       renderVersioni();
@@ -7155,11 +7565,13 @@
   });
 
   // ========== USCITA CON MODIFICHE NON SALVATE ==========
-  // L'app (manager.js) non chiude più da sola: chiede qui. Se ci sono
-  // modifiche non salvate compare l'avviso, altrimenti si esce subito.
+  // L'app segna la richiesta di uscita sul server locale; la pagina la vede,
+  // chiede cosa fare se ci sono modifiche non salvate e poi fa chiudere l'app.
+  let quitDone = false;
   function mpQuitApp() {
-    try { window.webkit.messageHandlers.mp.postMessage("quit"); }
-    catch (e) { fetch("/quit-app").catch(() => toast("Chiusura non disponibile fuori dall'app.", "err")); }
+    if (quitDone) return;
+    quitDone = true;
+    fetch("/quit-app").catch(() => toast("Chiusura non disponibile fuori dall'app.", "err"));
   }
   function askUnsaved() {
     return new Promise((resolve) => {
@@ -7190,52 +7602,27 @@
       bg.querySelector('[data-q="save"]').focus();
     });
   }
-  // Salva e aspetta che la pubblicazione su GitHub sia finita: chiudendo
-  // l'app si spegne anche il server che la esegue.
-  async function saveBeforeQuit() {
-    const veil = document.createElement("div");
-    veil.className = "quit-bg";
-    veil.innerHTML = `<div class="quit-box"><div class="quit-t">Salvo e pubblico le modifiche…</div><div class="quit-d">L'app si chiude da sola appena ha finito.</div></div>`;
-    document.body.appendChild(veil);
-    try {
-      if (await checkLocalServer()) {
-        const newJson = JSON.stringify(state, null, 2) + "\n";
-        const b64 = btoa(unescape(encodeURIComponent(newJson)));
-        const r = await fetch("/upload", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ folder: "codice-sorgente/contenuti", files: [{ name: "contenuti.json", data: b64 }] })
-        });
-        if (!r.ok) throw new Error("salvataggio non riuscito");
-        clearDirty();
-        embeddedEl.textContent = newJson;
-        const g = await fetch("/git-sync", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: "editor: aggiorna contenuti.json", wait: true }) });
-        const gj = await g.json().catch(() => ({}));
-        if (gj.ok === false) throw new Error("salvato sul disco, ma la pubblicazione non è riuscita");
-      } else {
-        const btn = document.getElementById("btnSave");
-        btn.click();
-        for (let i = 0; i < 300 && (btn.disabled || dirty); i++) await new Promise(r => setTimeout(r, 200));
-        if (dirty) throw new Error("salvataggio non riuscito");
-      }
-      return true;
-    } catch (e) {
-      veil.remove();
-      toast("Non ho chiuso l'app: " + e.message + ".", "err");
-      return false;
-    }
-  }
   let quitAsking = false;
   window.__mpRequestQuit = async () => {
+    if (quitAsking || quitDone) return;
     if (!dirty) { mpQuitApp(); return; }
-    if (quitAsking) return;
     quitAsking = true;
     const choice = await askUnsaved();
     quitAsking = false;
-    if (choice === "cancel") return;
+    if (choice === "cancel") { fetch("/quit-cancel").catch(() => {}); return; }
     if (choice === "discard") { clearDirty(); mpQuitApp(); return; }
-    if (await saveBeforeQuit()) mpQuitApp();
+    if (await saveLocal(true)) mpQuitApp();
+    else fetch("/quit-cancel").catch(() => {});
   };
+  function startQuitWatch() {
+    if (window._quitWatch) return;
+    window._quitWatch = setInterval(async () => {
+      try {
+        const j = await (await fetch("/quit-poll", { cache: "no-store" })).json();
+        if (j.req && !quitAsking) window.__mpRequestQuit();
+      } catch (e) { /* fuori dall'app: niente */ }
+    }, 400);
+  }
 
   // ========== PHOTOS ==========
   // Lista file locali via server Python (Manager app)
@@ -9029,7 +9416,7 @@
             msg += "\n\nPRO — Editor:\n" + localPro.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
             msg += "\n\nPRO — Sito:\n" + sitePro.map((s, i) => `  ${i + 1}. ${s}`).join("\n");
           }
-          msg += "\n\nSalva e pubblica per aggiornare il sito.";
+          msg += "\n\nPremi Pubblica per aggiornare il sito.";
           if (!data.fileExists) msg += "\n\nAttenzione: il file contenuti.json NON esiste sul server!";
           if (data.parseError) msg += "\n\nAttenzione, errore di lettura: " + data.parseError;
           toast("Ordine diverso — controlla il dettaglio.", "err");
@@ -9086,7 +9473,7 @@
           if (imported.aspetto) state.aspetto = imported.aspetto;
           markDirty();
           renderSidebar();
-          toast("Importato. Salva per pubblicare.", "ok");
+          toast("Importato. Salva per tenerlo, Pubblica per metterlo online.", "ok");
         } catch (err) {
           toast("JSON non valido: " + err.message, "err");
         }
@@ -9326,70 +9713,92 @@
     toast("Progetto creato. Ricorda di salvare.", "ok");
   };
 
-  // ========== SAVE ==========
-  document.getElementById("btnSave").onclick = async () => {
-    if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
+  // ========== SALVA / PUBBLICA ==========
+  // Salva: scrive contenuti.json sull'SSD (o tiene la bozza, fuori dall'app).
+  //        Chiudendo e riaprendo il Manager si riparte da qui, senza pubblicare.
+  // Pubblica: salva se serve, manda tutto su GitHub e segue il deploy di Vercel.
+  async function saveLocal(quiet) {
+    if (!dirty) return true;
     const btn = document.getElementById("btnSave");
     btn.disabled = true;
+    const prev = btn.innerHTML;
     btn.innerHTML = '<span class="btn-spinner"></span> Salvataggio…';
-    const isLocal = await checkLocalServer();
     try {
       const newJson = JSON.stringify(state, null, 2) + "\n";
-      if (isLocal) {
-        // Salva contenuti.json su disco e git push automatico
+      if (await checkLocalServer()) {
         const b64 = btoa(unescape(encodeURIComponent(newJson)));
         const r = await fetch("/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ folder: "codice-sorgente/contenuti", files: [{ name: "contenuti.json", data: b64 }] })
         });
-        if (!r.ok) throw new Error("Salvataggio locale fallito");
+        if (!r.ok) throw new Error("scrittura sul disco non riuscita");
         clearDirty();
-        embeddedEl.textContent = newJson;
-        toast("Salvato! Push in corso…", "ok");
-        // Git push automatico dopo salvataggio locale
-        fetch("/git-sync", { method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({message: "editor: aggiorna contenuti.json"}) })
-          .then(()=> {
-            // Track deploy via GitHub API — NON dire "pubblicato" finché Vercel non finisce
-            if (getToken()) {
-              toast("Push completato, deploy in corso…", "ok");
-              fetch(`https://api.github.com/repos/${getRepo()}/commits/${getBranch()}`, {
-                headers: { Authorization: `token ${getToken()}`, Accept: "application/vnd.github.v3+json" }
-              }).then(r=>r.json()).then(d=>{ if(d.sha) trackDeploy(d.sha); }).catch(()=>{
-                toast("Push completato! Impossibile tracciare il deploy.", "ok");
-              });
-            } else {
-              toast("Push completato! (nessun token per tracciare il deploy)", "ok");
-            }
-          })
-          .catch(()=> toast("Salvato localmente, push fallito.", "err"));
+        setUnpublished(true);
+      } else {
+        // Fuori dall'app non c'è un disco: la bozza resta nel browser
+        localStorage.setItem(STORAGE_DRAFT, JSON.stringify(state));
+        dirty = false;
+        setUnpublished(true);
+        updateStatusBadge();
+      }
+      embeddedEl.textContent = newJson;
+      if (!quiet) toast("Salvato. Non è ancora online: premi Pubblica quando vuoi.", "ok");
+      return true;
+    } catch (e) {
+      toast("Salvataggio non riuscito: " + e.message, "err");
+      return false;
+    } finally {
+      btn.innerHTML = prev;
+      updateStatusBadge();
+    }
+  }
+
+  async function publish() {
+    if (!dirty && !unpublished) { toast("Non ci sono modifiche da pubblicare.", ""); return; }
+    const btn = document.getElementById("btnPublish");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner"></span> Pubblicazione…';
+    try {
+      if (dirty && !await saveLocal(true)) return;
+      if (await checkLocalServer()) {
+        const r = await fetch("/publish", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "editor: aggiorna contenuti.json" }) });
+        const j = await r.json().catch(() => ({}));
+        if (!j.ok) throw new Error(j.error || "invio a GitHub non riuscito");
+        setUnpublished(false);
+        if (!j.nuovo) { toast("Era già tutto online.", "ok"); return; }
+        if (getToken() && j.sha) { toast("Inviato: il sito si aggiorna…", "ok"); trackDeploy(j.sha); }
+        else toast("Inviato: il sito si aggiorna tra qualche minuto.", "ok");
       } else {
         if (!getToken()) {
           toast("Imposta prima il token GitHub nella sezione Impostazioni.", "err");
           switchSection("impostazioni");
           return;
         }
+        const newJson = JSON.stringify(state, null, 2) + "\n";
         const existing = await ghGet("codice-sorgente/contenuti/contenuti.json");
         const sha = existing ? existing.sha : undefined;
         const result = await ghPut("codice-sorgente/contenuti/contenuti.json", str2b64(newJson), "editor: aggiorna contenuti.json", sha);
-        clearDirty();
-        embeddedEl.textContent = newJson;
-        toast("Salvato su GitHub! Monitoraggio deploy…", "ok");
+        localStorage.removeItem(STORAGE_DRAFT);
+        setUnpublished(false);
         const commitSha = result?.commit?.sha;
-        if (commitSha) {
-          trackDeploy(commitSha);
-        } else {
-          toast("Salvato! Impossibile tracciare il deploy (SHA mancante).", "ok");
-        }
+        if (commitSha) trackDeploy(commitSha);
+        else toast("Inviato: il sito si aggiorna tra qualche minuto.", "ok");
       }
-    } catch(e) {
-      toast("Errore salvataggio: " + e.message, "err");
+    } catch (e) {
+      toast("Pubblicazione non riuscita: " + e.message, "err");
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = "Salva e pubblica";
+      btn.innerHTML = "Pubblica";
+      updateStatusBadge();
     }
+  }
+
+  document.getElementById("btnSave").onclick = () => {
+    if (!dirty) { toast("Nessuna modifica da salvare.", ""); return; }
+    saveLocal(false);
   };
+  document.getElementById("btnPublish").onclick = () => publish();
 
   // ========== INIT ==========
   window.addEventListener("beforeunload", (e) => {
@@ -9483,7 +9892,20 @@
     await new Promise(r => setTimeout(r, STEP_DELAY));
   }
 
-  // Sync: se c'è token, scarica SEMPRE contenuti.json da GitHub (la verità è online).
+  // Avvio: prima l'SSD, poi token e GitHub, poi i contenuti.
+  // Nell'app i contenuti arrivano dall'SSD (l'ultima versione salvata, anche
+  // se non pubblicata); fuori dall'app da GitHub.
+  function applyContenuti(data) {
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, data);
+    state.projects = state.projects || [];
+    state.aboutArt = state.aboutArt || { text: "", quote: "", photo: "", video: "" };
+    state.aboutPro = state.aboutPro || { text: "", quote: "", photo: "", video: "" };
+    state.aboutShared = state.aboutShared || { text: true, quote: true, photo: true, video: true };
+    state.landing = state.landing || { artworkImages: [], professionalImages: [] };
+    embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
+  }
+
   (async function syncFromGitHub() {
     // Aspetta animazione overlay completa
     await revealInitSteps();
@@ -9501,87 +9923,63 @@
     }
     localServerAvailable = null;   // prima dell'SSD il server locale non rispondeva
     initStepOk("Ssd");
+    const local = await checkLocalServer();
     const token = getToken();
+
     // Step 1: token
     await revealStep(1);
-    if (!token) {
-      initStepFail(1, "(non configurato)");
-      await revealStep(2); initStepFail(2, "—");
-      await revealStep(3); initStepFail(3, "—");
-      await revealStep(4); initStepFail(4, "—");
-      renderSidebar();
-      if (dirty) toast("Bozza locale ripristinata (nessun token GitHub).", "");
-      await finishInit();
-      return;
-    }
-    initStepOk(1);
+    if (token) initStepOk(1); else initStepFail(1, "(non configurato)");
 
+    // Step 2: connessione al repository
+    await revealStep(2);
+    let connected = false;
+    if (token) {
+      try {
+        const testRes = await fetch(`https://api.github.com/repos/${getRepo()}`, {
+          headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
+        });
+        connected = testRes.ok;
+        if (connected) initStepOk(2); else initStepFail(2, `(errore ${testRes.status})`);
+      } catch (e) { initStepFail(2, "(nessuna connessione)"); }
+    } else initStepFail(2, "—");
+
+    // Step 3: contenuti
+    await revealStep(3);
     try {
-      // Step 2: test connection
-      await revealStep(2);
-      const testRes = await fetch(`https://api.github.com/repos/${getRepo()}`, {
-        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
-      });
-      if (!testRes.ok) {
-        console.warn("GitHub auth failed:", testRes.status, "token starts with:", token.substring(0, 10) + "…", "token length:", token.length);
-        initStepFail(2, `(errore ${testRes.status})`);
-        await revealStep(3); initStepFail(3, "—");
-        await revealStep(4); initStepFail(4, "—");
-        throw new Error("Connessione fallita");
+      if (local) {
+        const r = await fetch("/contenuti-locale", { cache: "no-store" });
+        const j = await r.json();
+        if (!r.ok || !j.contenuti || !Array.isArray(j.contenuti.projects)) throw new Error("file non leggibile");
+        if (dirty) toast("Ripristinate le modifiche che non avevi salvato.", "");
+        else applyContenuti(j.contenuti);
+        setUnpublished(!!j.daPubblicare);
+        initStepOk(3);
+      } else if (connected) {
+        const remote = await ghGet("codice-sorgente/contenuti/contenuti.json");
+        if (!remote || !remote.content) throw new Error("file non trovato");
+        const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
+        const remoteState = JSON.parse(decoded);
+        if (!remoteState.projects) throw new Error("file non valido");
+        if (dirty) toast("Ripristinate le modifiche che non avevi salvato.", "");
+        else applyContenuti(remoteState);
+        initStepOk(3);
+      } else {
+        initStepFail(3, "—");
       }
-      initStepOk(2);
-
-      // Step 3: fetch contenuti
-      await revealStep(3);
-      const remote = await ghGet("codice-sorgente/contenuti/contenuti.json");
-      if (!remote || !remote.content) {
-        initStepFail(3, "(file non trovato)");
-        await revealStep(4);
-        renderSidebar();
-        initStepOk(4);
-        await finishInit();
-        return;
-      }
-      initStepOk(3);
-
-      const decoded = decodeURIComponent(escape(atob(remote.content.replace(/\n/g, ""))));
-      const remoteState = JSON.parse(decoded);
-      if (!remoteState.projects) {
-        await revealStep(4);
-        renderSidebar();
-        initStepOk(4);
-        await finishInit();
-        return;
-      }
-      // Sovrascrivi completamente lo state con i dati freschi da GitHub
-      state.projects = remoteState.projects;
-      state.aboutArt = remoteState.aboutArt || state.aboutArt;
-      state.aboutPro = remoteState.aboutPro || state.aboutPro;
-      state.aboutShared = remoteState.aboutShared || state.aboutShared;
-      state.landing = remoteState.landing || state.landing;
-      state.version = remoteState.version || state.version;
-      clearDirty();
-      embeddedEl.textContent = JSON.stringify(state, null, 2) + "\n";
-
-      // Step 4: render
-      await revealStep(4);
-      renderSidebar();
-      if (currentKey) {
-        if (currentKey === "landing") renderLanding();
-        else if (currentKey === "aboutArt" || currentKey === "aboutPro") renderAbout(currentKey);
-        else renderProject(currentKey);
-      }
-      initStepOk(4);
-      toast("Sincronizzato con GitHub.", "ok");
-      fetchAllPhotoCounts();
-      await finishInit();
-    } catch(e) {
-      console.warn("Sync da GitHub fallito:", e.message);
-      renderSidebar();
-      if (dirty) toast("Bozza locale ripristinata (sync GitHub fallito).", "");
-      fetchAllPhotoCounts();
-      await finishInit();
+    } catch (e) {
+      initStepFail(3, "(" + e.message + ")");
     }
+
+    // Step 4: progetti
+    await revealStep(4);
+    renderSidebar();
+    if (currentKey) selectProject(currentKey);
+    undoReset();
+    updateStatusBadge();
+    initStepOk(4);
+    fetchAllPhotoCounts();
+    startQuitWatch();
+    await finishInit();
   })();
 })();
 </script>

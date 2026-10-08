@@ -26,24 +26,39 @@ if _r:
 else:
  threading.Thread(target=_wait_root,daemon=True).start()
 _git_lock=threading.Lock()
-def git_sync(msg="auto: media update",wait=False):
+_quit={'req':False,'ack':False}
+CONT_FILE='codice-sorgente/contenuti/contenuti.json'
+# contenuti=False: foto, video e versioni vanno online, ma contenuti.json no:
+# quello lo pubblica solo il tasto "Pubblica" (il tasto "Salva" lo scrive e basta)
+def git_sync(msg="auto: media update",wait=False,contenuti=False):
  def run():
   with _git_lock:
    try:
-    cwd=os.path.join(os.getcwd(),'codice-sorgente')
-    subprocess.run(['git','add','-A'],cwd=cwd,capture_output=True,timeout=10)
-    subprocess.run(['git','commit','-m',msg],cwd=cwd,capture_output=True,timeout=10)
-    r=subprocess.run(['git','pull','--rebase','--autostash'],cwd=cwd,capture_output=True,timeout=30)
+    cwd=os.getcwd()
+    def g(args,t=30):return subprocess.run(['git']+args,cwd=cwd,capture_output=True,timeout=t)
+    spec=['--',':/'] if contenuti else ['--',':/',':(top,exclude)'+CONT_FILE]
+    g(['add','-A']+spec)
+    before=g(['rev-parse','@{u}']).stdout.decode().strip()
+    g(['commit','-m',msg])
+    r=g(['pull','--rebase','--autostash'],60)
     if r.returncode!=0:sys.stderr.write('git pull failed: '+r.stderr.decode(errors='replace')+'\\n')
-    r=subprocess.run(['git','push'],cwd=cwd,capture_output=True,timeout=30)
+    r=g(['push'],60)
     if r.returncode!=0:
-     sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n');return False
-    return True
+     sys.stderr.write('git push failed: '+r.stderr.decode(errors='replace')+'\\n')
+     return {'ok':False,'error':r.stderr.decode(errors='replace')[-200:]}
+    after=g(['rev-parse','HEAD']).stdout.decode().strip()
+    return {'ok':True,'sha':after,'nuovo':after!=before}
    except Exception as e:
-    sys.stderr.write('git_sync error: '+str(e)+'\\n');return False
+    sys.stderr.write('git_sync error: '+str(e)+'\\n');return {'ok':False,'error':str(e)}
  if wait:return run()
  threading.Thread(target=run,daemon=True).start()
- return True
+ return {'ok':True}
+def contenuti_locale():
+ with open(CONT_FILE,encoding='utf-8') as fp:c=json.load(fp)
+ cwd=os.getcwd()
+ diff=subprocess.run(['git','diff','--quiet','HEAD','--',CONT_FILE],cwd=cwd,capture_output=True).returncode!=0
+ ahead=subprocess.run(['git','rev-list','--count','@{u}..HEAD','--',CONT_FILE],cwd=cwd,capture_output=True).stdout.decode().strip()
+ return {'contenuti':c,'daPubblicare':diff or (ahead not in ('','0'))}
 # ---- Video del banner: accorciati a 25 s, senza audio, alleggeriti ----
 _jobs={}
 def find_ffmpeg():
@@ -133,6 +148,11 @@ def versioni_leggi(vid,sha):
   r=_git(['show',sha+':'+CONT_PATH])
   if r.returncode==0:return json.loads(r.stdout.decode('utf-8'))
  return None
+def versioni_dettaglio(kind,sha):
+ if kind not in KIND_PATHS or not _is_sha(sha):return None
+ body=_git(['show','-s','--format=%b',sha]).stdout.decode(errors='replace')
+ files=[l for l in _git(['show','--name-only','--format=',sha,'--']+KIND_PATHS[kind]).stdout.decode(errors='replace').splitlines() if l.strip()]
+ return {'body':body,'files':files}
 def versioni_salva(nome,contenuti):
  os.makedirs(VDIR,exist_ok=True)
  vid=time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:4]
@@ -181,9 +201,27 @@ signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
  def do_GET(self):
+  p0=self.path.split('?')[0]
+  if p0=='/quit-request':
+   _quit['req']=True;_quit['ack']=False;self._json({'ok':True});return
+  if p0=='/quit-poll':
+   if _quit['req']:_quit['ack']=True
+   self._json({'req':_quit['req']});return
+  if p0=='/quit-cancel':
+   _quit['req']=False;self._json({'ok':True});return
+  if p0=='/quit-acked':
+   self._json({'ack':_quit['ack']});return
   if not _ready:
    p=self.path.split('?')[0]
    if p=='/ssd-status':self._json({'ok':False});return
+   if p=='/quit-app':
+    self._json({'ok':True})
+    def bye0():
+     time.sleep(0.3)
+     try:os.kill(os.getppid(),signal.SIGTERM)
+     except Exception:pass
+     os._exit(0)
+    threading.Thread(target=bye0,daemon=True).start();return
    if p in ('/','/.Manager%20Portfolio.html','/.Manager Portfolio.html') and BUNDLE_HTML and os.path.isfile(BUNDLE_HTML):
     with open(BUNDLE_HTML,'rb') as fp:data=fp.read()
     self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers()
@@ -191,6 +229,9 @@ class H(http.server.SimpleHTTPRequestHandler):
    self.send_response(503);self.end_headers();return
   if self.path=='/ssd-status':
    self._json({'ok':True})
+  elif self.path=='/contenuti-locale':
+   try:self._json(contenuti_locale())
+   except Exception as e:self._json({'error':str(e)},500)
   elif self.path.startswith('/open-url?'):
    q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
    url=q.get('url',[''])[0]
@@ -213,6 +254,11 @@ class H(http.server.SimpleHTTPRequestHandler):
    self.wfile.write(json.dumps(files).encode())
   elif self.path=='/versioni/elenco':
    self._json(versioni_elenco())
+  elif self.path.startswith('/versioni/dettaglio?'):
+   q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+   d=versioni_dettaglio(q.get('tipo',[''])[0],q.get('sha',[''])[0])
+   if d is None:self._json({'error':'non trovato'},404)
+   else:self._json(d)
   elif self.path.startswith('/versioni/contenuti?'):
    q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
    try:c=versioni_leggi(q.get('id',[''])[0],q.get('sha',[''])[0])
@@ -330,9 +376,11 @@ class H(http.server.SimpleHTTPRequestHandler):
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length)) if length else {}
    msg=body.get('message','auto: media update')
-   ok=git_sync(msg,bool(body.get('wait')))
-   self.send_response(200);self.end_headers()
-   self.wfile.write(json.dumps({'ok':bool(ok)}).encode())
+   self._json(git_sync(msg,bool(body.get('wait'))))
+  elif self.path=='/publish':
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length)) if length else {}
+   self._json(git_sync(body.get('message','editor: aggiorna contenuti.json'),True,True))
   elif self.path=='/delete-file':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
@@ -392,10 +440,17 @@ function mpQuitNow() {
   try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } catch (e) {}
   $.exit(0);
 }
-// Chiedere di uscire passa dalla pagina: se ci sono modifiche non salvate
-// la pagina mostra l'avviso e poi risponde con il messaggio "quit".
+// Chiedere di uscire passa dalla pagina, attraverso il server locale:
+// l'app segna la richiesta, la pagina la vede (controlla ogni 400 ms),
+// mostra l'avviso se ci sono modifiche non salvate e poi chiede al server
+// di chiudere l'app. Così l'app non esce mai dentro una chiamata di WebKit
+// (era quello a provocare la "chiusura inattesa" a ogni uscita).
 var wv = null;
 var mpQuitAsks = [];
+function mpCurl(path) {
+  try { return ObjC.unwrap(sa.doShellScript("curl -s -m 1 http://127.0.0.1:8471" + path + " 2>/dev/null; true")) || ""; }
+  catch (e) { return ""; }
+}
 function mpRequestQuit() {
   if (mpQuitting) return;
   if (!wv || wv.isLoading) { mpQuitNow(); return; }
@@ -404,9 +459,9 @@ function mpRequestQuit() {
   mpQuitAsks = mpQuitAsks.filter(function (t) { return now - t < 4000; });
   mpQuitAsks.push(now);
   if (mpQuitAsks.length >= 3) { mpQuitNow(); return; }
-  try {
-    wv.evaluateJavaScriptCompletionHandler("window.__mpRequestQuit ? (window.__mpRequestQuit(), 1) : window.webkit.messageHandlers.mp.postMessage('quit')", null);
-  } catch (e) { mpQuitNow(); }
+  mpCurl("/quit-request");
+  // se la pagina non risponde entro 3 secondi, si chiude comunque
+  $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(3.0, mpDel, "mpQuitCheck:", null, false);
 }
 var AE_CORE = 0x61657674; // 'aevt'
 var AE_QUIT = 0x71756974; // 'quit'
@@ -416,6 +471,7 @@ ObjC.registerSubclass({
     "applicationShouldTerminateAfterLastWindowClosed:":{types:["bool",["id"]],implementation:function(s){return true;}},
     "windowShouldClose:":{types:["bool",["id"]],implementation:function(w){ mpRequestQuit(); return false; }},
     "windowWillClose:":{types:["void",["id"]],implementation:function(n){ mpQuitNow(); }},
+    "mpQuitCheck:":{types:["void",["id"]],implementation:function(t){ if (mpCurl("/quit-acked").indexOf("true") < 0) mpQuitNow(); }},
     "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpRequestQuit(); }},
     "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpRequestQuit(); }},
     "mpInstallQuit:":{types:["void",["id"]],implementation:function(t){ mpInstallQuitHandler(); }}
@@ -465,22 +521,9 @@ win.setFrameDisplay(vf, true);
 
 // WKWebView with no cache + injected JS overrides
 var cfg = $.WKWebViewConfiguration.alloc.init;
-var injectCode = "(function(){var s=document.createElement('style');s.textContent='html,body{background:#1c1c1c!important}';document.documentElement.appendChild(s)})();window.confirm=function(msg){return new Promise(function(resolve){var bg=document.createElement('div');bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99998;display:flex;align-items:center;justify-content:center;';var box=document.createElement('div');box.style.cssText='background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:24px;max-width:420px;width:90%;color:#fff;font-size:14px;font-family:Inter,system-ui,sans-serif;';box.innerHTML='<div style=\"margin-bottom:16px;line-height:1.5;\">'+msg.replace(/\\n/g,'<br>')+'</div><div style=\"display:flex;gap:8px;justify-content:flex-end;\"><button id=\"_cfNo\" style=\"padding:8px 16px;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;cursor:pointer;font-size:12px;\">Annulla</button><button id=\"_cfYes\" style=\"padding:8px 16px;background:#c8102e;border:1px solid #c8102e;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;\">Conferma</button></div>';bg.appendChild(box);document.body.appendChild(bg);document.getElementById('_cfYes').onclick=function(){bg.remove();resolve(true);};document.getElementById('_cfNo').onclick=function(){bg.remove();resolve(false);};bg.onclick=function(e){if(e.target===bg){bg.remove();resolve(false);}};})};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();document.execCommand('undo');}},true);";
+var injectCode = "(function(){var s=document.createElement('style');s.textContent='html,body{background:#1c1c1c!important}';document.documentElement.appendChild(s)})();window.confirm=function(msg){return new Promise(function(resolve){var bg=document.createElement('div');bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99998;display:flex;align-items:center;justify-content:center;';var box=document.createElement('div');box.style.cssText='background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:24px;max-width:420px;width:90%;color:#fff;font-size:14px;font-family:Inter,system-ui,sans-serif;';box.innerHTML='<div style=\"margin-bottom:16px;line-height:1.5;\">'+msg.replace(/\\n/g,'<br>')+'</div><div style=\"display:flex;gap:8px;justify-content:flex-end;\"><button id=\"_cfNo\" style=\"padding:8px 16px;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;cursor:pointer;font-size:12px;\">Annulla</button><button id=\"_cfYes\" style=\"padding:8px 16px;background:#c8102e;border:1px solid #c8102e;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;\">Conferma</button></div>';bg.appendChild(box);document.body.appendChild(bg);document.getElementById('_cfYes').onclick=function(){bg.remove();resolve(true);};document.getElementById('_cfNo').onclick=function(){bg.remove();resolve(false);};bg.onclick=function(e){if(e.target===bg){bg.remove();resolve(false);}};})};window.alert=function(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:13px;border:1px solid #444;max-width:500px;text-align:center;';document.body.appendChild(t);setTimeout(function(){t.remove();},4000)};document.addEventListener('click',function(e){var a=e.target.closest('a[target=_blank]');if(a&&a.href){e.preventDefault();e.stopPropagation();fetch('/open-url?url='+encodeURIComponent(a.href))}},true);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();var btn=document.getElementById('btnSave');if(btn)btn.click();}if((e.metaKey||e.ctrlKey)&&(e.key==='z'||e.key==='Z')){e.preventDefault();if(e.shiftKey){if(window.__mpRedo)window.__mpRedo();else document.execCommand('redo');}else{if(window.__mpUndo)window.__mpUndo();else document.execCommand('undo');}}},true);window.__mpKeysInjected=true;";
 var userScript = $.WKUserScript.alloc.initWithSourceInjectionTimeForMainFrameOnly(injectCode, $.WKUserScriptInjectionTimeAtDocumentStart, true);
 cfg.userContentController.addUserScript(userScript);
-
-// Messaggi dalla pagina: "quit" = l'utente ha confermato l'uscita
-ObjC.registerSubclass({
-  name:"MPMsg2",superclass:"NSObject",protocols:["WKScriptMessageHandler"],
-  methods:{
-    "userContentController:didReceiveScriptMessage:":{types:["void",["id","id"]],implementation:function(ucc,msg){
-      var body = "";
-      try { body = ObjC.unwrap(msg.body); } catch (e) {}
-      if (body === "quit") mpQuitNow();
-    }}
-  }
-});
-cfg.userContentController.addScriptMessageHandlerName($.MPMsg2.alloc.init, "mp");
 
 wv = $.WKWebView.alloc.initWithFrameConfiguration(win.contentView.bounds,cfg);
 wv.setOpaque(false);

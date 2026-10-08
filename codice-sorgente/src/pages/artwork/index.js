@@ -1383,15 +1383,10 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           }}
         >
           {/* Title bar */}
-          <div className="w-full flex items-center justify-center gap-3 h-[44px] shrink-0 pointer-events-none">
+          <div className="w-full flex items-center justify-center h-[44px] shrink-0 pointer-events-none">
             <span className="text-white text-sm font-semibold text-center px-4 whitespace-nowrap">
-              {projectLabel}
+              {[selectedProject?.name, ...(selectedProject?.titleExtra || []), selectedProject?.datePlace].filter(Boolean).join(" - ")}
             </span>
-            {selectedProject.images.length > 1 && (
-              <span className="text-white/50 tabular-nums" style={{ fontSize: "var(--text-xs)" }}>
-                {viewerIndex + 1}/{selectedProject.images.length}
-              </span>
-            )}
           </div>
 
           {/* Image area — swipe support for mobile */}
@@ -1413,26 +1408,20 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           >
             {selectedProject.images.length > 1 && (
               <>
-                {/* SVG al posto dei caratteri ‹ › : non dipendono dal font,
-                    si allineano in modo prevedibile e il bersaglio arriva a
-                    44x44px come richiesto sul touch. */}
+                {/* Frecce come a settembre */}
                 <button
-                  className="viewer-nav absolute left-4 md:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-10"
+                  className="absolute left-6 md:left-10 lg:left-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
                   onClick={() => setViewerIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length)}
                   aria-label="Immagine precedente"
                 >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
+                  ‹
                 </button>
                 <button
-                  className="viewer-nav absolute right-4 md:right-8 lg:right-12 top-1/2 -translate-y-1/2 z-10"
+                  className="absolute right-6 md:right-10 lg:right-14 top-1/2 -translate-y-1/2 text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] px-2 hover:scale-110 transition-all hover-red z-10"
                   onClick={() => setViewerIndex((prev) => (prev + 1) % selectedProject.images.length)}
                   aria-label="Immagine successiva"
                 >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+                  ›
                 </button>
               </>
             )}
@@ -1456,7 +1445,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   className={`object-contain select-none ${isCurrent ? "shadow-2xl" : ""}`}
                   style={{
                     opacity: isCurrent ? 1 : 0,
-                    transition: "opacity 150ms cubic-bezier(0.23, 1, 0.32, 1)",
+                    transition: "opacity 120ms ease",
                     position: "absolute",
                     pointerEvents: isCurrent ? "auto" : "none",
                   }}
@@ -1466,16 +1455,13 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           </div>
 
           {/* Close button */}
-          <div className="w-full flex items-center justify-center shrink-0">
+          <div className="w-full flex items-center justify-center h-[44px] shrink-0">
             <button
-              className="viewer-nav"
+              className="text-white text-4xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)] hover:scale-110 transition-all hover-red z-10"
               onClick={() => setViewerOpen(false)}
               aria-label="Chiudi visualizzazione"
             >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <line x1="6" y1="6" x2="18" y2="18" />
-                <line x1="18" y1="6" x2="6" y2="18" />
-              </svg>
+              ×
             </button>
           </div>
         </div>
