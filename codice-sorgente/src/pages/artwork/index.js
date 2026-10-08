@@ -13,6 +13,7 @@ import { useTrackPageView, useTrackPhoto, trackContact } from "@/lib/useAnalytic
 const TopRotator = dynamic(() => import("../../components/TopRotator"), { ssr: false });
 const BannerVideo = dynamic(() => import("../../components/BannerVideo"), { ssr: false });
 import FreeGallery from "@/components/FreeGallery";
+import ScrollGallery from "@/components/ScrollGallery";
 
 // I contenuti (testi progetti + about) vengono ora letti da un unico file:
 // public/projects/contenuti.json (editabile con _editor.html)
@@ -94,47 +95,86 @@ export async function getStaticProps() {
       .filter((v) => /\.(mp4|m4v|mov|webm)$/i.test(v))
       .map((v) => `/projects/${id}/${v}`);
 
-    // Composizione libera della galleria (griglia di 12 colonne, celle
-    // quadrate). In galleria compaiono solo le foto messe nella
-    // composizione, nell'ordine di lettura: dall'alto in basso, da sinistra.
-    let galleryImages = images;
-    let composition = null;
-    const comp = data.composizione;
-    if (comp && Array.isArray(comp.foto) && comp.foto.length) {
-      const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
+    // Gallerie del progetto, una sotto l'altra. Tre tipi:
+    //  - mosaico: righe giustificate automatiche
+    //  - composizione: foto messe a mano su una griglia di 12 colonne
+    //  - scorrimento: una striscia di foto che scorre da sola
+    // Le immagini del visore a schermo intero sono quelle delle gallerie,
+    // nell'ordine in cui compaiono.
+    const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
+    const viewerImgs = [];
+    const viewerIdx = new Map();
+    const addImg = (f) => {
+      if (viewerIdx.has(f)) return viewerIdx.get(f);
+      const i = files.indexOf(f);
+      if (i < 0) return -1;
+      viewerIdx.set(f, viewerImgs.length);
+      viewerImgs.push(images[i]);
+      return viewerIdx.get(f);
+    };
+    const buildComposition = (comp) => {
+      if (!comp || !Array.isArray(comp.foto) || !comp.foto.length) return null;
       const placed = comp.foto
         .map((it) => {
-          const i = files.findIndex((f) => f === it.file);
-          if (i < 0) return null;
+          if (files.indexOf(it.file) < 0) return null;
           const w = Math.max(0.25, Math.min(12, num(it.w, 4)));
           const h = Math.max(0.25, num(it.h, 3));
           const x = Math.max(0, Math.min(12 - w, num(it.x, 0)));
           const y = Math.max(0, num(it.y, 0));
           const pos = it.pos && Number.isFinite(Number(it.pos.x)) && Number.isFinite(Number(it.pos.y))
             ? { x: Math.max(0, Math.min(100, Number(it.pos.x))), y: Math.max(0, Math.min(100, Number(it.pos.y))) } : null;
-          return { i, x, y, w, h, fit: it.adatta === "contain" ? "contain" : "cover", pos };
+          return { file: it.file, x, y, w, h, fit: it.adatta === "contain" ? "contain" : "cover", pos };
         })
         .filter(Boolean);
-      if (placed.length) {
-        const reading = [...placed].sort((a, b) => a.y - b.y || a.x - b.x);
-        galleryImages = reading.map((it) => images[it.i]);
-        const bottom = Math.max(...placed.map((it) => it.y + it.h));
-        composition = {
-          rows: Math.max(1, Math.ceil(bottom - 0.001), Math.round(num(comp.righe, 6))),
-          // spazio tra le foto: metà distanza, in % della larghezza della galleria
-          gap: Math.max(0, Math.min(3, num(comp.spazio, 0.23))),
-          // l'ordine dell'array resta quello del Manager: decide chi sta sopra
-          items: placed.map((it) => ({ idx: reading.indexOf(it), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit, pos: it.pos })),
-        };
-      }
+      if (!placed.length) return null;
+      // ordine di lettura (dall'alto, da sinistra) per il visore
+      [...placed].sort((a, b) => a.y - b.y || a.x - b.x).forEach((it) => addImg(it.file));
+      const bottom = Math.max(...placed.map((it) => it.y + it.h));
+      return {
+        rows: Math.max(1, Math.ceil(bottom - 0.001), Math.round(num(comp.righe, 6))),
+        // spazio tra le foto: metà distanza, in % della larghezza della galleria
+        gap: Math.max(0, Math.min(3, num(comp.spazio, 0.23))),
+        // l'ordine dell'array resta quello del Manager: decide chi sta sopra
+        items: placed.map((it) => ({ idx: viewerIdx.get(it.file), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit, pos: it.pos })),
+      };
+    };
+    let rawGalleries = Array.isArray(data.gallerie) && data.gallerie.length ? data.gallerie : null;
+    if (!rawGalleries) {
+      const c = data.composizione;
+      rawGalleries = c && Array.isArray(c.foto) && c.foto.length ? [{ tipo: "composizione", composizione: c }] : [{ tipo: "mosaico" }];
     }
-    if (composition) {
+    const SFONDI = { rosso: "#c8102e", nero: "#0a0a0a", bianco: "#ffffff", trasparente: "transparent" };
+    const galleries = rawGalleries.map((g) => {
+      if (g.tipo === "composizione") {
+        const composition = buildComposition(g.composizione);
+        return composition ? { type: "composizione", composition } : null;
+      }
+      // stesso ordine delle foto del progetto; senza elenco: tutte
+      const pick = Array.isArray(g.foto) ? new Set(g.foto) : null;
+      const list = pick ? files.filter((f) => pick.has(f)) : files;
+      const idx = list.map(addImg).filter((i) => i >= 0);
+      if (!idx.length) return null;
+      if (g.tipo === "scorrimento") {
+        const sc = g.scorrimento || {};
+        return { type: "scorrimento", idx, scroll: {
+          height: Math.max(15, Math.min(95, num(sc.altezza, 50))),
+          speed: Math.max(5, Math.min(300, num(sc.velocita, 40))),
+          gap: Math.max(0, Math.min(120, num(sc.spazio, 16))),
+          background: SFONDI[sc.sfondo] || "transparent",
+        } };
+      }
+      return { type: "mosaico", idx };
+    }).filter(Boolean);
+    const galleryImages = viewerImgs.length ? viewerImgs : images;
+    {
       const bannerFile = images[bannerStartIndex]?.src;
-      const bi = galleryImages.findIndex((im) => im.src === bannerFile);
+      let bi = galleryImages.findIndex((im) => im.src === bannerFile);
+      // la foto del banner non è in nessuna galleria: la si aggiunge in coda
+      if (bi < 0 && bannerFile && galleryImages === viewerImgs) { viewerImgs.push(images[bannerStartIndex]); bi = viewerImgs.length - 1; }
       bannerStartIndex = bi >= 0 ? bi : 0;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, composition, bannerStartIndex, anteprimaIndex, anteprimaPosizione, anteprimaScorrimento, techData, esposizioni, section };
+    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, galleries, bannerStartIndex, anteprimaIndex, anteprimaPosizione, anteprimaScorrimento, techData, esposizioni, section };
   });
 
   // ---- ABOUT: doppio (art + pro) con campi condivisibili ----
@@ -362,7 +402,7 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
             const w = item.ratio * row.height;
             return (
               <button key={item.idx} type="button"
-                className="group relative overflow-hidden cursor-zoom-in flex-shrink-0"
+                className="group relative overflow-hidden cursor-pointer flex-shrink-0"
                 style={{ width: `${w}px`, height: `${row.height}px` }}
                 onClick={() => onImageClick?.(item.idx)}
                 aria-label={`Apri immagine ${item.idx + 1} a schermo intero`}
@@ -372,22 +412,7 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
                   sizes={`${Math.round(w)}px`}
                   quality={80}
                   loading={ri < 2 ? "eager" : "lazy"}
-                  className="object-cover" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-200" />
-                {/* Prima qui compariva la scritta "visualizza a schermo
-                    intero" centrata su OGNI foto: su un mosaico di tre per
-                    riga era rumore. Una lente in un angolo dice la stessa
-                    cosa senza coprire l'immagine (il cursore è già zoom-in). */}
-                <div className="pointer-events-none absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round"
-                    style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} aria-hidden>
-                    <circle cx="11" cy="11" r="7" />
-                    <line x1="16.5" y1="16.5" x2="21" y2="21" />
-                    <line x1="11" y1="8" x2="11" y2="14" />
-                    <line x1="8" y1="11" x2="14" y2="11" />
-                  </svg>
-                </div>
+                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]" />
               </button>
             );
           })}
@@ -1168,35 +1193,36 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>{/* chiude project-text-reveal__wrapper */}
             </div>
           )}
-          {/* Gallery — margini simmetrici sopra e sotto */}
-          <div style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
-            {selectedProject.composition ? (
-            <FreeGallery
-              composition={selectedProject.composition}
-              images={selectedProject.images || []}
-              altFor={viewerAlt}
-              onImageClick={(i) => {
-                setViewerIndex(i);
-                setViewerOpen(true);
-                if (selectedProject?.images?.[i]) {
-                  trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
-                }
-              }}
-            />
-            ) : (
-            <JustifiedGallery
-              images={selectedProject.images || []}
-              altFor={viewerAlt}
-              onImageClick={(i) => {
-                setViewerIndex(i);
-                setViewerOpen(true);
-                if (selectedProject?.images?.[i]) {
-                  trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
-                }
-              }}
-            />
-            )}
-          </div>
+          {/* Gallerie — una sotto l'altra, con lo stesso margine sopra ciascuna */}
+          {(selectedProject.galleries?.length ? selectedProject.galleries : [{ type: "mosaico", idx: (selectedProject.images || []).map((_, i) => i) }]).map((g, gi) => {
+            const openAt = (i) => {
+              setViewerIndex(i);
+              setViewerOpen(true);
+              if (selectedProject?.images?.[i]) {
+                trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
+              }
+            };
+            if (g.type === "scorrimento") {
+              return (
+                <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem" }}>
+                  <ScrollGallery images={selectedProject.images || []} idx={g.idx} settings={g.scroll} altFor={viewerAlt} onImageClick={openAt} />
+                </div>
+              );
+            }
+            return (
+              <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+                {g.type === "composizione" ? (
+                  <FreeGallery composition={g.composition} images={selectedProject.images || []} altFor={viewerAlt} onImageClick={openAt} />
+                ) : (
+                  <JustifiedGallery
+                    images={g.idx.map((i) => selectedProject.images[i])}
+                    altFor={(i) => viewerAlt(g.idx[i])}
+                    onImageClick={(i) => openAt(g.idx[i])}
+                  />
+                )}
+              </div>
+            );
+          })}
           {/* Margine sotto la galleria — uguale al margine sopra */}
           <div style={{ height: ASP.galleriaMarginBottom + "rem" }} />
         </div>

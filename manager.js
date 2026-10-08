@@ -447,9 +447,22 @@ function mpQuitNow() {
 // (era quello a provocare la "chiusura inattesa" a ogni uscita).
 var wv = null;
 var mpQuitAsks = [];
+// Chiamata al server locale senza passare da "do shell script": quello è un
+// Apple Event, e dentro la gestione dell'Apple Event "Esci" del Dock non
+// partiva (per questo l'Esci del Dock non faceva nulla).
 function mpCurl(path) {
-  try { return ObjC.unwrap(sa.doShellScript("curl -s -m 1 http://127.0.0.1:8471" + path + " 2>/dev/null; true")) || ""; }
-  catch (e) { return ""; }
+  try {
+    var req = $.NSURLRequest.requestWithURLCachePolicyTimeoutInterval($.NSURL.URLWithString("http://127.0.0.1:8471" + path), 1, 1.5);
+    var data = $.NSURLConnection.sendSynchronousRequestReturningResponseError(req, null, null);
+    if (!data || data.isNil()) return "";
+    return ObjC.unwrap($.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding)) || "";
+  } catch (e) { return ""; }
+}
+// Esegue un metodo del delegato poco dopo, fuori dalla chiamata in corso
+// (anche mentre un menu è aperto: modalità "common")
+function mpLater(sel, secs) {
+  var t = $.NSTimer.timerWithTimeIntervalTargetSelectorUserInfoRepeats(secs, mpDel, sel, null, false);
+  $.NSRunLoop.mainRunLoop.addTimerForMode(t, $.NSRunLoopCommonModes);
 }
 function mpRequestQuit() {
   if (mpQuitting) return;
@@ -461,7 +474,7 @@ function mpRequestQuit() {
   if (mpQuitAsks.length >= 3) { mpQuitNow(); return; }
   mpCurl("/quit-request");
   // se la pagina non risponde entro 3 secondi, si chiude comunque
-  $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(3.0, mpDel, "mpQuitCheck:", null, false);
+  mpLater("mpQuitCheck:", 3.0);
 }
 var AE_CORE = 0x61657674; // 'aevt'
 var AE_QUIT = 0x71756974; // 'quit'
@@ -473,7 +486,10 @@ ObjC.registerSubclass({
     "windowWillClose:":{types:["void",["id"]],implementation:function(n){ mpQuitNow(); }},
     "mpQuitCheck:":{types:["void",["id"]],implementation:function(t){ if (mpCurl("/quit-acked").indexOf("true") < 0) mpQuitNow(); }},
     "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpRequestQuit(); }},
-    "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpRequestQuit(); }},
+    // "Esci" dal Dock: si risponde subito e la richiesta parte un attimo dopo
+    "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpLater("mpQuit:", 0.05); }},
+    // se il sistema prova comunque a chiudere l'app: prima si chiede alla pagina
+    "applicationShouldTerminate:":{types:["long",["id"]],implementation:function(s){ if (mpQuitting) return 1; mpLater("mpQuit:", 0.05); return 0; }},
     "mpInstallQuit:":{types:["void",["id"]],implementation:function(t){ mpInstallQuitHandler(); }}
   }
 });
