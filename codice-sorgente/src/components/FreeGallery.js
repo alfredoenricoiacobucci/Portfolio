@@ -12,6 +12,7 @@ const HALF_GAP = "0.23%";
 
 export default function FreeGallery({ composition, images = [], onImageClick, altFor }) {
   const rows = composition?.rows || 6;
+  const gap = composition?.gap != null ? `${composition.gap}%` : HALF_GAP;
   const items = composition?.items || [];
 
   return (
@@ -31,7 +32,7 @@ export default function FreeGallery({ composition, images = [], onImageClick, al
               top: `${(it.y / rows) * 100}%`,
               width: `${(it.w / COLS) * 100}%`,
               height: `${(it.h / rows) * 100}%`,
-              padding: HALF_GAP,
+              padding: gap,
               zIndex: n + 1,
             }}
             onClick={() => onImageClick?.(it.idx)}
@@ -46,6 +47,7 @@ export default function FreeGallery({ composition, images = [], onImageClick, al
                 quality={80}
                 loading={it.y < 6 ? "eager" : "lazy"}
                 className={`${it.fit === "contain" ? "object-contain" : "object-cover"} transition-[filter] duration-200 group-hover:brightness-[0.85]`}
+                style={it.pos ? { objectPosition: `${it.pos.x}% ${it.pos.y}%` } : undefined}
               />
               <span className="pointer-events-none absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"

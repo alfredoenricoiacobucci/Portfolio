@@ -110,7 +110,9 @@ export async function getStaticProps() {
           const h = Math.max(0.25, num(it.h, 3));
           const x = Math.max(0, Math.min(12 - w, num(it.x, 0)));
           const y = Math.max(0, num(it.y, 0));
-          return { i, x, y, w, h, fit: it.adatta === "contain" ? "contain" : "cover" };
+          const pos = it.pos && Number.isFinite(Number(it.pos.x)) && Number.isFinite(Number(it.pos.y))
+            ? { x: Math.max(0, Math.min(100, Number(it.pos.x))), y: Math.max(0, Math.min(100, Number(it.pos.y))) } : null;
+          return { i, x, y, w, h, fit: it.adatta === "contain" ? "contain" : "cover", pos };
         })
         .filter(Boolean);
       if (placed.length) {
@@ -119,8 +121,10 @@ export async function getStaticProps() {
         const bottom = Math.max(...placed.map((it) => it.y + it.h));
         composition = {
           rows: Math.max(1, Math.ceil(bottom - 0.001), Math.round(num(comp.righe, 6))),
+          // spazio tra le foto: metà distanza, in % della larghezza della galleria
+          gap: Math.max(0, Math.min(3, num(comp.spazio, 0.23))),
           // l'ordine dell'array resta quello del Manager: decide chi sta sopra
-          items: placed.map((it) => ({ idx: reading.indexOf(it), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit })),
+          items: placed.map((it) => ({ idx: reading.indexOf(it), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit, pos: it.pos })),
         };
       }
     }

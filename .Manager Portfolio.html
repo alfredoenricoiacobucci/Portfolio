@@ -19,7 +19,8 @@
     --red: #c8102e;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; }
+  html { height: 100%; }
+  body { min-height: 100%; }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -468,7 +469,7 @@
   .cmp-center.h { left: 0; right: 0; border-top: 1px dashed rgba(200,16,46,0.55); }
   .cmp-dot { position: absolute; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; border-radius: 50%; background: rgba(0,0,0,0.18); pointer-events: none; }
   .cmp-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(0,0,0,0.38); font-size: 12.5px; pointer-events: none; text-align: center; padding: 20px; }
-  .cmp-item { position: absolute; box-sizing: border-box; padding: 0.23%; cursor: grab; touch-action: none; }
+  .cmp-item { position: absolute; box-sizing: border-box; padding: var(--cmp-gap, 0.23%); cursor: grab; touch-action: none; }
   .cmp-item:active { cursor: grabbing; }
   .cmp-item img { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; background: rgba(0,0,0,0.06); }
   .cmp-item.contain img { object-fit: contain; background: transparent; }
@@ -508,6 +509,42 @@
   .cmp-tray img { height: 64px; width: auto; display: block; border-radius: 3px; cursor: grab; border: 1px solid var(--border); transition: transform 160ms ease, border-color 160ms ease; }
   .cmp-tray img:hover { transform: translateY(-2px); border-color: var(--red); }
   .cmp-tray .none { font-size: 11.5px; color: var(--text3); }
+
+  /* ---- COMPOSIZIONE: barra, vista telefono, inquadratura ---- */
+  .cmp-toolbar { position: sticky; top: 48px; z-index: 30; display: flex; flex-direction: column; gap: 6px; padding: 8px 0 10px; margin-bottom: 4px; background: var(--bg); }
+  .cmp-tb-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; transition: opacity 160ms ease; }
+  .cmp-tb-row.off { opacity: 0.45; }
+  .cmp-grp { display: inline-flex; align-items: center; gap: 1px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+  .cmp-ib { border: 0; border-radius: 6px; padding: 6px 7px; color: var(--text2); display: inline-flex; align-items: center; gap: 5px; font-size: 12px; background: transparent; }
+  .cmp-ib:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: #fff; border-color: transparent; }
+  .cmp-ib.on { color: #fff; background: rgba(200,16,46,0.18); }
+  .cmp-ib:disabled { opacity: 0.35; }
+  .cmp-mb { padding-right: 4px; }
+  .cmp-mb svg:last-child { width: 12px; height: 12px; opacity: 0.6; }
+  .cmp-rows-n { font-size: 11.5px; color: var(--text2); padding: 0 6px; min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; }
+  .cmp-sp { flex: 1; }
+  .cmp-chip { font-size: 11.5px; color: var(--text3); font-variant-numeric: tabular-nums; padding: 0 4px; }
+  .cmp-pop { position: fixed; z-index: 10050; min-width: 230px; padding: 5px; background: #1b1b1b; border: 1px solid #303030; border-radius: 9px; box-shadow: 0 16px 40px rgba(0,0,0,0.55); animation: cmpPopIn 140ms cubic-bezier(0.23, 1, 0.32, 1); }
+  @keyframes cmpPopIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .cmp-pop button { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; border-radius: 6px; padding: 7px 9px; font-size: 12.5px; color: var(--text); text-align: left; background: transparent; }
+  .cmp-pop button:hover:not(:disabled) { background: rgba(255,255,255,0.06); border-color: transparent; }
+  .cmp-pop button:disabled { opacity: 0.35; }
+  .cmp-pop button i, .cmp-pop button svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .cmp-pop button.on { color: #fff; }
+  .cmp-pop hr { border: 0; border-top: 1px solid #2c2c2c; margin: 5px 4px; }
+  .cmp-stage { transition: padding 260ms cubic-bezier(0.32, 0.72, 0, 1); }
+  .cmp-stage.phone { display: flex; flex-direction: column; align-items: center; padding: 30px 26px; }
+  .cmp-page.phone { border: 12px solid #050505; border-radius: 34px; box-shadow: 0 0 0 1px #2c2c2c, 0 24px 60px rgba(0,0,0,0.5); overflow: hidden; }
+  .cmp-scale { font-size: 11px; color: var(--text3); margin-top: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+  .cmp-canvas.nogrid { background-image: none !important; }
+  .cmp-canvas.nogrid .cmp-dot, .cmp-canvas.nogrid .cmp-center { display: none; }
+  .cmp-empty { flex-direction: column; gap: 10px; }
+  .cmp-empty svg { width: 28px; height: 28px; opacity: 0.6; }
+  .cmp-item.pan { cursor: move; outline: 2px dashed #fbbf24; outline-offset: -2px; }
+  .cmp-item.pan .cmp-h { display: none !important; }
+  .cmp-tray-h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 20px 0 10px; }
+  .cmp-tray-h:empty { display: none; }
+  .cmp-tray-h span { opacity: 0.7; margin-left: 6px; }
 
   /* ---- VIDEO DEL BANNER ---- */
   .vid-list { display: flex; flex-direction: column; gap: 8px; }
@@ -1408,7 +1445,6 @@
     <span id="dirtyBadge" class="status-badge" style="display:none;">Non salvato</span>
     <button id="btnSave" title="⌘S" disabled>Salva</button>
     <button id="btnPublish" class="primary" disabled>Pubblica</button>
-    <button onclick="location.reload()" class="topbar-icon-btn" title="Ricarica" aria-label="Ricarica"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
   </div>
 </div>
 
@@ -5503,7 +5539,6 @@
 
       <div class="field" id="focalPointSection" style="display:none;">
         <label>Anteprima nella home</label>
-        <p class="cmp-note" style="margin:2px 0 12px;">Nella home, quando passi sopra il titolo del progetto, dietro la scritta compare una striscia di questa foto che scorre lentamente. Il riquadro luminoso è la parte che si vede: trascina “Inizio” e “Fine” per scegliere da dove parte e dove arriva lo scorrimento.</p>
         <div class="ant-wrap">
           <div class="ant-editor" id="antEditor">
             <img id="antImg" src="" alt="" draggable="false">
@@ -5522,7 +5557,7 @@
               <img id="antStripImg" src="" alt="">
               <div class="ant-strip-ov"><span id="antStripTitle"></span></div>
             </div>
-            <div class="ant-info" id="antInfo"></div>
+            <div class="ant-info" id="antInfo" hidden></div>
             <div><button type="button" class="sm ghost" id="antReset">Ripristina scorrimento normale</button></div>
           </div>
         </div>
@@ -5550,30 +5585,19 @@
       <div class="photos-section" id="cmpSection">
         <div class="photos-header">
           <h3>Composizione della galleria</h3>
-        </div>
-        <p class="cmp-note">Il riquadro chiaro è esattamente lo spazio della galleria sul sito, in scala. Trascina dentro le foto della striscia in basso, poi spostale e ridimensionale dagli angoli: si agganciano alla griglia, al centro, ai bordi e alle altre foto (Alt per muoverle libere, Maiuscole sugli angoli per tenere le proporzioni). Con Maiuscole o Cmd scegli più foto, oppure trascina un rettangolo sul vuoto: puoi allinearle, dar loro la stessa misura e raggrupparle per spostarle insieme. Sul sito compaiono solo le foto messe qui; se il riquadro resta vuoto, il sito usa il mosaico automatico.</p>
-        <div class="cmp-bar">
-          <div class="cmp-rows" title="Altezza del riquadro">
-            <button type="button" id="cmpRowsMinus" aria-label="Togli una riga">−</button>
-            <span id="cmpRowsVal">6 righe</span>
-            <button type="button" id="cmpRowsPlus" aria-label="Aggiungi una riga">+</button>
-          </div>
-          <button type="button" class="ghost" id="cmpAuto">Disposizione di partenza</button>
-          <button type="button" class="ghost" id="cmpClear">Svuota</button>
-          <div class="sp"></div>
-          <div class="cmp-seg" role="group" aria-label="Vista">
-            <button type="button" class="on" id="cmpViewDesk">Computer</button>
-            <button type="button" id="cmpViewPhone">Telefono</button>
+          <div class="cmp-seg" role="group" aria-label="Schermo">
+            <button type="button" class="on" data-view="desk" title="Come si vede sul computer">Computer</button>
+            <button type="button" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button>
           </div>
         </div>
-        <div class="cmp-stage">
+        <div class="cmp-toolbar" id="cmpToolbar"></div>
+        <div class="cmp-stage" id="cmpStage">
           <div class="cmp-page" id="cmpPage">
             <div class="cmp-canvas" id="cmpCanvas" tabindex="0"></div>
           </div>
           <div class="cmp-scale" id="cmpScale"></div>
         </div>
-        <div class="cmp-sel-bar" id="cmpSelBar"></div>
-        <div class="cmp-tray-h" id="cmpTrayH">Foto non ancora nella composizione</div>
+        <div class="cmp-tray-h" id="cmpTrayH"></div>
         <div class="cmp-tray" id="cmpTray"></div>
       </div>
       ` : ""}
@@ -5583,7 +5607,6 @@
           <h3>Video del banner</h3>
           <button type="button" id="vidAdd">Aggiungi video</button>
         </div>
-        <p class="cmp-note">${section === "art" ? "I video della mostra scorrono uno dopo l'altro nel riquadro in alto, sotto il titolo." : "I video scorrono uno dopo l'altro nel riquadro in alto, sotto il titolo, al posto delle foto."} Prima di salvarlo, ogni video viene accorciato a 25 secondi, senza audio, e alleggerito. Se non ci sono video, il riquadro mostra le foto come sempre.</p>
         <input type="file" id="vidInput" accept="video/*" multiple style="display:none;">
         <div class="vid-list" id="vidList"></div>
         <div id="vidWork"></div>
@@ -6153,6 +6176,27 @@
     "dist-v": '<path d="M4 3h16M4 21h16"/><rect x="8" y="9" width="8" height="6" rx="1"/>',
     "join-h": '<rect x="3" y="7" width="8" height="10" rx="1"/><rect x="13" y="7" width="8" height="10" rx="1"/><path d="M12 4v16" stroke-dasharray="2 2"/>',
     "join-v": '<rect x="7" y="3" width="10" height="8" rx="1"/><rect x="7" y="13" width="10" height="8" rx="1"/><path d="M4 12h16" stroke-dasharray="2 2"/>',
+    layout: '<rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="15" y="11" width="6" height="10" rx="1"/><rect x="3" y="16" width="10" height="5" rx="1"/>',
+    gap: '<rect x="3" y="5" width="7" height="14" rx="1"/><rect x="14" y="5" width="7" height="14" rx="1"/><path d="M12 3v18" stroke-dasharray="2 2"/>',
+    magnet: '<path d="M6 3v8a6 6 0 0 0 12 0V3"/><path d="M6 7h4M14 7h4"/>',
+    grid: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
+    undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
+    clear: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+    size: '<path d="M4 9V4h5M20 15v5h-5M4 4l7 7M20 20l-7-7"/>',
+    fill: '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 15l5-5 4 4 3-3 6 6"/>',
+    fit: '<rect x="3" y="3" width="18" height="18" rx="1"/><rect x="6" y="8" width="12" height="8" rx="1"/>',
+    crop: '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/>',
+    group: '<rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M11 7h4a2 2 0 0 1 2 2v4"/>',
+    ungroup: '<rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>',
+    front: '<rect x="8" y="8" width="12" height="12" rx="1" fill="currentColor" fill-opacity="0.25"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/>',
+    back: '<rect x="4" y="4" width="12" height="12" rx="1"/><path d="M20 8v11a1 1 0 0 1-1 1H8"/>',
+    remove: '<path d="M6 6l12 12M18 6L6 18"/>',
+    rows: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+    caret: '<path d="M7 10l5 5 5-5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
+    check: '<path d="M5 12l5 5 9-10"/>',
   };
   const cmpIcon = (k) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${CMP_ICO[k]}</svg>`;
 
@@ -6162,9 +6206,11 @@
     const page = document.getElementById("cmpPage");
     const tray = document.getElementById("cmpTray");
     const trayH = document.getElementById("cmpTrayH");
-    const selBar = document.getElementById("cmpSelBar");
-    const rowsVal = document.getElementById("cmpRowsVal");
+    const selBar = document.getElementById("cmpToolbar");
     const scaleInfo = document.getElementById("cmpScale");
+    const stage = document.getElementById("cmpStage");
+    let snapOn = true, gridOn = true, panIt = null;
+    const SPAZI = [["Nessuno", 0], ["Sottile", 0.23], ["Medio", 0.6], ["Ampio", 1.2]];
     const section = document.getElementById("cmpSection");
     let sel = new Set();      // oggetti foto selezionati
     let primary = null;       // la prima selezionata: fa da misura di riferimento
@@ -6218,21 +6264,23 @@
         bot: parseFloat(a.galleriaMarginBottom || 3),
       };
     }
+    // Computer: la galleria del tuo schermo, in scala. Telefono: il sito si
+    // usa in orizzontale, quindi una pagina larga 844 px dentro una cornice.
+    const PHONE_W = 844;
     function layoutPage() {
       const a = aspetto();
-      const screenW = phone ? 390 : (screen.width || window.innerWidth);
+      const screenW = phone ? PHONE_W : (screen.width || window.innerWidth);
       page.classList.toggle("phone", phone);
-      page.style.width = phone ? "360px" : "100%";
+      stage.classList.toggle("phone", phone);
+      const avail = Math.max(320, stage.clientWidth - (phone ? 72 : 44));
+      page.style.width = phone ? Math.min(PHONE_W, avail) + "px" : "100%";
       const pageW = page.getBoundingClientRect().width || 1;
-      const k = pageW / screenW;                       // scala pagina
+      const k = pageW / screenW;
       page.style.paddingLeft = page.style.paddingRight = a.ml + "%";
       page.style.paddingTop = Math.round(a.top * 16 * k) + "px";
       page.style.paddingBottom = Math.round(a.bot * 16 * k) + "px";
-      const galleryW = screenW * (1 - 2 * a.ml / 100);
-      const pct = Math.round(k * 100);
-      scaleInfo.textContent = phone
-        ? `Telefono largo 390 px: la galleria è larga ${Math.round(galleryW)} px, qui la vedi al ${pct}%. Le zone a righe sono i margini del sito.`
-        : `Il tuo schermo è largo ${screenW} px: sul sito la galleria è larga ${Math.round(galleryW)} px, qui la vedi al ${pct}%. Le zone a righe sono i margini del sito.`;
+      const galleryW = Math.round(screenW * (1 - 2 * a.ml / 100));
+      scaleInfo.textContent = `${phone ? "Telefono" : "Computer"} · galleria ${galleryW} px · ${Math.round(k * 100)}%`;
     }
 
     function place(el, it) {
@@ -6251,8 +6299,9 @@
       if (primary && !sel.has(primary)) primary = selected()[0] || null;
       fitRows();
       const rows = c.righe;
-      rowsVal.textContent = rows === 1 ? "1 riga" : `${rows} righe`;
       canvas.style.aspectRatio = `${CMP_COLS} / ${rows}`;
+      canvas.classList.toggle("nogrid", !gridOn);
+      canvas.style.setProperty("--cmp-gap", (c.spazio == null ? 0.23 : c.spazio) + "%");
       canvas.style.backgroundImage =
         "linear-gradient(to right, rgba(0,0,0,0.09) 1px, transparent 1px)," +
         "linear-gradient(to bottom, rgba(0,0,0,0.09) 1px, transparent 1px)";
@@ -6261,10 +6310,11 @@
       let html = `<div class="cmp-center v"></div><div class="cmp-center h" style="top:50%"></div>`;
       for (let r = 0; r < rows; r++) for (let k = 0; k < CMP_COLS; k++)
         html += `<span class="cmp-dot" style="left:${(k + 0.5) / CMP_COLS * 100}%;top:${(r + 0.5) / rows * 100}%"></span>`;
-      if (!c.foto.length) html += `<div class="cmp-empty">Trascina qui le foto della striscia in basso, oppure premi “Disposizione di partenza”.</div>`;
+      if (!c.foto.length) html += `<div class="cmp-empty">${cmpIcon("layout")}<span>Trascina qui le foto</span></div>`;
       c.foto.forEach((it, n) => {
-        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
-          `<img src="${urlOf(it.file)}" alt="" draggable="false">` +
+        const op = it.pos ? `object-position:${it.pos.x}% ${it.pos.y}%` : "";
+        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}${it === panIt ? " pan" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
+          `<img src="${urlOf(it.file)}" alt="" draggable="false" style="${op}">` +
           (it.gruppo ? `<span class="cmp-gtag" title="Fa parte di un gruppo"></span>` : "") +
           ["nw","n","ne","e","se","s","sw","w"].map(h => `<span class="cmp-h" data-h="${h}"></span>`).join("") +
           `</div>`;
@@ -6276,8 +6326,9 @@
 
       const used = new Set(c.foto.map(it => it.file));
       const free = photoList().filter(ph => !used.has(ph.name));
-      trayH.textContent = free.length ? `Foto non ancora nella composizione (${free.length})` : "Tutte le foto sono nella composizione";
-      tray.innerHTML = free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro, o clicca per aggiungerla in fondo">`).join("");
+      trayH.innerHTML = free.length ? `Da aggiungere <span>${free.length}</span>` : "";
+      tray.style.display = free.length ? "" : "none";
+      tray.innerHTML = free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro o clicca per aggiungerla">`).join("");
       layoutPage();
       paintSel();
     }
@@ -6308,51 +6359,81 @@
       box.style.height = (bb.h / rows * 100) + "%";
     }
 
-    const tb = (a, label, extra = "") => `<button type="button" class="sm" data-a="${a}" ${extra}>${label}</button>`;
-    const ib = (a, title, dis) => `<button type="button" class="sm cmp-ib" data-a="${a}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(a)}</button>`;
+    // Barra degli strumenti: sempre la stessa, gli strumenti della selezione
+    // si accendono quando scegli una o più foto. Ogni icona ha il suo nome
+    // al passaggio del mouse.
+    const ib = (a, title, opts = {}) => `<button type="button" class="cmp-ib${opts.on ? " on" : ""}" data-a="${a}" title="${title}" aria-label="${title}" ${opts.dis ? "disabled" : ""}>${cmpIcon(opts.icon || a)}</button>`;
+    const mb = (m, title, icon, label, dis) => `<button type="button" class="cmp-ib cmp-mb" data-menu="${m}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(icon)}${label ? `<span>${label}</span>` : ""}${cmpIcon("caret")}</button>`;
     function renderSelBar() {
+      const c = comp();
       const items = selected();
-      const n = items.length;
-      if (!n) {
-        selBar.innerHTML = `<div class="cmp-tools"><span class="lbl">${comp().foto.length} foto nella composizione. Clicca una foto per modificarla; con Maiuscole o Cmd ne scegli più di una, oppure trascina un rettangolo sul vuoto.</span>
-          ${comp().foto.length ? tb("all", "Seleziona tutte") : ""}${hist.length ? tb("undo", "Annulla") : ""}</div>`;
-        return;
-      }
+      const n = items.length, none = !n;
       const U = units(items);
       const grouped = items.some(it => it.gruppo);
-      const allContain = items.every(it => it.adatta === "contain");
-      const allCover = items.every(it => it.adatta !== "contain");
-      const one = items[0];
-      const what = n === 1 ? `1 foto · ${cmpR(one.w)} × ${cmpR(one.h)} celle`
-        : `${n} foto${U.length < n ? ` (${U.length === 1 ? "un gruppo" : U.length + " elementi"})` : ""}`;
-      const alignTo = U.length === 1 ? "al riquadro" : "tra loro";
+      const allContain = n && items.every(it => it.adatta === "contain");
+      const chip = !n ? `${c.foto.length} foto` : n === 1 ? `${cmpR(items[0].w)} × ${cmpR(items[0].h)}` : `${n} foto selezionate`;
       selBar.innerHTML = `
-        <div class="cmp-tools"><span class="lbl strong">${what}</span>
-          <div class="cmp-seg" role="group" aria-label="Adattamento">
-            <button type="button" class="sm ${allCover ? "on" : ""}" data-a="cover">Riempi il riquadro</button>
-            <button type="button" class="sm ${allContain ? "on" : ""}" data-a="contain">Foto intera</button>
+        <div class="cmp-tb-row">
+          <div class="cmp-grp">
+            ${ib("rows-minus", "Togli una riga", { icon: "minus" })}<span class="cmp-rows-n" title="Altezza del riquadro">${c.righe} righe</span>${ib("rows-plus", "Aggiungi una riga", { icon: "plus" })}
           </div>
-          ${tb("ratio", "Proporzioni della foto")}
+          <div class="cmp-grp">${mb("layout", "Disposizioni pronte", "layout", "Disponi")}${mb("gap", "Spazio tra le foto", "gap", "Spazio")}</div>
+          <div class="cmp-grp">${ib("toggle-snap", snapOn ? "Calamita accesa" : "Calamita spenta", { icon: "magnet", on: snapOn })}${ib("toggle-grid", gridOn ? "Nascondi la griglia" : "Mostra la griglia", { icon: "grid", on: gridOn })}</div>
+          <div class="cmp-grp">${ib("undo", "Annulla (Cmd+Z)")}${ib("redo", "Ripeti (Maiuscole+Cmd+Z)")}</div>
+          <span class="cmp-sp"></span>
+          <span class="cmp-chip">${chip}</span>
+          ${ib("clear", "Svuota la composizione", { dis: !c.foto.length })}
         </div>
-        ${n > 1 ? `<div class="cmp-tools"><span class="lbl">Stessa misura della foto di riferimento</span>
-          ${tb("same-long", "Stesso lato lungo", 'title="Orizzontali e verticali hanno lo stesso lato più lungo: sembrano grandi uguali"')}
-          ${tb("same-h", "Stessa altezza")}
-          ${tb("same-w", "Stessa larghezza")}
-          ${tb("same-box", "Stesso riquadro", 'title="Riquadro identico: la foto viene ritagliata"')}
-        </div>` : ""}
-        <div class="cmp-tools"><span class="lbl">Allinea ${alignTo}</span>
-          <div class="cmp-ibs">${ib("al-l", "A sinistra")}${ib("al-hc", "Al centro, in orizzontale")}${ib("al-r", "A destra")}</div>
-          <div class="cmp-ibs">${ib("al-t", "In alto")}${ib("al-vc", "Al centro, in verticale")}${ib("al-b", "In basso")}</div>
-          <div class="cmp-ibs">${ib("dist-h", "Spazi uguali in orizzontale (almeno 3)", U.length < 3)}${ib("dist-v", "Spazi uguali in verticale (almeno 3)", U.length < 3)}</div>
-          <div class="cmp-ibs">${ib("join-h", "Accosta in orizzontale", U.length < 2)}${ib("join-v", "Accosta in verticale", U.length < 2)}</div>
-        </div>
-        <div class="cmp-tools"><span class="lbl">Disponi</span>
-          ${n > 1 && !(U.length === 1 && grouped) ? tb("group", "Raggruppa") : ""}
-          ${grouped ? tb("ungroup", "Separa il gruppo") : ""}
-          ${tb("front", "Porta sopra")}${tb("back", "Porta sotto")}
-          ${hist.length ? tb("undo", "Annulla") : ""}
-          <button type="button" class="sm danger" data-a="remove">Togli</button>
+        <div class="cmp-tb-row${none ? " off" : ""}">
+          <div class="cmp-grp">${mb("size", "Misura", "size", "Misura", none)}
+            ${ib(allContain ? "cover" : "contain", allContain ? "Riempi il riquadro" : "Mostra la foto intera", { icon: allContain ? "fill" : "fit", dis: none })}
+            ${ib("pan", "Sposta l'inquadratura (doppio clic sulla foto)", { icon: "crop", dis: n !== 1, on: !!panIt })}</div>
+          <div class="cmp-grp">${ib("al-l", U.length > 1 ? "Allinea a sinistra" : "Accosta al bordo sinistro", { dis: none })}${ib("al-hc", "Centra in orizzontale", { dis: none })}${ib("al-r", U.length > 1 ? "Allinea a destra" : "Accosta al bordo destro", { dis: none })}</div>
+          <div class="cmp-grp">${ib("al-t", U.length > 1 ? "Allinea in alto" : "Accosta al bordo alto", { dis: none })}${ib("al-vc", "Centra in verticale", { dis: none })}${ib("al-b", U.length > 1 ? "Allinea in basso" : "Accosta al bordo basso", { dis: none })}</div>
+          <div class="cmp-grp">${ib("dist-h", "Spazi uguali in orizzontale", { dis: U.length < 3 })}${ib("dist-v", "Spazi uguali in verticale", { dis: U.length < 3 })}${ib("join-h", "Accosta in orizzontale", { dis: U.length < 2 })}${ib("join-v", "Accosta in verticale", { dis: U.length < 2 })}</div>
+          <div class="cmp-grp">${grouped ? ib("ungroup", "Separa il gruppo") : ib("group", "Raggruppa (Cmd+G)", { dis: n < 2 })}${ib("front", "Porta sopra", { dis: none })}${ib("back", "Porta sotto", { dis: none })}</div>
+          <div class="cmp-grp">${ib("remove", "Togli dalla composizione (Canc)", { dis: none })}</div>
         </div>`;
+    }
+
+    // Menu a tendina della barra
+    function closeMenu() { const m = document.getElementById("cmpPop"); if (m) m.remove(); }
+    function openMenu(btn, kind) {
+      closeMenu();
+      const c = comp();
+      const items = selected();
+      const many = items.length > 1;
+      let html = "";
+      const it = (a, label, opts = {}) => `<button type="button" data-a="${a}" ${opts.dis ? "disabled" : ""} class="${opts.on ? "on" : ""}">${opts.on ? cmpIcon("check") : "<i></i>"}<span>${label}</span>${opts.k ? `<em>${opts.k}</em>` : ""}</button>`;
+      if (kind === "layout") {
+        html = it("lay-mosaico", "Mosaico") + it("lay-colonne", "Colonne") + it("lay-grande", "Una grande e le altre accanto") +
+          it("lay-sfalsata", "Sfalsata") + it("lay-centrata", "Una sotto l'altra, al centro") + it("lay-griglia", "Griglia regolare");
+      } else if (kind === "gap") {
+        const cur = c.spazio == null ? 0.23 : c.spazio;
+        html = SPAZI.map(([l, v]) => it("gap-" + v, l, { on: Math.abs(cur - v) < 1e-6 })).join("");
+      } else if (kind === "size") {
+        html = it("size-3", "Un quarto della larghezza") + it("size-4", "Un terzo") + it("size-6", "Metà") + it("size-8", "Due terzi") + it("size-12", "Tutta la larghezza") +
+          `<hr>` + it("same-long", "Stesso lato lungo della prima scelta", { dis: !many }) + it("same-h", "Stessa altezza", { dis: !many }) +
+          it("same-w", "Stessa larghezza", { dis: !many }) + it("same-box", "Stesso riquadro", { dis: !many }) +
+          `<hr>` + it("ratio", "Proporzioni originali della foto");
+      }
+      const pop = document.createElement("div");
+      pop.id = "cmpPop";
+      pop.className = "cmp-pop";
+      pop.innerHTML = html;
+      document.body.appendChild(pop);
+      const r = btn.getBoundingClientRect();
+      pop.style.left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 12) + "px";
+      pop.style.top = (r.bottom + 6) + "px";
+      pop.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-a]");
+        if (!b || b.disabled) return;
+        closeMenu();
+        act(b.dataset.a);
+      });
+      setTimeout(() => document.addEventListener("pointerdown", function off(e) {
+        if (!e.target.closest("#cmpPop")) { closeMenu(); document.removeEventListener("pointerdown", off, true); }
+      }, true), 0);
     }
 
     // ---- comandi della barra ----
@@ -6368,7 +6449,23 @@
       const c = comp();
       const items = selected();
       if (a === "undo") { undo(); return; }
+      if (a === "redo") { if (window.__mpRedo) window.__mpRedo(); return; }
       if (a === "all") { sel = new Set(c.foto); primary = c.foto[0] || null; paintSel(); return; }
+      if (a === "toggle-snap") { snapOn = !snapOn; renderSelBar(); return; }
+      if (a === "toggle-grid") { gridOn = !gridOn; canvas.classList.toggle("nogrid", !gridOn); renderSelBar(); return; }
+      if (a === "rows-plus") { c.righe += 1; markDirty(); render(); return; }
+      if (a === "rows-minus") {
+        if (c.righe - 1 < minRows()) { toast("L'ultima riga è occupata.", "err"); return; }
+        c.righe -= 1; markDirty(); render(); return;
+      }
+      if (a === "clear") {
+        if (!c.foto.length) return;
+        c.foto = []; c.righe = 6; sel.clear(); primary = null; panIt = null;
+        markDirty(); render(); toast("Composizione svuotata. Cmd+Z per tornare indietro.", ""); return;
+      }
+      if (a.startsWith("gap-")) { c.spazio = parseFloat(a.slice(4)); markDirty(); render(); return; }
+      if (a.startsWith("lay-")) { applyLayout(a.slice(4)); return; }
+      if (a === "pan") { const t = items[0]; panIt = (panIt === t || !t) ? null : t; render(); return; }
       if (!items.length) return;
       snapshot();
       const U = units(items);
@@ -6379,6 +6476,11 @@
         case "cover": items.forEach(it => delete it.adatta); break;
         case "contain": items.forEach(it => it.adatta = "contain"); break;
         case "ratio": items.forEach(it => { it.h = cmpR(it.w / cmpRatio(p, it.file)); }); break;
+        case "size-3": case "size-4": case "size-6": case "size-8": case "size-12": {
+          const w = +a.slice(5);
+          items.forEach(it => { it.w = w; it.h = cmpR(w / cmpRatio(p, it.file)); if (it.x + w > CMP_COLS) it.x = CMP_COLS - w; });
+          break;
+        }
         case "same-long": {
           const L = Math.max(ref.w, ref.h);
           others.forEach(it => { const r = cmpRatio(p, it.file); r >= 1 ? setByRatio(it, L, L / r) : setByRatio(it, L * r, L); });
@@ -6421,16 +6523,71 @@
         case "ungroup": items.forEach(it => delete it.gruppo); break;
         case "front": c.foto = c.foto.filter(it => !sel.has(it)).concat(items); break;
         case "back": c.foto = items.concat(c.foto.filter(it => !sel.has(it))); break;
-        case "remove": c.foto = c.foto.filter(it => !sel.has(it)); sel.clear(); primary = null; break;
+        case "remove": c.foto = c.foto.filter(it => !sel.has(it)); sel.clear(); primary = null; panIt = null; break;
       }
       clampAll();
       markDirty();
       render();
     }
     selBar.addEventListener("click", (e) => {
+      const mbtn = e.target.closest("button[data-menu]");
+      if (mbtn && !mbtn.disabled) { openMenu(mbtn, mbtn.dataset.menu); return; }
       const b = e.target.closest("button[data-a]");
       if (b && !b.disabled) act(b.dataset.a);
     });
+
+    // Disposizioni pronte: usano le foto della composizione (o tutte, se è vuota)
+    function applyLayout(kind) {
+      const c = comp();
+      const names = c.foto.length
+        ? [...c.foto].sort((m, n) => m.y - n.y || m.x - n.x).map(it => it.file)
+        : photoList().map(ph => ph.name);
+      if (!names.length) { toast("Il progetto non ha ancora foto.", "err"); return; }
+      const L = names.map(f => ({ file: f, r: cmpRatio(p, f) }));
+      const out = [];
+      const masonry = (list, y0, cols) => {
+        const w = CMP_COLS / cols, hc = new Array(cols).fill(y0);
+        list.forEach(o => { const i = hc.indexOf(Math.min(...hc)); const h = w / o.r; out.push({ file: o.file, x: i * w, y: hc[i], w, h }); hc[i] += h; });
+      };
+      if (kind === "mosaico") {
+        const target = L.length <= 3 ? 6 : L.length <= 8 ? 4 : 3;
+        let y = 0, row = [];
+        const flush = (last) => {
+          if (!row.length) return;
+          const sum = row.reduce((t, r) => t + r.r, 0);
+          let h = CMP_COLS / sum, x = 0;
+          if (last && h > target * 1.3) { h = target; x = (CMP_COLS - sum * h) / 2; }
+          row.forEach(r => { out.push({ file: r.file, x, y, w: r.r * h, h }); x += r.r * h; });
+          y += h; row = [];
+        };
+        L.forEach(o => { row.push(o); if (row.reduce((t, r) => t + r.r, 0) * target >= CMP_COLS) flush(false); });
+        flush(true);
+      } else if (kind === "colonne") {
+        masonry(L, 0, L.length <= 4 ? 2 : 3);
+      } else if (kind === "grande") {
+        const [f, ...rest] = L;
+        const w0 = Math.min(f.r >= 1 ? 8 : 6, 8 * f.r), h0 = w0 / f.r;
+        out.push({ file: f.file, x: 0, y: 0, w: w0, h: h0 });
+        const rw = CMP_COLS - w0;
+        let y = 0;
+        while (rest.length && y + rw / rest[0].r <= h0 + 0.01) { const o = rest.shift(); const h = rw / o.r; out.push({ file: o.file, x: w0, y, w: rw, h }); y += h; }
+        masonry(rest, Math.max(h0, y), 3);
+      } else if (kind === "sfalsata") {
+        let y = 0;
+        L.forEach((o, i) => { const w = o.r >= 1 ? 6 : 4.5, h = w / o.r; out.push({ file: o.file, x: i % 2 ? CMP_COLS - w : 0, y, w, h }); y += h * 0.6; });
+      } else if (kind === "centrata") {
+        let y = 0;
+        L.forEach(o => { const w = o.r >= 1 ? 8 : 5, h = w / o.r; out.push({ file: o.file, x: (CMP_COLS - w) / 2, y, w, h }); y += h + 0.5; });
+      } else if (kind === "griglia") {
+        const cols = L.length <= 4 ? 2 : 3, w = CMP_COLS / cols, h = w * 0.75;
+        L.forEach((o, i) => out.push({ file: o.file, x: (i % cols) * w, y: Math.floor(i / cols) * h, w, h }));
+      }
+      c.foto = out.map(o => ({ file: o.file, x: cmpR(o.x), y: cmpR(o.y), w: cmpR(o.w), h: cmpR(o.h) }));
+      c.righe = Math.max(1, Math.ceil(Math.max(...c.foto.map(o => o.y + o.h)) - 0.001));
+      sel.clear(); primary = null; panIt = null;
+      markDirty();
+      render();
+    }
 
     // ---- calamita: griglia, centro, bordi, altre foto ----
     function targets(axis, skip) {
@@ -6569,6 +6726,22 @@
       const it = c.foto[+itemEl.dataset.n];
       const members = groupOf(it);
 
+      if (panIt === it && !hEl) {
+        const img = itemEl.querySelector("img");
+        const r = itemEl.getBoundingClientRect();
+        const st = it.pos ? { ...it.pos } : { x: 50, y: 50 };
+        let moved = false;
+        track(e, (ev) => {
+          const dx = (ev.clientX - e.clientX) / r.width * 100, dy = (ev.clientY - e.clientY) / r.height * 100;
+          if (!moved && Math.abs(dx) + Math.abs(dy) < 1) return;
+          moved = true;
+          it.pos = { x: cmpR(cmpClamp(st.x - dx, 0, 100)), y: cmpR(cmpClamp(st.y - dy, 0, 100)) };
+          img.style.objectPosition = `${it.pos.x}% ${it.pos.y}%`;
+        }, () => { if (moved) markDirty(); });
+        return;
+      }
+      if (panIt && panIt !== it) { panIt = null; render(); return; }
+
       // --- Maiuscole o Cmd: aggiunge o toglie dalla selezione ---
       if (e.shiftKey || e.metaKey) {
         const allIn = members.every(m => sel.has(m));
@@ -6592,7 +6765,7 @@
           if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
           if (!moved) { snapshot(); moved = true; }
           const rows = c.righe;
-          const thr = ev.altKey ? 0 : 9 / cell;
+          const thr = (ev.altKey || !snapOn) ? 0 : 9 / cell;
           const guides = [];
           let l = st.x, t = st.y, r = st.x + st.w, b = st.y + st.h;
           if (handle.includes("w")) l = cmpClamp(st.x + dx, 0, r - MIN);
@@ -6611,7 +6784,7 @@
           }
           it.x = l; it.y = t; it.w = r - l; it.h = b - t;
           place(itemEl, it); showGuides(guides); showSize(bbox([it]));
-          const lbl = selBar.querySelector(".lbl.strong"); if (lbl) lbl.textContent = `1 foto · ${cmpR(it.w)} × ${cmpR(it.h)} celle`;
+          const chip = selBar.querySelector(".cmp-chip"); if (chip) chip.textContent = `${cmpR(it.w)} × ${cmpR(it.h)}`;
         }, () => {
           showGuides([]); showSize(null);
           if (!moved) return;
@@ -6632,7 +6805,7 @@
         if (!moved && Math.abs(dx) + Math.abs(dy) < 0.04) return;
         if (!moved) { snapshot(); moved = true; }
         const rows = c.righe;
-        const thr = ev.altKey ? 0 : 9 / cell;
+        const thr = (ev.altKey || !snapOn) ? 0 : 9 / cell;
         const guides = [];
         let l = cmpClamp(bb0.l + dx, 0, CMP_COLS - bb0.w);
         let t = cmpClamp(bb0.t + dy, 0, rows - bb0.h);
@@ -6650,6 +6823,15 @@
       });
     });
 
+    canvas.addEventListener("dblclick", (e) => {
+      const el = e.target.closest(".cmp-item");
+      if (!el) return;
+      const it = comp().foto[+el.dataset.n];
+      panIt = panIt === it ? null : it;
+      sel = new Set([it]); primary = it;
+      render();
+    });
+
     // tastiera: frecce spostano (Maiuscole = una cella intera), Canc toglie,
     // Cmd+G raggruppa, Maiuscole+Cmd+G separa, Cmd+A seleziona tutto, Cmd+Z annulla
     canvas.addEventListener("keydown", (e) => {
@@ -6660,7 +6842,7 @@
       if (cmd && k === "g") { e.preventDefault(); act(e.shiftKey ? "ungroup" : "group"); return; }
       const items = selected();
       if (!items.length) return;
-      if (e.key === "Escape") { sel.clear(); primary = null; paintSel(); return; }
+      if (e.key === "Escape") { sel.clear(); primary = null; if (panIt) { panIt = null; render(); } else paintSel(); return; }
       if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); act("remove"); return; }
       const step = e.shiftKey ? 1 : 0.25;
       const bb = bbox(items);
@@ -6720,54 +6902,16 @@
       addPhoto(data.slice(4), (e.clientX - rect.left) / cell, (e.clientY - rect.top) / cell);
     });
 
-    // ---- comandi generali ----
-    document.getElementById("cmpRowsPlus").onclick = () => { snapshot(); comp().righe += 1; markDirty(); render(); };
-    document.getElementById("cmpRowsMinus").onclick = () => {
-      const c = comp();
-      if (c.righe - 1 < minRows()) { toast("Prima sposta più in alto le foto dell'ultima riga.", "err"); return; }
-      snapshot(); c.righe -= 1; markDirty(); render();
-    };
-    document.getElementById("cmpClear").onclick = async () => {
-      if (!comp().foto.length) return;
-      if (!await confirm("Svuotare la composizione?\n\nLe foto restano nel progetto: sul sito tornerà il mosaico automatico finché non ne crei una nuova. Puoi sempre tornare indietro con Annulla.")) return;
-      snapshot(); comp().foto = []; comp().righe = 6; sel.clear(); primary = null; markDirty(); render();
-    };
-    // Disposizione di partenza: righe giustificate come il mosaico del sito
-    document.getElementById("cmpAuto").onclick = async () => {
-      const c = comp();
-      const list = photoList();
-      if (!list.length) { toast("Il progetto non ha ancora foto.", "err"); return; }
-      if (c.foto.length && !await confirm("Sostituire la composizione attuale con una disposizione di partenza?\n\nPuoi sempre tornare indietro con Annulla.")) return;
-      snapshot();
-      const target = list.length <= 3 ? 6 : list.length <= 8 ? 4 : 3;
-      const out = [];
-      let y = 0, row = [];
-      const flush = (last) => {
-        if (!row.length) return;
-        const sum = row.reduce((s, r) => s + r.ratio, 0);
-        let h = CMP_COLS / sum;
-        let x = 0;
-        if (last && h > target * 1.3) { h = target; x = (CMP_COLS - sum * h) / 2; }
-        row.forEach(r => { out.push({ file: r.name, x: cmpR(x), y: cmpR(y), w: cmpR(r.ratio * h), h: cmpR(h) }); x += r.ratio * h; });
-        y += h; row = [];
-      };
-      list.forEach(ph => {
-        row.push({ name: ph.name, ratio: cmpRatio(p, ph.name) });
-        if (row.reduce((s, r) => s + r.ratio, 0) * target >= CMP_COLS) flush(false);
-      });
-      flush(true);
-      c.foto = out;
-      c.righe = Math.max(1, Math.ceil(y - 0.001));
-      sel.clear(); primary = null;
-      markDirty();
-      render();
-    };
-    const vDesk = document.getElementById("cmpViewDesk"), vPhone = document.getElementById("cmpViewPhone");
-    vDesk.onclick = () => { phone = false; vDesk.classList.add("on"); vPhone.classList.remove("on"); layoutPage(); };
-    vPhone.onclick = () => { phone = true; vPhone.classList.add("on"); vDesk.classList.remove("on"); layoutPage(); };
+    // ---- vista computer / telefono ----
+    document.querySelectorAll("#cmpSection [data-view]").forEach(b => b.onclick = () => {
+      phone = b.dataset.view === "phone";
+      document.querySelectorAll("#cmpSection [data-view]").forEach(x => x.classList.toggle("on", x === b));
+      layoutPage();
+    });
     // clic fuori dal riquadro (ma dentro la sezione): deseleziona
     section.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("#cmpCanvas, #cmpSelBar, .cmp-bar, #cmpTray")) return;
+      if (e.target.closest("#cmpCanvas, #cmpToolbar, #cmpTray, #cmpPop, [data-view]")) return;
+      if (panIt) { panIt = null; sel.clear(); primary = null; render(); return; }
       if (sel.size) { sel.clear(); primary = null; paintSel(); }
     });
     if (window._cmpResizeObs) window._cmpResizeObs.disconnect();
@@ -6792,7 +6936,7 @@
 
     function render() {
       if (!p.video.length) {
-        list.innerHTML = `<div class="vid-empty">Nessun video. Il riquadro in alto mostra le foto.</div>`;
+        list.innerHTML = `<div class="vid-empty">Nessun video</div>`;
         return;
       }
       list.innerHTML = p.video.map((rel, i) => `
