@@ -992,7 +992,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
       {/* BANNER — riempie il viewport sotto l'header */}
       {selectedProject && selectedProject.name !== "About" && selectedProject.images?.length > 0 && (
-        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100svh - var(--header-h, 80px))', background: 'black', marginBottom: '-1px', borderTop: mode === "professional" ? `2.5px solid ${ASP.colorTextProfessional}` : `4px solid ${ASP.colorTextArtwork}` }}>
+        <section key={`banner-${currentSlug}`} className="w-full relative project-banner" style={{ height: 'calc(100vh - var(--header-h, 80px) + 3rem + 80px)', background: 'black', marginBottom: '-1px', borderTop: mode === "professional" ? `2.5px solid ${ASP.colorTextProfessional}` : `4px solid ${ASP.colorTextArtwork}` }}>
           {selectedProject.videos?.length > 0 && !reducedMotion ? (
             <BannerVideo
               videos={selectedProject.videos}

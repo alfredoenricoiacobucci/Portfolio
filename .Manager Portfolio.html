@@ -1403,11 +1403,11 @@
     <div id="initTextBlock" style="opacity:0;transition:opacity 0.6s ease;">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:24px;">Manager Portfolio</div>
       <div id="initSteps" style="text-align:left;font-size:12px;color:var(--text3);line-height:2.2;">
+        <div id="initStepSsd" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Verifica SSD...</div>
         <div id="initStep1" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Verifica token GitHub...</div>
         <div id="initStep2" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Connessione al repository...</div>
         <div id="initStep3" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Sincronizzazione contenuti...</div>
         <div id="initStep4" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Caricamento progetti...</div>
-        <div id="initStep5" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;opacity:0;transition:opacity 0.3s;"><span style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center;color:var(--text3);"><i style="display:block;width:6px;height:6px;border-radius:50%;background:currentColor;"></i></span> Convincere le foto a mettersi in posa...</div>
       </div>
       <!-- Bottoni overlay: nascosti finché non serve -->
       <div id="initActions" style="display:none;margin-top:20px;gap:10px;justify-content:center;flex-wrap:wrap;"></div>
@@ -9444,9 +9444,6 @@
 
   // hideOverlay solo se tutto ok, altrimenti mostra errore
   async function finishInit() {
-    // Step 5: check ironico
-    await revealStep(5);
-    initStepOk(5);
     if (initHadError) {
       showInitError();
     } else {
@@ -9490,6 +9487,20 @@
   (async function syncFromGitHub() {
     // Aspetta animazione overlay completa
     await revealInitSteps();
+    // Step 0: SSD collegato. Condizione necessaria: finché l'SSD non c'è,
+    // le altre verifiche non partono; appena viene collegato si prosegue.
+    await revealStep("Ssd");
+    for (;;) {
+      let ok = false;
+      try {
+        const r = await fetch("/ssd-status", { cache: "no-store" });
+        ok = r.status === 404 ? true : (await r.json()).ok === true;   // fuori dall'app: niente da aspettare
+      } catch (e) { ok = true; }
+      if (ok) break;
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    localServerAvailable = null;   // prima dell'SSD il server locale non rispondeva
+    initStepOk("Ssd");
     const token = getToken();
     // Step 1: token
     await revealStep(1);

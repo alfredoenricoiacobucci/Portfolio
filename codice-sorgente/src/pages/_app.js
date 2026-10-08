@@ -3,30 +3,19 @@ import "@/styles/globals.css";
 import { useEffect, useRef, useCallback, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Archivo, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { useTrackPageView } from "@/lib/useAnalytics";
 
-/* Font self-hosted da next/font: zero richieste a fonts.googleapis.com, zero
- * render-blocking, zero CLS. Prima arrivavano da un <link> in _document.js,
- * che scaricava 6 pesi di Inter per intero.
- *
- * Archivo regge il display — marquee a 7rem, titoli dei banner, citazioni —
- * dove Inter risultava anonimo. Inter resta per corpo e UI, dove ai corpi
- * piccoli e' piu' leggibile. Per tornare a Inter su tutto, basta puntare
- * --font-display sul font body in tailwind.config.js.
- */
-const archivo = Archivo({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+/* Inter su tutto il sito, come a settembre: titoli, marquee e testi.
+ * Il file sta nel progetto (src/fonts): il build non deve più scaricarlo da
+ * Google, e un intoppo di rete non fa più fallire la pubblicazione.
+ * È la versione variabile, quindi copre tutti i pesi da 100 a 900
+ * (gli 800 dei titoli sono veri, non ingrossati dal browser). */
+const inter = localFont({
+  src: [{ path: "../fonts/Inter-latin.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-body",
   display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
 });
 
 /*
@@ -418,12 +407,12 @@ export default function App({ Component, pageProps }) {
       <style jsx global>{`
         :root {
           --font-body: ${inter.style.fontFamily};
-          --font-display: ${archivo.style.fontFamily};
+          --font-display: ${inter.style.fontFamily};
         }
       `}</style>
       {mobilePortraitOverlay}
       {mobileLandscapeGate}
-      <div ref={wrapRef} className={`${archivo.variable} ${inter.variable}`} style={{ opacity: 1 }}>
+      <div ref={wrapRef} className={inter.variable} style={{ opacity: 1 }}>
         <Component {...pageProps} />
       </div>
     </>

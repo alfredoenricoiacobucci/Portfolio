@@ -7,10 +7,24 @@ try { sa.doShellScript("lsof -ti :8471 | xargs kill -9 2>/dev/null; true"); } ca
 
 var pyCode = `import http.server,socketserver,os,urllib.parse,webbrowser,signal,sys,json,base64,pathlib,subprocess,threading,shutil,tempfile,time,re,uuid,hashlib,datetime
 _ROOTS=['/Volumes/Alfredo Enrico Iacobucci/Portfolio AEI','/Users/enricoiacobucci/Desktop/Portfolio AEI']
-_root=next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
-if not _root:
- sys.stderr.write('Cartella progetto non trovata. Collega l SSD "Alfredo Enrico Iacobucci".\\n');sys.exit(1)
-os.chdir(_root)
+# Senza SSD il server parte lo stesso: serve la copia della pagina che sta
+# dentro l'app e aspetta. Appena l'SSD compare usa la cartella del progetto.
+BUNDLE_HTML=sys.argv[1] if len(sys.argv)>1 else ''
+_ready=False
+def _find_root():
+ return next((p for p in _ROOTS if os.path.isdir(os.path.join(p,'codice-sorgente'))),None)
+def _wait_root():
+ global _ready
+ while not _ready:
+  r=_find_root()
+  if r:
+   os.chdir(r);_ready=True;break
+  time.sleep(1)
+_r=_find_root()
+if _r:
+ os.chdir(_r);_ready=True
+else:
+ threading.Thread(target=_wait_root,daemon=True).start()
 _git_lock=threading.Lock()
 def git_sync(msg="auto: media update",wait=False):
  def run():
@@ -167,7 +181,17 @@ signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
  def do_GET(self):
-  if self.path.startswith('/open-url?'):
+  if not _ready:
+   p=self.path.split('?')[0]
+   if p=='/ssd-status':self._json({'ok':False});return
+   if p in ('/','/.Manager%20Portfolio.html','/.Manager Portfolio.html') and BUNDLE_HTML and os.path.isfile(BUNDLE_HTML):
+    with open(BUNDLE_HTML,'rb') as fp:data=fp.read()
+    self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers()
+    self.wfile.write(data);return
+   self.send_response(503);self.end_headers();return
+  if self.path=='/ssd-status':
+   self._json({'ok':True})
+  elif self.path.startswith('/open-url?'):
    q=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
    url=q.get('url',[''])[0]
    if url:webbrowser.open(url)
@@ -242,6 +266,8 @@ class H(http.server.SimpleHTTPRequestHandler):
    except (BrokenPipeError,ConnectionResetError):pass
   else:super().do_GET()
  def do_POST(self):
+  if not _ready:
+   self.send_response(503);self.end_headers();return
   if self.path=='/upload':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
@@ -339,7 +365,11 @@ httpd.serve_forever()`;
 
 var task = $.NSTask.alloc.init;
 task.launchPath = "/usr/bin/python3";
-task.arguments = $(["-c", pyCode]);
+// copia della pagina dentro l'app (la mette lì aggiorna-app.sh): serve
+// quando l'SSD non è collegato
+var bundleHtml = "";
+try { bundleHtml = ObjC.unwrap($.NSBundle.mainBundle.resourcePath) + "/manager.html"; } catch (e) {}
+task.arguments = $(["-c", pyCode, bundleHtml]);
 task.standardOutput = $.NSPipe.pipe;
 task.standardError = $.NSPipe.pipe;
 task.launch;

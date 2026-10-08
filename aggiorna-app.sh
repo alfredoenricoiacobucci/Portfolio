@@ -15,6 +15,9 @@ sleep 1
 # Cancella e ricompila
 rm -rf "$APP"
 osacompile -l JavaScript -o "$APP" "$JS"
+# Copia della pagina dentro l'app: il Manager si apre anche senza SSD
+# e aspetta che venga collegato
+cp "$ROOT/.Manager Portfolio.html" "$APP/Contents/Resources/manager.html"
 
 # Crea .icns da icon_1024.png con iconutil
 if [ -f "$ICON_PNG" ]; then
@@ -36,6 +39,7 @@ if [ -f "$ICON_PNG" ]; then
 fi
 
 xattr -cr "$APP" 2>/dev/null
+codesign --force --deep -s - "$APP" >/dev/null 2>&1
 touch "$APP"
 
 # Imposta icona tramite NSWorkspace
