@@ -60,29 +60,45 @@ def video_job(jid,src,dst,rel):
  finally:
   try:os.remove(src)
   except Exception:pass
-# ---- Versioni: configurazioni dei contenuti e grafica del sito ----
+# ---- Versioni: contenuti, sito e Manager ----
 SITE_PATHS=['codice-sorgente/src','codice-sorgente/scripts','codice-sorgente/public','codice-sorgente/package.json','codice-sorgente/next.config.js','codice-sorgente/tailwind.config.js','codice-sorgente/postcss.config.js','codice-sorgente/jsconfig.json','vercel.json']
+MANAGER_PATHS=['.Manager Portfolio.html','manager.js','manager-assets','aggiorna-app.sh']
+KIND_PATHS={'sito':SITE_PATHS,'manager':MANAGER_PATHS}
 CONT_PATH='codice-sorgente/contenuti/contenuti.json'
 VDIR=os.path.join('versioni','contenuti')
-VNAMES=os.path.join('versioni','sito.json')
+def _names_file(kind):
+ return os.path.join('versioni',kind+'.json')
 def _git(args,timeout=30):
  return subprocess.run(['git']+args,cwd=os.getcwd(),capture_output=True,timeout=timeout)
 def _is_sha(s):
  return bool(re.fullmatch('[0-9a-f]{7,40}',s or ''))
-def _log(paths,n=80):
- r=_git(['log','-n',str(n),'--format=%H%x09%cI%x09%s','--']+paths)
+def _log(paths,n=80,skip_auto=False):
+ r=_git(['log','-n',str(n*2 if skip_auto else n),'--format=%H%x09%cI%x09%s','--']+paths)
  out=[]
  for line in r.stdout.decode(errors='replace').splitlines():
   parts=line.split(chr(9),2)
-  if len(parts)==3:out.append({'sha':parts[0],'data':parts[1],'msg':parts[2]})
- return out
-def _site_fp(sha):
- r=_git(['ls-tree','-r',sha,'--']+SITE_PATHS)
+  if len(parts)!=3:continue
+  if skip_auto and re.match('(editor|auto|versioni):',parts[2]):continue
+  out.append({'sha':parts[0],'data':parts[1],'msg':parts[2]})
+ return out[:n]
+def _fp(sha,paths):
+ r=_git(['ls-tree','-r',sha,'--']+paths)
  return hashlib.sha1(r.stdout).hexdigest()
-def _site_names():
+def _names(kind):
  try:
-  with open(VNAMES,encoding='utf-8') as fp:return json.load(fp)
+  with open(_names_file(kind),encoding='utf-8') as fp:return json.load(fp)
  except Exception:return {}
+def _storia(kind):
+ paths=KIND_PATHS[kind]
+ storia=_log(paths,60,True)
+ names=_names(kind)
+ cur=_fp('HEAD',paths)
+ for s in storia:
+  s['nome']=names.get(s['sha'],'')
+  s['inUso']=(_fp(s['sha'],paths)==cur)
+  # un Manager senza la sezione Versioni non permetterebbe di tornare indietro
+  s['ripristinabile']=True if kind=='sito' else (_git(['grep','-q','function renderVersioni',s['sha'],'--','.Manager Portfolio.html']).returncode==0)
+ return storia
 def versioni_elenco():
  salvate=[]
  if os.path.isdir(VDIR):
@@ -94,14 +110,7 @@ def versioni_elenco():
     salvate.append({'id':f[:-5],'nome':d.get('nome',''),'data':d.get('data',''),'progetti':len(c.get('projects') or [])})
    except Exception:pass
  salvate.sort(key=lambda x:x['data'],reverse=True)
- pubblicate=_log([CONT_PATH])
- storia=_log(SITE_PATHS,60)
- names=_site_names()
- cur=_site_fp('HEAD')
- for s in storia:
-  s['nome']=names.get(s['sha'],'')
-  s['inUso']=(_site_fp(s['sha'])==cur)
- return {'contenuti':{'salvate':salvate,'pubblicate':pubblicate},'sito':{'storia':storia}}
+ return {'contenuti':{'salvate':salvate,'pubblicate':_log([CONT_PATH])},'sito':{'storia':_storia('sito')},'manager':{'storia':_storia('manager')}}
 def versioni_leggi(vid,sha):
  if vid:
   if not re.fullmatch('[A-Za-z0-9_-]+',vid):return None
@@ -123,34 +132,37 @@ def versioni_elimina(vid):
  if os.path.isfile(p):os.remove(p)
  git_sync('versioni: eliminata '+vid)
  return True
-def versioni_nome_sito(sha,nome):
- if not _is_sha(sha):return False
- names=_site_names()
+def versioni_nome(kind,sha,nome):
+ if kind not in KIND_PATHS or not _is_sha(sha):return False
+ names=_names(kind)
  if nome:names[sha]=nome[:80]
  else:names.pop(sha,None)
  os.makedirs('versioni',exist_ok=True)
- with open(VNAMES,'w',encoding='utf-8') as fp:json.dump(names,fp,ensure_ascii=False,indent=1)
- git_sync('versioni: nome alla grafica '+sha[:7])
+ with open(_names_file(kind),'w',encoding='utf-8') as fp:json.dump(names,fp,ensure_ascii=False,indent=1)
+ git_sync('versioni: nome '+kind+' '+sha[:7])
  return True
-def versioni_ripristina_sito(sha):
- if not _is_sha(sha):return {'ok':False,'error':'versione non valida'}
+def versioni_ripristina(kind,sha):
+ if kind not in KIND_PATHS or not _is_sha(sha):return {'ok':False,'error':'versione non valida'}
+ paths=KIND_PATHS[kind]
  with _git_lock:
   r=_git(['pull','--rebase','--autostash'],60)
   if r.returncode!=0:return {'ok':False,'error':'non riesco ad aggiornare dal server: '+r.stderr.decode(errors='replace')[-200:]}
+  app_cambia=_git(['diff','--quiet',sha,'HEAD','--','manager.js']).returncode!=0
   # file nati dopo quella versione: vanno tolti, il resto torna com'era
-  r=_git(['diff','--name-only','--diff-filter=A',sha,'HEAD','--']+SITE_PATHS)
+  r=_git(['diff','--name-only','--diff-filter=A',sha,'HEAD','--']+paths)
   nuovi=[l for l in r.stdout.decode(errors='replace').splitlines() if l.strip()]
   if nuovi:_git(['rm','-q','--']+nuovi)
-  esistenti=[p for p in SITE_PATHS if _git(['cat-file','-e',sha+':'+p]).returncode==0]
+  esistenti=[p for p in paths if _git(['cat-file','-e',sha+':'+p]).returncode==0]
   r=_git(['checkout',sha,'--']+esistenti)
   if r.returncode!=0:return {'ok':False,'error':r.stderr.decode(errors='replace')[-200:]}
   d=_git(['log','-1','--format=%cd','--date=format:%d/%m/%Y %H:%M',sha]).stdout.decode().strip()
-  r=_git(['commit','-m','Ripristinata la grafica del sito alla versione del '+d+' ('+sha[:7]+')'])
+  cosa='la grafica del sito' if kind=='sito' else 'il Manager'
+  r=_git(['commit','-m','Ripristinato '+cosa+' alla versione del '+d+' ('+sha[:7]+')'])
   if r.returncode!=0:return {'ok':True,'uguale':True}
   r=_git(['push'],60)
   if r.returncode!=0:return {'ok':False,'error':'ripristinato sul Mac ma non pubblicato: '+r.stderr.decode(errors='replace')[-200:]}
   head=_git(['rev-parse','HEAD']).stdout.decode().strip()
-  return {'ok':True,'sha':head}
+  return {'ok':True,'sha':head,'appCambiata':(kind=='manager' and app_cambia)}
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
@@ -284,8 +296,8 @@ class H(http.server.SimpleHTTPRequestHandler):
      nome=str(body.get('nome','')).strip()[:80] or 'Senza nome'
      self._json({'ok':True,'id':versioni_salva(nome,body.get('contenuti') or {})})
     elif self.path=='/versioni/elimina':self._json({'ok':versioni_elimina(body.get('id',''))})
-    elif self.path=='/versioni/nome-sito':self._json({'ok':versioni_nome_sito(body.get('sha',''),str(body.get('nome','')).strip())})
-    elif self.path=='/versioni/ripristina-sito':self._json(versioni_ripristina_sito(body.get('sha','')))
+    elif self.path=='/versioni/nome':self._json({'ok':versioni_nome(body.get('tipo',''),body.get('sha',''),str(body.get('nome','')).strip())})
+    elif self.path=='/versioni/ripristina':self._json(versioni_ripristina(body.get('tipo',''),body.get('sha','')))
     else:self._json({'error':'sconosciuto'},404)
    except Exception as e:self._json({'ok':False,'error':str(e)},500)
   elif self.path=='/git-sync':
