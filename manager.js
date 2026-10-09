@@ -488,8 +488,6 @@ ObjC.registerSubclass({
     "mpQuit:":{types:["void",["id"]],implementation:function(sender){ mpRequestQuit(); }},
     // "Esci" dal Dock: si risponde subito e la richiesta parte un attimo dopo
     "mpHandleQuit:withReply:":{types:["void",["id","id"]],implementation:function(ev,reply){ mpLater("mpQuit:", 0.05); }},
-    // se il sistema prova comunque a chiudere l'app: prima si chiede alla pagina
-    "applicationShouldTerminate:":{types:["long",["id"]],implementation:function(s){ if (mpQuitting) return 1; mpLater("mpQuit:", 0.05); return 0; }},
     "mpInstallQuit:":{types:["void",["id"]],implementation:function(t){ mpInstallQuitHandler(); }}
   }
 });
