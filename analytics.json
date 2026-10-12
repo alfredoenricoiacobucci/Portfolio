@@ -1,17 +1,19 @@
 {
   "views": {
-    "total": 2,
-    "art": 1,
+    "total": 3,
+    "art": 2,
     "pro": 0,
     "landing": 1,
     "about": 0
   },
-  "projects": {},
+  "projects": {
+    "art/xylella": 1
+  },
   "photos": {},
   "daily": {
     "2026-10-12": {
-      "total": 2,
-      "art": 1,
+      "total": 3,
+      "art": 2,
       "pro": 0,
       "sessions": 1
     }
