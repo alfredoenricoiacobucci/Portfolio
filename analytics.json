@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 10,
+    "total": 11,
     "art": 3,
-    "pro": 5,
+    "pro": 6,
     "landing": 2,
     "about": 0
   },
@@ -21,19 +21,19 @@
       "sessions": 1
     },
     "2026-10-13": {
-      "total": 7,
+      "total": 8,
       "art": 1,
-      "pro": 5,
-      "sessions": 2
+      "pro": 6,
+      "sessions": 3
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 3
+    "IT": 4
   },
   "cities": {
     "IT|Naples": {
-      "n": 3,
+      "n": 4,
       "city": "Naples",
       "region": "72",
       "cc": "IT",
@@ -42,12 +42,12 @@
     }
   },
   "referrers": {
-    "direct": 3
+    "direct": 4
   },
   "devices": {
     "desktop": 2,
-    "mobile": 1,
+    "mobile": 2,
     "tablet": 0
   },
-  "sessions": 3
+  "sessions": 4
 }
