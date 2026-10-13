@@ -1,15 +1,15 @@
 {
   "views": {
-    "total": 11,
+    "total": 12,
     "art": 3,
-    "pro": 6,
+    "pro": 7,
     "landing": 2,
     "about": 0
   },
   "projects": {
     "art/xylella": 1,
     "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 1,
-    "pro/untitled-comelli": 1,
+    "pro/untitled-comelli": 2,
     "pro/artisti-in-piazza": 1
   },
   "photos": {},
@@ -21,9 +21,9 @@
       "sessions": 1
     },
     "2026-10-13": {
-      "total": 8,
+      "total": 9,
       "art": 1,
-      "pro": 6,
+      "pro": 7,
       "sessions": 3
     }
   },
