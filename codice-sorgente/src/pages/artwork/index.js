@@ -149,9 +149,8 @@ export async function getStaticProps() {
         const composition = buildComposition(g.composizione);
         return composition ? { type: "composizione", composition } : null;
       }
-      // stesso ordine delle foto del progetto; senza elenco: tutte
-      const pick = Array.isArray(g.foto) ? new Set(g.foto) : null;
-      const list = pick ? files.filter((f) => pick.has(f)) : files;
+      // foto della galleria nel suo ordine; senza elenco: tutte le foto del progetto
+      const list = Array.isArray(g.foto) ? g.foto.filter((f) => files.includes(f)) : files;
       const idx = list.map(addImg).filter((i) => i >= 0);
       if (!idx.length) return null;
       if (g.tipo === "scorrimento") {

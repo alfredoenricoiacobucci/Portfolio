@@ -612,6 +612,43 @@
   .gal-th:hover::after { opacity: 1; box-shadow: inset 0 0 0 2px rgba(200,16,46,0.6); }
   .gal-th:not(.off):hover::after { box-shadow: inset 0 0 0 2px var(--red); }
   .gal-empty { font-size: 12px; color: var(--text3); }
+  .gal-sub > span:not(.cmp-sp) { opacity: 0.7; font-variant-numeric: tabular-nums; }
+  .gal-sub button span { opacity: 0.6; margin-left: 4px; }
+  .gal-sub button.on { color: #fff; }
+  .gal-photos { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+  .gal-ph { position: relative; height: 92px; border-radius: 5px; overflow: hidden; background: #000; cursor: grab; flex-shrink: 0; transition: opacity 160ms ease, transform 160ms ease; }
+  .gal-ph img { height: 100%; width: auto; display: block; pointer-events: none; }
+  .gal-ph.dragging { opacity: 0.35; }
+  .gal-ph.free { cursor: pointer; }
+  .gal-ph.free img { opacity: 0.55; }
+  .gal-ph.free:hover img { opacity: 1; }
+  .gal-ph.drop-before { box-shadow: -4px 0 0 var(--red); }
+  .gal-ph.drop-after { box-shadow: 4px 0 0 var(--red); }
+  .gal-tags { position: absolute; left: 5px; top: 5px; display: flex; gap: 3px; pointer-events: none; }
+  .gal-tags em { font-style: normal; font-size: 9.5px; font-weight: 600; padding: 1px 5px; border-radius: 3px; background: var(--red); color: #fff; }
+  .gal-in { position: absolute; right: 5px; top: 5px; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .gal-in svg { width: 11px !important; height: 11px !important; }
+  .gal-ph-acts { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 2px; padding: 16px 4px 4px; background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0)); opacity: 0; transition: opacity 140ms ease; }
+  .gal-ph:hover .gal-ph-acts { opacity: 1; }
+  .gal-ph-acts button { border: 0; padding: 3px 6px; font-size: 10.5px; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.08); border-radius: 4px; white-space: nowrap; }
+  .gal-ph-acts button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .gal-ph-acts button.x { margin-left: auto; padding: 3px 4px; }
+  .gal-ph-acts button.x:hover { background: var(--red); }
+  .gal-ph-acts svg { width: 11px !important; height: 11px !important; }
+  .gal-addtile { width: 92px; height: 92px; flex-shrink: 0; border: 1px dashed #3a3a3a; border-radius: 5px; color: var(--text3); display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; }
+  .gal-addtile:hover { border-color: var(--red); color: #fff; background: rgba(200,16,46,0.06); }
+  .gal-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 140px; border: 1px dashed #3a3a3a; border-radius: 8px; color: var(--text3); font-size: 12.5px; cursor: pointer; transition: border-color 160ms ease, color 160ms ease, background 160ms ease; margin-bottom: 10px; }
+  .gal-drop:hover { border-color: var(--red); color: #fff; background: rgba(200,16,46,0.05); }
+  .gal-card .cmp-tray, .gal-card .cmp-tray-h { display: none !important; }
+  .gal-card.gal-over { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+  .gal-card.gal-over .gal-drop { border-color: var(--red); color: #fff; }
+  .gal-from { border: 1px solid var(--border); border-radius: 8px; background: #0a0a0a; padding: 10px 12px 12px; margin-bottom: 12px; }
+  .gal-from-h { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
+  .gal-from .gal-th::after { box-shadow: inset 0 0 0 2px transparent; }
+  .gal-from .gal-th:hover::after { box-shadow: inset 0 0 0 2px var(--red); }
+  .gal-from .gal-th img { opacity: 0.8; }
+  .gal-from .gal-th:hover img { opacity: 1; }
+  .gal-card .cmp-stage + .cmp-tray-h + .cmp-tray + .gal-sub, .gal-card .gal-mini + .gal-sub { margin-top: 18px; }
   .gal-mini { position: relative; width: 100%; background: #f8f4ed; border-radius: 6px; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px var(--border); }
   .gal-mini:hover { box-shadow: 0 0 0 1px var(--red); }
   .gal-mini img { position: absolute; object-fit: cover; padding: 0.25%; box-sizing: border-box; }
@@ -5633,24 +5670,6 @@
         </div>
       </div>
 
-      <div class="photos-section">
-        <div class="photos-header">
-          <h3>Foto del progetto</h3>
-          <div class="view-toggle" id="viewToggle">
-            <button class="vt-btn active" data-view="grid" title="Griglia" aria-label="Griglia"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></button>
-            <button class="vt-btn" data-view="list" title="Elenco" aria-label="Elenco"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg></button>
-          </div>
-        </div>
-        <div class="upload-area" id="uploadArea">
-          Trascina qui foto (o clicca)
-          <div class="hint2">Si caricheranno in contenuti/${key}/</div>
-        </div>
-        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
-        <div class="photos-grid" id="photosGrid">
-          <div style="color:var(--text3);font-size:12px;">Caricamento foto da GitHub…</div>
-        </div>
-      </div>
-
       <div class="photos-section" id="galSection">
         <div class="photos-header">
           <h3>Gallerie</h3>
@@ -5724,19 +5743,6 @@
 
     // Anteprima nella home: la striscia che scorre sulla foto
     window._updateFocalPointUI = setupAnteprima(p, key);
-
-    // Upload area — drag & drop foto
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("fileInput");
-    uploadArea.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleUpload(e.target.files, key);
-    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add("drag"); };
-    uploadArea.ondragleave = () => uploadArea.classList.remove("drag");
-    uploadArea.ondrop = (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove("drag");
-      handleUpload(e.dataTransfer.files, key);
-    };
 
     // Gallerie (mosaico, composizione, scorrimento) e video del banner
     setupGallerie(p, key);
@@ -6257,18 +6263,23 @@
     }
     return galDerived.get(p);
   }
-  // prima modifica alla struttura: l'elenco diventa vero
-  function galMat(p) {
+  // prima modifica alla struttura: l'elenco diventa vero e ogni galleria
+  // riceve il suo elenco di foto (prima "tutte" voleva dire tutte le foto)
+  function galMat(p, allNames) {
     if (!(Array.isArray(p.gallerie) && p.gallerie.length)) { p.gallerie = galGet(p); galDerived.delete(p); }
     delete p.composizione;
+    const all = allNames || (p.ordine || []).slice();
+    p.gallerie.forEach(g => { if (!Array.isArray(g.foto)) g.foto = all.slice(); });
     return p.gallerie;
   }
   const galActive = {};   // progetto -> indice della composizione aperta
+  const galFromOpen = {}; // progetto -> indici delle gallerie con "Dal progetto" aperto
 
   function setupGallerie(p, key) {
     const list = document.getElementById("galList");
     if (!list) { window._updateComposer = null; return; }
-    let cmpRender = null;
+    let cmp = null;
+    const [section, slug] = key.split("/");
     const photos = () => {
       const all = photosByProject[key] || [];
       const ord = p.ordine || [];
@@ -6277,14 +6288,18 @@
         return (ia < 0 ? 1e6 : ia) - (ib < 0 ? 1e6 : ib) || a.name.localeCompare(b.name);
       });
     };
+    const allNames = () => photos().map(x => x.name);
+    const mat = () => galMat(p, allNames());
     const urlOf = (name) => { const ph = (photosByProject[key] || []).find(x => x.name === name); return ph ? ph.url : ""; };
+    // foto della galleria, nel suo ordine
     const chosen = (g) => {
-      const names = photos().map(x => x.name);
+      const names = allNames();
       if (!Array.isArray(g.foto)) return names;
-      const set = new Set(g.foto);
-      return names.filter(n => set.has(n));
+      const set = new Set(names);
+      return g.foto.filter(n => set.has(n));
     };
     const ratio = (name) => cmpRatio(p, name);
+    const fromOpen = () => (galFromOpen[key] = galFromOpen[key] || new Set());
 
     function countOf(g) {
       if (g.tipo === "composizione") return ((g.composizione && g.composizione.foto) || []).length;
@@ -6298,15 +6313,41 @@
       return i;
     }
 
-    // ---- scelta delle foto (mosaico e scorrimento) ----
-    function pickerHtml(g, i) {
-      const all = photos();
-      if (!all.length) return `<div class="gal-empty">Nessuna foto nel progetto.</div>`;
-      const on = new Set(chosen(g));
-      return `<div class="gal-sub">Foto <span class="cmp-sp"></span>
-          <button type="button" class="sm ghost" data-g="all" data-i="${i}" ${on.size === all.length ? "disabled" : ""}>Tutte</button>
-          <button type="button" class="sm ghost" data-g="none" data-i="${i}" ${!on.size ? "disabled" : ""}>Nessuna</button></div>
-        <div class="gal-thumbs">${all.map(ph => `<button type="button" class="gal-th${on.has(ph.name) ? "" : " off"}" data-g="th" data-i="${i}" data-name="${escapeHtml(ph.name)}" title="${on.has(ph.name) ? "Togli dalla galleria" : "Metti nella galleria"}"><img src="${ph.url}" alt="" loading="lazy" draggable="false"></button>`).join("")}</div>`;
+    // ---- foto della galleria: trascina per riordinare, passa sopra per Banner/Anteprima/Togli ----
+    function stripHtml(g, i) {
+      const names = chosen(g);
+      const placed = g.tipo === "composizione" ? new Set(((g.composizione && g.composizione.foto) || []).map(it => it.file)) : null;
+      const inG = new Set(names);
+      const others = allNames().filter(n => !inG.has(n));
+      const open = fromOpen().has(i) && others.length;
+      const fromBtn = others.length ? `<button type="button" class="sm ghost${open ? " on" : ""}" data-g="from" data-i="${i}">Dal progetto <span>${others.length}</span></button>` : "";
+      if (!names.length) {
+        return `<div class="gal-drop" data-g="pick" data-i="${i}">${cmpIcon("plus")}<span>Trascina qui le foto o clicca per sceglierle</span></div>
+          ${fromBtn ? `<div class="gal-sub"><span class="cmp-sp"></span>${fromBtn}</div>` : ""}
+          ${open ? fromHtml(others, i) : ""}`;
+      }
+      const ph = names.map(n => {
+        const tags = (p.banner === n ? `<em>Banner</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
+        const isPlaced = placed && placed.has(n);
+        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}"${placed && !isPlaced ? ' title="Clicca o trascina nel riquadro"' : ""}>
+          <img src="${urlOf(n)}" alt="" draggable="false" loading="lazy">
+          ${tags ? `<span class="gal-tags">${tags}</span>` : ""}
+          ${isPlaced ? `<span class="gal-in">${cmpIcon("check")}</span>` : ""}
+          <span class="gal-ph-acts">
+            <button type="button" data-g="banner" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come banner">Banner</button>
+            <button type="button" data-g="ante" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come anteprima nella home">Anteprima</button>
+            <button type="button" class="x" data-g="rm" data-i="${i}" data-name="${escapeHtml(n)}" title="Togli dalla galleria" aria-label="Togli dalla galleria">${cmpIcon("remove")}</button>
+          </span>
+        </div>`;
+      }).join("");
+      return `<div class="gal-sub">${g.tipo === "composizione" ? "Foto della galleria" : "Foto"} <span>${names.length}</span><span class="cmp-sp"></span>${fromBtn}</div>
+        ${open ? fromHtml(others, i) : ""}
+        <div class="gal-photos" data-i="${i}">${ph}<button type="button" class="gal-addtile" data-g="pick" data-i="${i}" title="Aggiungi foto dal computer">${cmpIcon("plus")}</button></div>`;
+    }
+    // foto già nel progetto ma non in questa galleria
+    function fromHtml(others, i) {
+      return `<div class="gal-from"><div class="gal-from-h"><span>Clicca le foto da aggiungere</span><span class="cmp-sp"></span><button type="button" class="sm ghost" data-g="fromall" data-i="${i}">Aggiungi tutte</button><button type="button" class="cmp-ib" data-g="from" data-i="${i}" title="Chiudi" aria-label="Chiudi">${cmpIcon("remove")}</button></div>
+        <div class="gal-thumbs">${others.map(n => `<button type="button" class="gal-th" data-g="fromadd" data-i="${i}" data-name="${escapeHtml(n)}" title="Aggiungi a questa galleria"><img src="${urlOf(n)}" alt="" loading="lazy" draggable="false"></button>`).join("")}</div></div>`;
     }
 
     // ---- scorrimento ----
@@ -6333,7 +6374,8 @@
       const h = Math.max(12, Math.round(viewH * sc.altezza / 100 * k));
       const gap = sc.spazio * k;
       const col = (GAL_SFONDI.find(x => x[0] === sc.sfondo) || GAL_SFONDI[3])[1];
-      if (!names.length) { box.innerHTML = `<div class="gal-empty" style="padding:20px;color:#888;text-align:center">Scegli le foto qui sotto</div>`; return; }
+      if (!names.length) { box.style.display = "none"; return; }
+      box.style.display = "";
       const imgs = names.map(n => `<img src="${urlOf(n)}" alt="" draggable="false" style="height:${h}px;width:${Math.round(ratio(n) * h)}px;margin-right:${gap}px">`).join("");
       const loopW = names.reduce((t, n) => t + ratio(n) * h + gap, 0);
       const dur = loopW / Math.max(1, sc.velocita * k);
@@ -6354,8 +6396,26 @@
         <div class="cmp-page" id="cmpPage"><div class="cmp-canvas" id="cmpCanvas" tabindex="0"></div></div>
         <div class="cmp-scale" id="cmpScale"></div>
       </div>
-      <div class="cmp-tray-h" id="cmpTrayH"></div>
-      <div class="cmp-tray" id="cmpTray"></div>`;
+      <div class="cmp-tray-h" id="cmpTrayH" hidden></div>
+      <div class="cmp-tray" id="cmpTray" hidden></div>`;
+
+    // segna nella striscia le foto già messe nella composizione
+    function markPlaced() {
+      const i = activeIdx();
+      if (i < 0) return;
+      const g = galGet(p)[i];
+      const placed = new Set(((g.composizione && g.composizione.foto) || []).map(it => it.file));
+      const card = list.querySelector(`.gal-card[data-i="${i}"]`);
+      if (!card) return;
+      card.querySelectorAll(".gal-ph").forEach(el => {
+        const on = placed.has(el.dataset.name);
+        el.classList.toggle("placed", on);
+        el.classList.toggle("free", !on);
+        let b = el.querySelector(".gal-in");
+        if (on && !b) { b = document.createElement("span"); b.className = "gal-in"; b.innerHTML = cmpIcon("check"); el.appendChild(b); }
+        if (!on && b) b.remove();
+      });
+    }
 
     function render() {
       const gs = galGet(p);
@@ -6367,9 +6427,9 @@
         const editing = tipo === "composizione" && i === act;
         const cnt = countOf(g);
         let body = "";
-        if (tipo === "composizione") body = editing ? composerHtml : miniHtml(g, i);
-        else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}${pickerHtml(g, i)}`;
-        else body = pickerHtml(g, i);
+        if (tipo === "composizione") body = (editing ? composerHtml : miniHtml(g, i)) + stripHtml(g, i);
+        else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}${stripHtml(g, i)}`;
+        else body = stripHtml(g, i);
         return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
           <div class="gal-head">
             ${n > 1 ? `<span class="gal-n">${i + 1}</span>` : ""}
@@ -6392,17 +6452,67 @@
         const g = gs[+card.dataset.i];
         if (g.tipo === "scorrimento") paintScPreview(card, g);
       });
-      cmpRender = act >= 0 ? setupComposer(p, key, gs[act]) : null;
+      cmp = act >= 0 ? setupComposer(p, key, gs[act], {
+        pool: () => chosen(gs[act]),
+        onChange: markPlaced,
+      }) : null;
+    }
+
+    // ---- caricare foto in una galleria (dal Finder) ----
+    let pickFor = -1;
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = "image/*"; input.multiple = true; input.hidden = true;
+    list.after(input);
+    input.onchange = () => { const f = input.files; if (f && f.length) uploadTo(pickFor, f); input.value = ""; };
+    async function uploadTo(i, files, at) {
+      const imgs = Array.from(files).filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|heic|tiff?)$/i.test(f.name));
+      if (!imgs.length) { toast("Si possono aggiungere solo foto.", "err"); return; }
+      // prima si fissano gli elenchi: la foto nuova va solo in questa galleria
+      mat();
+      const names = await handleUpload(imgs, key);
+      if (!names || !names.length) return;
+      const gs = mat(), g = gs[i];
+      if (!g) return;
+      const have = new Set(g.foto);
+      names.forEach(n => { if (!have.has(n)) g.foto.push(n); });
+      markDirty();
+      render();
+      if (at && cmp && g.tipo === "composizione" && i === activeIdx()) names.forEach((n, k) => cmp.add(n, at.x + k * 0.5, at.y + k * 0.5));
+    }
+    function addNames(i, names) {
+      const gs = mat(), g = gs[i];
+      if (!g) return false;
+      const have = new Set(g.foto);
+      let added = 0;
+      names.forEach(n => { if (!have.has(n)) { g.foto.push(n); have.add(n); added++; } });
+      return added > 0;
     }
 
     // ---- comandi ----
     list.onclick = (e) => {
       const b = e.target.closest("[data-g]");
-      if (!b || b.disabled) return;
+      if (!b || b.disabled) {
+        // composizione: un clic su una foto libera la mette nel riquadro
+        const ph = e.target.closest(".gal-ph.free");
+        if (ph && cmp && +ph.dataset.i === activeIdx()) cmp.add(ph.dataset.name);
+        return;
+      }
       const i = +b.dataset.i, a = b.dataset.g;
       if (a === "sc") return;
       if (a === "open") { galActive[key] = i; render(); return; }
-      const gs = galMat(p), g = gs[i];
+      if (a === "pick") { pickFor = i; input.click(); return; }
+      if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); render(); return; }
+      if (a === "banner" || a === "ante") {
+        const name = b.dataset.name;
+        if (a === "banner") p.banner = name;
+        else { p.anteprima = name; delete p.anteprimaScorrimento; }
+        markDirty();
+        render();
+        if (window._updateFocalPointUI) window._updateFocalPointUI();
+        toast(a === "banner" ? "Foto del banner scelta." : "Foto di anteprima scelta.", "ok");
+        return;
+      }
+      const gs = mat(), g = gs[i];
       if (!g) return;
       if (a === "type") {
         const t = b.dataset.t;
@@ -6415,22 +6525,23 @@
         if (j < 0 || j >= gs.length) return;
         [gs[i], gs[j]] = [gs[j], gs[i]];
         if (galActive[key] === i) galActive[key] = j; else if (galActive[key] === j) galActive[key] = i;
+        fromOpen().clear();
       } else if (a === "del") {
         if (gs.length < 2) return;
         gs.splice(i, 1);
         if (galActive[key] === i) galActive[key] = -1; else if (galActive[key] > i) galActive[key]--;
+        fromOpen().clear();
         toast("Galleria eliminata. Cmd+Z per tornare indietro.", "");
-      } else if (a === "all") {
-        delete g.foto;
-      } else if (a === "none") {
-        g.foto = [];
-      } else if (a === "th") {
+      } else if (a === "rm") {
         const name = b.dataset.name;
-        const cur = new Set(chosen(g));
-        cur.has(name) ? cur.delete(name) : cur.add(name);
-        const all = photos().map(x => x.name);
-        g.foto = all.filter(nm => cur.has(nm));
-        if (g.foto.length === all.length) delete g.foto;   // tutte: segue anche le foto nuove
+        g.foto = g.foto.filter(n => n !== name);
+        if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => it.file !== name);
+      } else if (a === "fromadd") {
+        addNames(i, [b.dataset.name]);
+      } else if (a === "fromall") {
+        const inG = new Set(g.foto);
+        addNames(i, allNames().filter(n => !inG.has(n)));
+        fromOpen().delete(i);
       } else if (a === "bg") {
         g.scorrimento = Object.assign(scOf(g), { sfondo: b.dataset.k });
       } else return;
@@ -6441,12 +6552,81 @@
     list.oninput = (e) => {
       const r = e.target.closest('input[data-g="sc"]');
       if (!r) return;
-      const gs = galMat(p), g = gs[+r.dataset.i];
+      const gs = mat(), g = gs[+r.dataset.i];
       g.scorrimento = Object.assign(scOf(g), { [r.dataset.k]: +r.value });
       const em = r.parentElement.querySelector("em");
       em.textContent = r.value + (r.dataset.k === "altezza" ? "%" : r.dataset.k === "spazio" ? " px" : "");
       paintScPreview(r.closest(".gal-card"), g);
       markDirty();
+    };
+
+    // ---- trascinare: foto dal Finder, foto tra gallerie, ordine dentro una galleria ----
+    let dragPh = null;   // { i, name }
+    list.ondragstart = (e) => {
+      const ph = e.target.closest(".gal-ph");
+      if (!ph) return;
+      dragPh = { i: +ph.dataset.i, name: ph.dataset.name };
+      e.dataTransfer.setData("text/plain", "cmp:" + ph.dataset.name);
+      e.dataTransfer.effectAllowed = "copyMove";
+      ph.classList.add("dragging");
+    };
+    list.ondragend = () => {
+      dragPh = null;
+      list.querySelectorAll(".dragging, .drop-before, .drop-after, .gal-over").forEach(el => el.classList.remove("dragging", "drop-before", "drop-after", "gal-over"));
+    };
+    const isFiles = (e) => Array.from(e.dataTransfer.types || []).includes("Files");
+    list.ondragover = (e) => {
+      const card = e.target.closest(".gal-card");
+      if (!card || (!isFiles(e) && !dragPh)) return;
+      e.preventDefault();
+      list.querySelectorAll(".drop-before, .drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
+      list.querySelectorAll(".gal-over").forEach(el => { if (el !== card) el.classList.remove("gal-over"); });
+      card.classList.add("gal-over");
+      const ph = e.target.closest(".gal-ph");
+      if (ph && dragPh && +ph.dataset.i === dragPh.i && ph.dataset.name !== dragPh.name) {
+        const r = ph.getBoundingClientRect();
+        ph.classList.add(e.clientX < r.left + r.width / 2 ? "drop-before" : "drop-after");
+      }
+    };
+    list.ondragleave = (e) => {
+      const card = e.target.closest(".gal-card");
+      if (card && !card.contains(e.relatedTarget)) card.classList.remove("gal-over");
+    };
+    list.ondrop = (e) => {
+      const card = e.target.closest(".gal-card");
+      if (!card) return;
+      e.preventDefault();
+      const i = +card.dataset.i;
+      const ph = e.target.closest(".gal-ph");
+      const before = ph && ph.classList.contains("drop-before");
+      list.querySelectorAll(".drop-before, .drop-after, .gal-over").forEach(el => el.classList.remove("drop-before", "drop-after", "gal-over"));
+      const canvas = e.target.closest("#cmpCanvas");
+      let at = null;
+      if (canvas) {
+        const r = canvas.getBoundingClientRect(), cell = r.width / CMP_COLS;
+        at = { x: (e.clientX - r.left) / cell, y: (e.clientY - r.top) / cell };
+      }
+      if (isFiles(e) && e.dataTransfer.files.length) { uploadTo(i, e.dataTransfer.files, at); return; }
+      if (!dragPh) return;
+      const src = dragPh;
+      dragPh = null;
+      if (canvas) {
+        // il riquadro gestisce già le foto della sua galleria; da un'altra galleria: si aggiunge e si posa
+        if (src.i !== i) { addNames(i, [src.name]); markDirty(); render(); if (cmp) cmp.add(src.name, at.x, at.y); }
+        return;
+      }
+      if (src.i === i) {
+        if (!ph || ph.dataset.name === src.name) return;
+        const gs = mat(), g = gs[i];
+        const arr = g.foto.filter(n => n !== src.name);
+        let k = arr.indexOf(ph.dataset.name);
+        if (!before) k++;
+        arr.splice(k, 0, src.name);
+        g.foto = arr;
+        markDirty(); render();
+        return;
+      }
+      if (addNames(i, [src.name])) { markDirty(); render(); toast("Foto aggiunta alla galleria.", "ok"); }
     };
 
     // aggiungi galleria: si sceglie il tipo
@@ -6467,9 +6647,10 @@
         const b = e.target.closest("button[data-t]");
         if (!b) return;
         pop.remove();
-        const gs = galMat(p);
+        const gs = mat();
         const t = b.dataset.t;
-        const g = { tipo: t };
+        // una galleria nuova parte vuota: le foto si aggiungono a lei sola
+        const g = { tipo: t, foto: [] };
         if (t === "composizione") g.composizione = { righe: 6, foto: [] };
         if (t === "scorrimento") g.scorrimento = { ...GAL_SC_DEF };
         gs.push(g);
@@ -6487,8 +6668,12 @@
     };
 
     if (window._galResizeObs) window._galResizeObs.disconnect();
+    let lastW = 0;
     window._galResizeObs = new ResizeObserver(() => {
       if (!document.body.contains(list)) return;
+      const w = Math.round(list.getBoundingClientRect().width);
+      if (w === lastW) return;
+      lastW = w;
       const gs = galGet(p);
       list.querySelectorAll(".gal-card").forEach(card => { const g = gs[+card.dataset.i]; if (g && g.tipo === "scorrimento") paintScPreview(card, g); });
     });
@@ -6536,7 +6721,7 @@
   Object.assign(CMP_ICO, CMP_ICO_EXTRA);
   const cmpIcon = (k) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${CMP_ICO[k]}</svg>`;
 
-  function setupComposer(p, key, g) {
+  function setupComposer(p, key, g, opts = {}) {
     const canvas = document.getElementById("cmpCanvas");
     if (!canvas) return null;
     const page = document.getElementById("cmpPage");
@@ -6576,6 +6761,8 @@
     const shift = (items, dx, dy) => items.forEach(it => { it.x = cmpR(it.x + dx); it.y = cmpR(it.y + dy); });
     const photoList = () => {
       const photos = photosByProject[key] || [];
+      // foto della galleria (nel suo ordine), se la galleria ne ha un elenco
+      if (opts.pool) { const m = new Map(photos.map(x => [x.name, x])); return opts.pool().map(n => m.get(n)).filter(Boolean); }
       const ord = p.ordine || [];
       return [...photos].sort((a, b) => {
         const ia = ord.indexOf(a.name), ib = ord.indexOf(b.name);
@@ -6667,6 +6854,7 @@
       tray.innerHTML = free.map(ph => `<img src="${ph.url}" alt="" draggable="true" data-name="${escapeHtml(ph.name)}" title="Trascina nel riquadro o clicca per aggiungerla">`).join("");
       layoutPage();
       paintSel();
+      if (opts.onChange) opts.onChange();
     }
 
     // Aggiorna solo l'aspetto della selezione, senza ricostruire il riquadro
@@ -6872,13 +7060,12 @@
       if (b && !b.disabled) act(b.dataset.a);
     });
 
-    // Disposizioni pronte: usano le foto della composizione (o tutte, se è vuota)
+    // Disposizioni pronte: tutte le foto della galleria (prima quelle già messe)
     function applyLayout(kind) {
       const c = comp();
-      const names = c.foto.length
-        ? [...c.foto].sort((m, n) => m.y - n.y || m.x - n.x).map(it => it.file)
-        : photoList().map(ph => ph.name);
-      if (!names.length) { toast("Il progetto non ha ancora foto.", "err"); return; }
+      const placedNames = [...c.foto].sort((m, n) => m.y - n.y || m.x - n.x).map(it => it.file);
+      const names = [...placedNames, ...photoList().map(ph => ph.name).filter(n => !placedNames.includes(n))];
+      if (!names.length) { toast("La galleria non ha ancora foto.", "err"); return; }
       const L = names.map(f => ({ file: f, r: cmpRatio(p, f) }));
       const out = [];
       const masonry = (list, y0, cols) => {
@@ -7233,6 +7420,8 @@
       canvas.classList.remove("dropping");
       const data = e.dataTransfer.getData("text/plain") || "";
       if (!data.startsWith("cmp:")) return;
+      // da un'altra galleria: ci pensa la sezione Gallerie
+      if (opts.pool && !opts.pool().includes(data.slice(4))) return;
       const rect = canvas.getBoundingClientRect();
       const cell = rect.width / CMP_COLS;
       addPhoto(data.slice(4), (e.clientX - rect.left) / cell, (e.clientY - rect.top) / cell);
@@ -7255,7 +7444,7 @@
     window._cmpResizeObs.observe(page.parentElement);
 
     render();
-    return render;
+    return { render, add: addPhoto };
   }
 
   // ========== VIDEO DEL BANNER ==========
@@ -7666,7 +7855,7 @@
     titolo: "f_titolo", descrizione: "f_descrizione", camera: "f_camera", ottica: "f_ottica", luce: "f_luce",
     esposizioni: "esposizioniList", composizione: "galSection", gallerie: "galSection", video: "vidSection",
     anteprima: "focalPointSection", anteprimaPosizione: "focalPointSection", anteprimaScorrimento: "focalPointSection",
-    ordine: "photosGrid", banner: "photosGrid",
+    ordine: "galSection", banner: "galSection",
   };
   function verGoto(c) {
     if (c.o === "aspetto") { switchSection("impostazioni"); return; }
@@ -8182,8 +8371,7 @@
 
   async function fetchPhotos(key) {
     if (!await storageReady(true)) {
-      document.getElementById("photosGrid").innerHTML =
-        '<div style="color:var(--text3);font-size:12px;">Imposta il token GitHub per vedere e gestire le foto.</div>';
+      toast("Imposta il token GitHub per vedere e gestire le foto.", "err");
       return;
     }
     const [section, slug] = key.split("/");
@@ -8195,8 +8383,7 @@
       if (window._updateFocalPointUI) window._updateFocalPointUI();
       if (window._updateComposer) window._updateComposer(key);
     } catch(e) {
-      document.getElementById("photosGrid").innerHTML =
-        `<div style="color:#f87171;font-size:12px;">Errore: ${escapeHtml(e.message)}</div>`;
+      toast("Errore nel leggere le foto: " + e.message, "err");
     }
   }
 
@@ -8247,6 +8434,7 @@
     const [section, slug] = key.split("/");
     const p = state.projects.find(x => x.section === section && x.slug === slug);
     const grid = document.getElementById("photosGrid");
+    if (!grid) return;   // le foto dei progetti ora stanno nelle gallerie
     const photos = photosByProject[key] || [];
 
     // Stabilizza scroll: salva altezza e posizione prima del re-render
@@ -10119,7 +10307,7 @@
 
   async function handleUpload(files, key) {
     const fileList = Array.from(files || []);
-    if (!fileList.length) return;
+    if (!fileList.length) return [];
 
     let folderPath;
     if (key === "aboutArt" || key === "aboutPro") folderPath = "codice-sorgente/contenuti/about";
@@ -10164,7 +10352,7 @@
       // Fallback: upload via GitHub API
       if (!getToken()) {
         toast("Imposta prima il token GitHub.", "err");
-        return;
+        return [];
       }
       for (const file of fileList) {
         try {
@@ -10197,6 +10385,7 @@
     if (key === "aboutArt" || key === "aboutPro") await fetchAboutMedia();
     else await fetchPhotos(key);
     if (uploadedNames.length > 0) storageGitSync(`auto: upload ${uploadedNames.length} foto in ${folderPath}`);
+    return uploadedNames;
   }
 
   // ========== NEW PROJECT ==========
