@@ -592,7 +592,26 @@
   .gal-list { display: flex; flex-direction: column; gap: 16px; }
   .gal-card { border: 1px solid var(--border); border-radius: 12px; background: #0e0e0e; padding: 14px 18px 18px; transition: border-color 160ms ease; }
   .gal-card.editing { border-color: #333; }
-  .gal-card input.gal-title { display: block; width: 100%; box-sizing: border-box; margin: 0 0 14px; font-size: 15px; font-weight: 600; color: #fff; }
+  .gal-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .gal-card input.gal-title { flex: 1; min-width: 0; box-sizing: border-box; margin: 0; font-size: 15px; font-weight: 600; color: #fff; }
+  .gal-chev svg { transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1); }
+  .gal-chev.open svg { transform: rotate(90deg); }
+  .gal-card.closed { padding: 0; }
+  .gal-bar { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 18px; border: 0; border-radius: 12px; background: transparent; text-align: left; color: #fff; }
+  .gal-bar:hover { background: rgba(255,255,255,0.03); border-color: transparent; }
+  .gal-bar:active { transform: none; }
+  .gal-bar .gal-chev { color: var(--text3); display: flex; }
+  .gal-bar-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gal-bar-t.none { color: var(--text3); font-weight: 500; }
+  .gal-list.dragging-ph .gal-card.closed { border-style: dashed; border-color: #3a3a3a; }
+  .gal-list.dragging-ph .gal-card.closed.gal-over { border-style: solid; border-color: var(--red); background: rgba(200,16,46,0.08); }
+  @keyframes galFlash { 0% { box-shadow: 0 0 0 2px rgba(200,16,46,0.9); } 100% { box-shadow: 0 0 0 2px rgba(200,16,46,0); } }
+  .gal-card.gal-flash { animation: galFlash 900ms ease-out; }
+  .gal-ph.sel { outline: 2px solid var(--red); outline-offset: 2px; }
+  .gal-selinfo { color: #fff !important; opacity: 1 !important; text-transform: none; letter-spacing: 0; font-weight: 500; margin-left: 6px; }
+  .gal-ghost { position: fixed; left: -1000px; top: -1000px; width: 64px; height: 64px; border-radius: 6px; overflow: visible; }
+  .gal-ghost img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; box-shadow: 4px 4px 0 #333, 8px 8px 0 #222; }
+  .gal-ghost span { position: absolute; right: -8px; top: -8px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: var(--red); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .gal-card input.gal-title::placeholder { color: var(--text3); font-weight: 500; }
   .gal-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .gal-n { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text2); background: #1c1c1c; font-variant-numeric: tabular-nums; flex-shrink: 0; }
@@ -5675,6 +5694,7 @@
       <div class="photos-section" id="galSection">
         <div class="photos-header">
           <h3>Gallerie</h3>
+          <button type="button" class="sm ghost" id="galFold"></button>
         </div>
         <div class="gal-list" id="galList"></div>
         <div class="gal-add-row"><button type="button" id="galAdd">${cmpIcon("plus")}<span>Aggiungi galleria</span></button></div>
@@ -6252,6 +6272,7 @@
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
     down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
     pen: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>',
     mosaico: '<rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="11" height="7" rx="1"/><rect x="16" y="13" width="5" height="7" rx="1"/>',
     composizione: '<rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="15" y="11" width="6" height="10" rx="1"/><rect x="3" y="16" width="10" height="5" rx="1"/>',
     scorrimento: '<rect x="5" y="6" width="8" height="12" rx="1"/><rect x="15" y="6" width="6" height="12" rx="1"/><path d="M1 12h2M2 10l-1 2 1 2"/>',
@@ -6276,12 +6297,12 @@
   }
   const galActive = {};   // progetto -> indice della composizione aperta
   const galFromOpen = {}; // progetto -> indici delle gallerie con "Dal progetto" aperto
+  const galClosed = new WeakSet(); // gallerie ridotte al solo titolo
 
   function setupGallerie(p, key) {
     const list = document.getElementById("galList");
     if (!list) { window._updateComposer = null; return; }
     let cmp = null;
-    const [section, slug] = key.split("/");
     const photos = () => {
       const all = photosByProject[key] || [];
       const ord = p.ordine || [];
@@ -6302,6 +6323,12 @@
     };
     const ratio = (name) => cmpRatio(p, name);
     const fromOpen = () => (galFromOpen[key] = galFromOpen[key] || new Set());
+    const cardEl = (i) => list.querySelector(`.gal-card[data-i="${i}"]`);
+    const titleOf = (g) => (g.titolo || "").trim();
+
+    // selezione di più foto (Cmd o Maiuscole + clic), sempre dentro una sola galleria
+    let selI = -1, selN = new Set(), lastSel = null;
+    const clearSel = () => { selI = -1; selN = new Set(); lastSel = null; };
 
     function countOf(g) {
       if (g.tipo === "composizione") return ((g.composizione && g.composizione.foto) || []).length;
@@ -6310,12 +6337,13 @@
     function activeIdx() {
       const gs = galGet(p);
       let i = galActive[key];
-      if (!(i >= 0 && i < gs.length && gs[i].tipo === "composizione")) i = gs.findIndex(g => g.tipo === "composizione");
+      const ok = (k) => k >= 0 && k < gs.length && gs[k].tipo === "composizione" && !galClosed.has(gs[k]);
+      if (!ok(i)) i = gs.findIndex((g, k) => ok(k));
       galActive[key] = i;
       return i;
     }
 
-    // ---- foto della galleria: trascina per riordinare, passa sopra per Banner/Anteprima/Togli ----
+    // ---- foto della galleria ----
     function stripHtml(g, i) {
       const names = chosen(g);
       const placed = g.tipo === "composizione" ? new Set(((g.composizione && g.composizione.foto) || []).map(it => it.file)) : null;
@@ -6331,7 +6359,8 @@
       const ph = names.map(n => {
         const tags = (p.banner === n ? `<em>Banner</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
         const isPlaced = placed && placed.has(n);
-        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}"${placed && !isPlaced ? ' title="Clicca o trascina nel riquadro"' : ""}>
+        const isSel = selI === i && selN.has(n);
+        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}${isSel ? " sel" : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}">
           <img src="${urlOf(n)}" alt="" draggable="false" loading="lazy">
           ${tags ? `<span class="gal-tags">${tags}</span>` : ""}
           ${isPlaced ? `<span class="gal-in">${cmpIcon("check")}</span>` : ""}
@@ -6342,11 +6371,13 @@
           </span>
         </div>`;
       }).join("");
-      return `<div class="gal-sub">${g.tipo === "composizione" ? "Foto della galleria" : "Foto"} <span>${names.length}</span><span class="cmp-sp"></span>${fromBtn}</div>
+      const nSel = selI === i ? selN.size : 0;
+      return `<div class="gal-sub">${g.tipo === "composizione" ? "Foto della galleria" : "Foto"} <span>${names.length}</span>
+          ${nSel > 1 ? `<span class="gal-selinfo">${nSel} selezionate</span><button type="button" class="sm ghost" data-g="rmsel" data-i="${i}">Togli</button><button type="button" class="sm ghost" data-g="unsel" data-i="${i}">Deseleziona</button>` : ""}
+          <span class="cmp-sp"></span>${fromBtn}</div>
         ${open ? fromHtml(others, i) : ""}
         <div class="gal-photos" data-i="${i}">${ph}<button type="button" class="gal-addtile" data-g="pick" data-i="${i}" title="Aggiungi foto dal computer">${cmpIcon("plus")}</button></div>`;
     }
-    // foto già nel progetto ma non in questa galleria
     function fromHtml(others, i) {
       return `<div class="gal-from"><div class="gal-from-h"><span>Clicca le foto da aggiungere</span><span class="cmp-sp"></span><button type="button" class="sm ghost" data-g="fromall" data-i="${i}">Aggiungi tutte</button><button type="button" class="cmp-ib" data-g="from" data-i="${i}" title="Chiudi" aria-label="Chiudi">${cmpIcon("remove")}</button></div>
         <div class="gal-thumbs">${others.map(n => `<button type="button" class="gal-th" data-g="fromadd" data-i="${i}" data-name="${escapeHtml(n)}" title="Aggiungi a questa galleria"><img src="${urlOf(n)}" alt="" loading="lazy" draggable="false"></button>`).join("")}</div></div>`;
@@ -6364,9 +6395,8 @@
           <div class="gal-bg"><span>Sfondo</span>${GAL_SFONDI.map(([k, c, l]) => `<button type="button" class="gal-sw${sc.sfondo === k ? " on" : ""}" data-g="bg" data-k="${k}" data-i="${i}" title="${l}" aria-label="${l}" style="${c !== "transparent" ? `background:${c}` : ""}"></button>`).join("")}</div>
         </div>`;
     }
-    // anteprima in scala: la larghezza del riquadro è quella del tuo schermo
     function paintScPreview(card, g) {
-      const box = card.querySelector(".gal-sc-prev");
+      const box = card && card.querySelector(".gal-sc-prev");
       if (!box) return;
       const sc = scOf(g);
       const names = chosen(g);
@@ -6385,7 +6415,7 @@
       box.innerHTML = `<div class="gal-sc-band" style="background:${col};padding:${gap}px 0"><div class="gal-sc-track" style="animation-duration:${dur}s;padding-left:${gap}px">${imgs}${imgs}</div></div>`;
     }
 
-    // ---- composizione non aperta: miniatura ----
+    // ---- composizione ----
     function miniHtml(g, i) {
       const c = g.composizione || { righe: 6, foto: [] };
       const rows = Math.max(1, c.righe || 6, ...(c.foto || []).map(it => Math.ceil(it.y + it.h - 0.001)));
@@ -6400,14 +6430,13 @@
       </div>
       <div class="cmp-tray-h" id="cmpTrayH" hidden></div>
       <div class="cmp-tray" id="cmpTray" hidden></div>`;
-
-    // segna nella striscia le foto già messe nella composizione
     function markPlaced() {
-      const i = activeIdx();
-      if (i < 0) return;
+      const i = galActive[key];
+      if (!(i >= 0)) return;
       const g = galGet(p)[i];
+      if (!g) return;
       const placed = new Set(((g.composizione && g.composizione.foto) || []).map(it => it.file));
-      const card = list.querySelector(`.gal-card[data-i="${i}"]`);
+      const card = cardEl(i);
       if (!card) return;
       card.querySelectorAll(".gal-ph").forEach(el => {
         const on = placed.has(el.dataset.name);
@@ -6419,49 +6448,104 @@
       });
     }
 
+    // ---- una galleria ----
+    const ib = (a, i, title, icon, dis, cls = "") => `<button type="button" class="cmp-ib ${cls}" data-g="${a}" data-i="${i}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(icon)}</button>`;
+    function cardHtml(g, i, n, act) {
+      const t = titleOf(g);
+      if (galClosed.has(g)) {
+        return `<div class="gal-card closed" data-i="${i}">
+          <button type="button" class="gal-bar" data-g="toggle" data-i="${i}" title="Apri">
+            <span class="gal-chev">${cmpIcon("chev")}</span>
+            <span class="gal-bar-t${t ? "" : " none"}">${t ? escapeHtml(t) : "Senza titolo"}</span>
+          </button>
+        </div>`;
+      }
+      const tipo = GAL_TIPI.some(x => x[0] === g.tipo) ? g.tipo : "mosaico";
+      const editing = tipo === "composizione" && i === act;
+      let body = "";
+      if (tipo === "composizione") body = (editing ? composerHtml : miniHtml(g, i)) + `<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else body = `<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
+        <div class="gal-top">
+          <button type="button" class="cmp-ib gal-chev open" data-g="toggle" data-i="${i}" title="Riduci" aria-label="Riduci">${cmpIcon("chev")}</button>
+          <input type="text" class="gal-title" data-g="title" data-i="${i}" value="${escapeHtml(g.titolo || "")}" placeholder="Titolo della galleria" maxlength="120" aria-label="Titolo della galleria">
+        </div>
+        <div class="gal-head">
+          ${n > 1 ? `<span class="gal-n">${i + 1}</span>` : ""}
+          <div class="cmp-seg gal-type" role="group" aria-label="Tipo di galleria">${GAL_TIPI.map(([x, l, d]) =>
+            `<button type="button" class="${x === tipo ? "on" : ""}" data-g="type" data-t="${x}" data-i="${i}" title="${d}">${cmpIcon(x)}<span>${l}</span></button>`).join("")}</div>
+          ${editing ? "" : `<span class="gal-count">${countOf(g)} foto</span>`}
+          <span class="cmp-sp"></span>
+          ${editing ? `<div class="cmp-seg" role="group" aria-label="Schermo">
+            <button type="button" class="sm on" data-view="desk" title="Come si vede sul computer">Computer</button>
+            <button type="button" class="sm" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button></div>` : ""}
+          <div class="gal-acts">
+            ${n > 1 ? ib("up", i, "Sposta sopra", "up", i === 0) + ib("down", i, "Sposta sotto", "down", i === n - 1) : ""}
+            ${ib("del", i, n > 1 ? "Elimina questa galleria" : "Serve almeno una galleria", "clear", n < 2, "del")}
+          </div>
+        </div>
+        ${body}
+      </div>`;
+    }
+    function setupActive() {
+      const gs = galGet(p), act = galActive[key];
+      cmp = act >= 0 && gs[act] && cardEl(act) && cardEl(act).id === "cmpSection"
+        ? setupComposer(p, key, gs[act], { pool: () => chosen(gs[act]), onChange: markPlaced }) : null;
+    }
+    // riduci tutte / apri tutte
+    const fold = document.getElementById("galFold");
+    function paintFold() {
+      if (!fold) return;
+      const gs = galGet(p);
+      fold.hidden = gs.length < 2;
+      fold.textContent = gs.some(g => !galClosed.has(g)) ? "Riduci tutte" : "Apri tutte";
+    }
+    if (fold) fold.onclick = () => {
+      const gs = galGet(p);
+      const close = gs.some(g => !galClosed.has(g));
+      gs.forEach(g => close ? galClosed.add(g) : galClosed.delete(g));
+      clearSel();
+      render();
+    };
+    // tutto (cambi di struttura)
     function render() {
       const gs = galGet(p);
       const act = activeIdx();
-      const n = gs.length;
-      const ib = (a, i, title, icon, dis, cls = "") => `<button type="button" class="cmp-ib ${cls}" data-g="${a}" data-i="${i}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(icon)}</button>`;
-      list.innerHTML = gs.map((g, i) => {
-        const tipo = GAL_TIPI.some(t => t[0] === g.tipo) ? g.tipo : "mosaico";
-        const editing = tipo === "composizione" && i === act;
-        const cnt = countOf(g);
-        let body = "";
-        if (tipo === "composizione") body = (editing ? composerHtml : miniHtml(g, i)) + stripHtml(g, i);
-        else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}${stripHtml(g, i)}`;
-        else body = stripHtml(g, i);
-        return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
-          <input type="text" class="gal-title" data-g="title" data-i="${i}" value="${escapeHtml(g.titolo || "")}" placeholder="Titolo della galleria" maxlength="120" aria-label="Titolo della galleria">
-          <div class="gal-head">
-            ${n > 1 ? `<span class="gal-n">${i + 1}</span>` : ""}
-            <div class="cmp-seg gal-type" role="group" aria-label="Tipo di galleria">${GAL_TIPI.map(([t, l, d]) =>
-              `<button type="button" class="${t === tipo ? "on" : ""}" data-g="type" data-t="${t}" data-i="${i}" title="${d}">${cmpIcon(t)}<span>${l}</span></button>`).join("")}</div>
-            ${editing ? "" : `<span class="gal-count">${cnt} foto</span>`}
-            <span class="cmp-sp"></span>
-            ${editing ? `<div class="cmp-seg" role="group" aria-label="Schermo">
-              <button type="button" class="sm on" data-view="desk" title="Come si vede sul computer">Computer</button>
-              <button type="button" class="sm" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button></div>` : ""}
-            <div class="gal-acts">
-              ${n > 1 ? ib("up", i, "Sposta sopra", "up", i === 0) + ib("down", i, "Sposta sotto", "down", i === n - 1) : ""}
-              ${ib("del", i, n > 1 ? "Elimina questa galleria" : "Serve almeno una galleria", "clear", n < 2, "del")}
-            </div>
-          </div>
-          ${body}
-        </div>`;
-      }).join("");
-      list.querySelectorAll(".gal-card").forEach(card => {
-        const g = gs[+card.dataset.i];
-        if (g.tipo === "scorrimento") paintScPreview(card, g);
-      });
-      cmp = act >= 0 ? setupComposer(p, key, gs[act], {
-        pool: () => chosen(gs[act]),
-        onChange: markPlaced,
-      }) : null;
+      paintFold();
+      list.innerHTML = gs.map((g, i) => cardHtml(g, i, gs.length, act)).join("");
+      list.querySelectorAll(".gal-card").forEach(card => { const g = gs[+card.dataset.i]; if (g.tipo === "scorrimento") paintScPreview(card, g); });
+      setupActive();
     }
+    // una galleria sola (aprire, chiudere)
+    function renderCard(i) {
+      const gs = galGet(p), el = cardEl(i);
+      if (!el || !gs[i]) return render();
+      const before = galActive[key];
+      const act = activeIdx();
+      if (act !== before && before >= 0 && act >= 0) return render();
+      el.outerHTML = cardHtml(gs[i], i, gs.length, act);
+      if (gs[i].tipo === "scorrimento") paintScPreview(cardEl(i), gs[i]);
+      if (act === i) setupActive();
+    }
+    // solo le foto (e il numero, e l'anteprima dello scorrimento): veloce
+    function refresh(i) {
+      const gs = galGet(p), g = gs[i], card = cardEl(i);
+      if (!g || !card) return;
+      const strip = card.querySelector(".gal-strip");
+      if (strip) strip.innerHTML = stripHtml(g, i);
+      const cnt = card.querySelector(".gal-count");
+      if (cnt) cnt.textContent = countOf(g) + " foto";
+      if (g.tipo === "scorrimento") paintScPreview(card, g);
+      if (g.tipo === "composizione") {
+        if (cmp && galActive[key] === i) cmp.render();
+        else { const mini = card.querySelector(".gal-mini"); if (mini) mini.outerHTML = miniHtml(g, i); }
+      }
+    }
+    const refreshAll = () => galGet(p).forEach((g, i) => refresh(i));
+    const flash = (i) => { const c = cardEl(i); if (!c) return; c.classList.remove("gal-flash"); void c.offsetWidth; c.classList.add("gal-flash"); };
 
-    // ---- caricare foto in una galleria (dal Finder) ----
+    // ---- caricare foto dal Finder ----
     let pickFor = -1;
     const input = document.createElement("input");
     input.type = "file"; input.accept = "image/*"; input.multiple = true; input.hidden = true;
@@ -6479,40 +6563,86 @@
       const have = new Set(g.foto);
       names.forEach(n => { if (!have.has(n)) g.foto.push(n); });
       markDirty();
-      render();
-      if (at && cmp && g.tipo === "composizione" && i === activeIdx()) names.forEach((n, k) => cmp.add(n, at.x + k * 0.5, at.y + k * 0.5));
+      refresh(i);
+      if (at && cmp && g.tipo === "composizione" && i === galActive[key]) names.forEach((n, k) => cmp.add(n, at.x + k * 0.5, at.y + k * 0.5));
     }
-    function addNames(i, names) {
+    function addNames(i, names, at) {
       const gs = mat(), g = gs[i];
-      if (!g) return false;
+      if (!g) return 0;
       const have = new Set(g.foto);
-      let added = 0;
-      names.forEach(n => { if (!have.has(n)) { g.foto.push(n); have.add(n); added++; } });
-      return added > 0;
+      const add = names.filter(n => !have.has(n));
+      if (at == null) g.foto.push(...add); else g.foto.splice(at, 0, ...add);
+      return add.length;
+    }
+    function removeNames(i, names) {
+      const gs = mat(), g = gs[i];
+      if (!g) return;
+      const out = new Set(names);
+      g.foto = g.foto.filter(n => !out.has(n));
+      if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => !out.has(it.file));
     }
 
-    // ---- comandi ----
+    // ---- clic ----
     list.onclick = (e) => {
       const b = e.target.closest("[data-g]");
       if (!b || b.disabled) {
+        const ph = e.target.closest(".gal-ph");
+        if (!ph) return;
+        const i = +ph.dataset.i, name = ph.dataset.name;
+        // Cmd + clic: aggiungi/togli dalla selezione; Maiuscole + clic: da qui a lì
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+          if (selI !== i) { selI = i; selN = new Set(); }
+          if (e.shiftKey && lastSel) {
+            const names = chosen(galGet(p)[i]);
+            const a = names.indexOf(lastSel), z = names.indexOf(name);
+            names.slice(Math.min(a, z), Math.max(a, z) + 1).forEach(n => selN.add(n));
+          } else selN.has(name) ? selN.delete(name) : selN.add(name);
+          lastSel = name;
+          if (!selN.size) clearSel();
+          refresh(i);
+          return;
+        }
+        if (selN.size) { const k = selI; clearSel(); refresh(k); }
         // composizione: un clic su una foto libera la mette nel riquadro
-        const ph = e.target.closest(".gal-ph.free");
-        if (ph && cmp && +ph.dataset.i === activeIdx()) cmp.add(ph.dataset.name);
+        if (ph.classList.contains("free") && cmp && i === galActive[key]) cmp.add(name);
         return;
       }
       const i = +b.dataset.i, a = b.dataset.g;
       if (a === "sc" || a === "title") return;
+      if (a === "toggle") {
+        const g = galGet(p)[i];
+        if (galClosed.has(g)) galClosed.delete(g); else galClosed.add(g);
+        if (selI === i) clearSel();
+        renderCard(i);
+        paintFold();
+        return;
+      }
       if (a === "open") { galActive[key] = i; render(); return; }
       if (a === "pick") { pickFor = i; input.click(); return; }
-      if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); render(); return; }
+      if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); refresh(i); return; }
+      if (a === "unsel") { clearSel(); refresh(i); return; }
       if (a === "banner" || a === "ante") {
         const name = b.dataset.name;
         if (a === "banner") p.banner = name;
         else { p.anteprima = name; delete p.anteprimaScorrimento; }
         markDirty();
-        render();
+        refreshAll();
         if (window._updateFocalPointUI) window._updateFocalPointUI();
         toast(a === "banner" ? "Foto del banner scelta." : "Foto di anteprima scelta.", "ok");
+        return;
+      }
+      if (a === "rm" || a === "rmsel") {
+        const names = a === "rmsel" ? [...selN] : [b.dataset.name];
+        removeNames(i, names);
+        if (a === "rmsel" || selN.has(b.dataset.name)) clearSel();
+        markDirty(); refresh(i);
+        return;
+      }
+      if (a === "fromadd" || a === "fromall") {
+        const g = mat()[i];
+        if (a === "fromadd") addNames(i, [b.dataset.name]);
+        else { const inG = new Set(g.foto); addNames(i, allNames().filter(n => !inG.has(n))); fromOpen().delete(i); }
+        markDirty(); refresh(i);
         return;
       }
       const gs = mat(), g = gs[i];
@@ -6535,23 +6665,17 @@
         if (galActive[key] === i) galActive[key] = -1; else if (galActive[key] > i) galActive[key]--;
         fromOpen().clear();
         toast("Galleria eliminata. Cmd+Z per tornare indietro.", "");
-      } else if (a === "rm") {
-        const name = b.dataset.name;
-        g.foto = g.foto.filter(n => n !== name);
-        if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => it.file !== name);
-      } else if (a === "fromadd") {
-        addNames(i, [b.dataset.name]);
-      } else if (a === "fromall") {
-        const inG = new Set(g.foto);
-        addNames(i, allNames().filter(n => !inG.has(n)));
-        fromOpen().delete(i);
       } else if (a === "bg") {
         g.scorrimento = Object.assign(scOf(g), { sfondo: b.dataset.k });
+        markDirty();
+        cardEl(i).querySelectorAll(".gal-sw").forEach(x => x.classList.toggle("on", x.dataset.k === b.dataset.k));
+        paintScPreview(cardEl(i), g);
+        return;
       } else return;
+      clearSel();
       markDirty();
       render();
     };
-    // cursori dello scorrimento: aggiornano subito l'anteprima
     list.oninput = (e) => {
       const t = e.target.closest('input[data-g="title"]');
       if (t) {
@@ -6569,30 +6693,72 @@
       markDirty();
     };
 
-    // ---- trascinare: foto dal Finder, foto tra gallerie, ordine dentro una galleria ----
-    let dragPh = null;   // { i, name }
+    // ---- trascinare ----
+    // Una foto trascinata su un'altra galleria (aperta o chiusa) si SPOSTA lì;
+    // tenendo premuto Opzione si copia. Dentro la stessa galleria cambia posto.
+    let drag = null;   // { i, names }
+    let scrollRaf = 0, scrollV = 0;
+    const autoScroll = () => {
+      if (!scrollV) { scrollRaf = 0; return; }
+      window.scrollBy(0, scrollV);
+      scrollRaf = requestAnimationFrame(autoScroll);
+    };
+    const stopScroll = () => { scrollV = 0; };
     list.ondragstart = (e) => {
       const ph = e.target.closest(".gal-ph");
       if (!ph) return;
-      dragPh = { i: +ph.dataset.i, name: ph.dataset.name };
-      e.dataTransfer.setData("text/plain", "cmp:" + ph.dataset.name);
+      const i = +ph.dataset.i, name = ph.dataset.name;
+      const names = selI === i && selN.has(name) ? chosen(galGet(p)[i]).filter(n => selN.has(n)) : [name];
+      drag = { i, names };
+      e.dataTransfer.setData("text/plain", names.length === 1 ? "cmp:" + name : "gal:multi");
       e.dataTransfer.effectAllowed = "copyMove";
-      ph.classList.add("dragging");
+      if (names.length > 1) {
+        const ghost = document.createElement("div");
+        ghost.className = "gal-ghost";
+        ghost.innerHTML = `<img src="${urlOf(name)}" alt=""><span>${names.length}</span>`;
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, 30, 30);
+        setTimeout(() => ghost.remove(), 0);
+      }
+      requestAnimationFrame(() => {
+        list.classList.add("dragging-ph");
+        names.forEach(n => { const el = list.querySelector(`.gal-ph[data-i="${i}"][data-name="${CSS.escape(n)}"]`); if (el) el.classList.add("dragging"); });
+      });
     };
-    list.ondragend = () => {
-      dragPh = null;
+    const endDrag = () => {
+      drag = null;
+      stopScroll();
+      list.classList.remove("dragging-ph");
       list.querySelectorAll(".dragging, .drop-before, .drop-after, .gal-over").forEach(el => el.classList.remove("dragging", "drop-before", "drop-after", "gal-over"));
     };
+    list.ondragend = endDrag;
     const isFiles = (e) => Array.from(e.dataTransfer.types || []).includes("Files");
+    // scorre la pagina quando si trascina vicino ai bordi
+    if (window._galDragOver) {
+      document.removeEventListener("dragover", window._galDragOver);
+      document.removeEventListener("dragleave", window._galDragStop);
+      document.removeEventListener("drop", window._galDragStop);
+    }
+    window._galDragOver = (e) => {
+      if (!drag && !isFiles(e)) return;
+      const edge = 90, y = e.clientY;
+      scrollV = y < edge + 50 ? -Math.ceil((edge + 50 - y) / 6) : y > window.innerHeight - edge ? Math.ceil((y - window.innerHeight + edge) / 6) : 0;
+      if (scrollV && !scrollRaf) scrollRaf = requestAnimationFrame(autoScroll);
+    };
+    window._galDragStop = (e) => { if (e.type === "drop" || !e.relatedTarget) stopScroll(); };
+    document.addEventListener("dragover", window._galDragOver);
+    document.addEventListener("dragleave", window._galDragStop);
+    document.addEventListener("drop", window._galDragStop);
     list.ondragover = (e) => {
       const card = e.target.closest(".gal-card");
-      if (!card || (!isFiles(e) && !dragPh)) return;
+      if (!card || (!isFiles(e) && !drag)) return;
       e.preventDefault();
+      e.dataTransfer.dropEffect = drag && +card.dataset.i !== drag.i && !e.altKey ? "move" : "copy";
       list.querySelectorAll(".drop-before, .drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
       list.querySelectorAll(".gal-over").forEach(el => { if (el !== card) el.classList.remove("gal-over"); });
       card.classList.add("gal-over");
       const ph = e.target.closest(".gal-ph");
-      if (ph && dragPh && +ph.dataset.i === dragPh.i && ph.dataset.name !== dragPh.name) {
+      if (ph && drag && !drag.names.includes(ph.dataset.name)) {
         const r = ph.getBoundingClientRect();
         ph.classList.add(e.clientX < r.left + r.width / 2 ? "drop-before" : "drop-after");
       }
@@ -6608,34 +6774,47 @@
       const i = +card.dataset.i;
       const ph = e.target.closest(".gal-ph");
       const before = ph && ph.classList.contains("drop-before");
-      list.querySelectorAll(".drop-before, .drop-after, .gal-over").forEach(el => el.classList.remove("drop-before", "drop-after", "gal-over"));
       const canvas = e.target.closest("#cmpCanvas");
       let at = null;
       if (canvas) {
         const r = canvas.getBoundingClientRect(), cell = r.width / CMP_COLS;
         at = { x: (e.clientX - r.left) / cell, y: (e.clientY - r.top) / cell };
       }
-      if (isFiles(e) && e.dataTransfer.files.length) { uploadTo(i, e.dataTransfer.files, at); return; }
-      if (!dragPh) return;
-      const src = dragPh;
-      dragPh = null;
-      if (canvas) {
-        // il riquadro gestisce già le foto della sua galleria; da un'altra galleria: si aggiunge e si posa
-        if (src.i !== i) { addNames(i, [src.name]); markDirty(); render(); if (cmp) cmp.add(src.name, at.x, at.y); }
-        return;
-      }
+      const src = drag;
+      const copy = e.altKey;
+      endDrag();
+      if (!src) { if (isFiles(e) && e.dataTransfer.files.length) uploadTo(i, e.dataTransfer.files, at); return; }
+      const gs = mat(), g = gs[i];
+      // stessa galleria
       if (src.i === i) {
-        if (!ph || ph.dataset.name === src.name) return;
-        const gs = mat(), g = gs[i];
-        const arr = g.foto.filter(n => n !== src.name);
+        if (canvas) {
+          // una foto la posa già il riquadro; più foto le posiamo noi, una accanto all'altra
+          if (src.names.length > 1 && cmp) src.names.forEach((n, k) => cmp.add(n, at.x + k * 0.6, at.y + k * 0.6));
+          return;
+        }
+        if (!ph || src.names.includes(ph.dataset.name)) return;
+        const arr = g.foto.filter(n => !src.names.includes(n));
         let k = arr.indexOf(ph.dataset.name);
         if (!before) k++;
-        arr.splice(k, 0, src.name);
+        arr.splice(k, 0, ...src.names);
         g.foto = arr;
-        markDirty(); render();
+        markDirty(); refresh(i);
         return;
       }
-      if (addNames(i, [src.name])) { markDirty(); render(); toast("Foto aggiunta alla galleria.", "ok"); }
+      // un'altra galleria: si sposta (o si copia con Opzione)
+      let pos = null;
+      if (ph && g.foto.includes(ph.dataset.name)) { pos = g.foto.indexOf(ph.dataset.name) + (before ? 0 : 1); }
+      const added = addNames(i, src.names, pos);
+      if (!copy) removeNames(src.i, src.names);
+      if (selI === src.i) clearSel();
+      markDirty();
+      refresh(src.i);
+      refresh(i);
+      flash(i);
+      if (canvas && cmp && i === galActive[key]) src.names.forEach((n, k) => cmp.add(n, at.x + k * 0.6, at.y + k * 0.6));
+      const dest = titleOf(g) ? `«${titleOf(g)}»` : `galleria ${i + 1}`;
+      const nn = src.names.length;
+      if (added || !copy) toast(`${nn === 1 ? "Foto" : nn + " foto"} ${copy ? (nn === 1 ? "copiata" : "copiate") : (nn === 1 ? "spostata" : "spostate")} in ${dest}.`, "ok");
     };
 
     // aggiungi galleria: si sceglie il tipo
@@ -6664,6 +6843,7 @@
         if (t === "scorrimento") g.scorrimento = { ...GAL_SC_DEF };
         gs.push(g);
         if (t === "composizione") galActive[key] = gs.length - 1;
+        clearSel();
         markDirty();
         render();
         const cards = list.querySelectorAll(".gal-card");
