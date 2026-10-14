@@ -8,6 +8,8 @@ ICON_PNG="$ROOT/icon_1024.png"
 
 # Chiudi tutto
 killall "Manager Portfolio" 2>/dev/null
+# il processo dell'app si chiama "applet": lo si chiude dal percorso
+pkill -9 -f "$APP/Contents/MacOS/" 2>/dev/null
 killall osascript 2>/dev/null
 lsof -ti :8471 | xargs kill -9 2>/dev/null
 sleep 1

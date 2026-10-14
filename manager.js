@@ -545,21 +545,38 @@ wv.autoresizingMask = $.NSViewWidthSizable|$.NSViewHeightSizable;
 win.contentView.addSubview(wv);
 win.makeFirstResponder(wv);
 
-// Mostra la finestra SOLO quando la pagina è caricata (no flash bianca)
+// Mostra la finestra SOLO quando la pagina è caricata (no flash bianca).
+// Se il server locale non è ancora pronto la pagina si ricarica da sola;
+// e dopo 10 secondi la finestra compare comunque, così l'app non resta
+// mai "accesa" senza finestra.
+var pageURL = $.NSURL.URLWithString("http://127.0.0.1:8471/.Manager%20Portfolio.html");
+var mpTries = 0;
+function mpLoadPage() {
+  var req = $.NSMutableURLRequest.requestWithURL(pageURL);
+  req.cachePolicy = 1;
+  wv.loadRequest(req);
+}
+function mpShowWin() {
+  if (win.isVisible) return;
+  win.makeKeyAndOrderFront(null);
+  nsApp.activateIgnoringOtherApps(true);
+}
 ObjC.registerSubclass({
-  name:"NavDel",superclass:"NSObject",protocols:["WKNavigationDelegate"],
+  name:"NavDel2",superclass:"NSObject",protocols:["WKNavigationDelegate"],
   methods:{
-    "webView:didFinishNavigation:":{types:["void",["id","id"]],implementation:function(w,n){
-      win.makeKeyAndOrderFront(null);
-      nsApp.activateIgnoringOtherApps(true);
-    }}
+    "webView:didFinishNavigation:":{types:["void",["id","id"]],implementation:function(w,n){ mpShowWin(); }},
+    "webView:didFailProvisionalNavigation:withError:":{types:["void",["id","id","id"]],implementation:function(w,n,e){
+      mpTries++;
+      if (mpTries < 30) $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(1.0, navDel, "mpRetry:", null, false);
+      else mpShowWin();
+    }},
+    "mpRetry:":{types:["void",["id"]],implementation:function(t){ mpLoadPage(); }},
+    "mpShowNow:":{types:["void",["id"]],implementation:function(t){ mpShowWin(); }}
   }
 });
-wv.navigationDelegate = $.NavDel.alloc.init;
-
-var pageURL = $.NSURL.URLWithString("http://127.0.0.1:8471/.Manager%20Portfolio.html");
-var req = $.NSMutableURLRequest.requestWithURL(pageURL);
-req.cachePolicy = 1;
-wv.loadRequest(req);
+var navDel = $.NavDel2.alloc.init;
+wv.navigationDelegate = navDel;
+mpLoadPage();
+$.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(10.0, navDel, "mpShowNow:", null, false);
 
 nsApp.run;
