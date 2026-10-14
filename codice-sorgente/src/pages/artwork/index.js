@@ -145,6 +145,11 @@ export async function getStaticProps() {
     }
     const SFONDI = { rosso: "#c8102e", nero: "#0a0a0a", bianco: "#ffffff", trasparente: "transparent" };
     const galleries = rawGalleries.map((g) => {
+      const titolo = typeof g.titolo === "string" ? g.titolo.trim() : "";
+      const gal = galleryOf(g);
+      return gal ? { ...gal, title: titolo } : null;
+    }).filter(Boolean);
+    function galleryOf(g) {
       if (g.tipo === "composizione") {
         const composition = buildComposition(g.composizione);
         return composition ? { type: "composizione", composition } : null;
@@ -163,7 +168,7 @@ export async function getStaticProps() {
         } };
       }
       return { type: "mosaico", idx };
-    }).filter(Boolean);
+    }
     const galleryImages = viewerImgs.length ? viewerImgs : images;
     {
       const bannerFile = images[bannerStartIndex]?.src;
@@ -1201,15 +1206,26 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
               }
             };
+            const titleEl = g.title ? (
+              <div
+                className={`uppercase tracking-wider font-semibold mb-3 ${mode === "professional" ? "text-white/55" : "text-black/55"}`}
+                style={{ fontSize: "var(--text-xs)", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}
+              >
+                {g.title}
+              </div>
+            ) : null;
             if (g.type === "scorrimento") {
               return (
                 <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem" }}>
+                  {titleEl}
                   <ScrollGallery images={selectedProject.images || []} idx={g.idx} settings={g.scroll} altFor={viewerAlt} onImageClick={openAt} />
                 </div>
               );
             }
             return (
-              <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+              <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem" }}>
+                {titleEl}
+                <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
                 {g.type === "composizione" ? (
                   <FreeGallery composition={g.composition} images={selectedProject.images || []} altFor={viewerAlt} onImageClick={openAt} />
                 ) : (
@@ -1219,6 +1235,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                     onImageClick={(i) => openAt(g.idx[i])}
                   />
                 )}
+                </div>
               </div>
             );
           })}

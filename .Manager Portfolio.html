@@ -592,6 +592,8 @@
   .gal-list { display: flex; flex-direction: column; gap: 16px; }
   .gal-card { border: 1px solid var(--border); border-radius: 12px; background: #0e0e0e; padding: 14px 18px 18px; transition: border-color 160ms ease; }
   .gal-card.editing { border-color: #333; }
+  .gal-card input.gal-title { display: block; width: 100%; box-sizing: border-box; margin: 0 0 14px; font-size: 15px; font-weight: 600; color: #fff; }
+  .gal-card input.gal-title::placeholder { color: var(--text3); font-weight: 500; }
   .gal-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .gal-n { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text2); background: #1c1c1c; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .gal-type button { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: 12px; color: var(--text2); }
@@ -6431,6 +6433,7 @@
         else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}${stripHtml(g, i)}`;
         else body = stripHtml(g, i);
         return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
+          <input type="text" class="gal-title" data-g="title" data-i="${i}" value="${escapeHtml(g.titolo || "")}" placeholder="Titolo della galleria" maxlength="120" aria-label="Titolo della galleria">
           <div class="gal-head">
             ${n > 1 ? `<span class="gal-n">${i + 1}</span>` : ""}
             <div class="cmp-seg gal-type" role="group" aria-label="Tipo di galleria">${GAL_TIPI.map(([t, l, d]) =>
@@ -6498,7 +6501,7 @@
         return;
       }
       const i = +b.dataset.i, a = b.dataset.g;
-      if (a === "sc") return;
+      if (a === "sc" || a === "title") return;
       if (a === "open") { galActive[key] = i; render(); return; }
       if (a === "pick") { pickFor = i; input.click(); return; }
       if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); render(); return; }
@@ -6550,6 +6553,12 @@
     };
     // cursori dello scorrimento: aggiornano subito l'anteprima
     list.oninput = (e) => {
+      const t = e.target.closest('input[data-g="title"]');
+      if (t) {
+        const g = mat()[+t.dataset.i];
+        if (g) { g.titolo = t.value; markDirty(); }
+        return;
+      }
       const r = e.target.closest('input[data-g="sc"]');
       if (!r) return;
       const gs = mat(), g = gs[+r.dataset.i];
@@ -6659,7 +6668,11 @@
         render();
         const cards = list.querySelectorAll(".gal-card");
         const last = cards[cards.length - 1];
-        if (last) last.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (last) {
+          last.scrollIntoView({ behavior: "smooth", block: "center" });
+          const ti = last.querySelector(".gal-title");
+          if (ti) setTimeout(() => ti.focus({ preventScroll: true }), 350);
+        }
       });
       setTimeout(() => document.addEventListener("pointerdown", function off(e) {
         if (!e.target.closest("#cmpPop") && e.target !== add && !add.contains(e.target)) { pop.remove(); }
