@@ -615,6 +615,23 @@
   .gal-card.closed .gal-grip { margin-left: 10px; }
   .gal-grip { flex-shrink: 0; width: 22px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--text3); cursor: grab; border-radius: 5px; touch-action: none; }
   .gal-grip:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .gal-grip, .gal-top .gal-chev, .gal-bar .gal-chev { transition: color 140ms ease, background-color 140ms ease; }
+  .gal-top .gal-chev { color: var(--text3); width: 26px; height: 30px; padding: 0; justify-content: center; border-radius: 5px; }
+  .gal-top .gal-chev:hover:not(:disabled) { color: #fff; background: rgba(255,255,255,0.05); }
+  .gal-bar .gal-chev { width: 26px; height: 30px; align-items: center; justify-content: center; border-radius: 5px; }
+  .gal-bar:hover .gal-chev { color: #fff; background: rgba(255,255,255,0.05); }
+  .gal-card.picked { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+  .gal-pick-info { font-size: 11.5px; color: #fff; display: inline-flex; align-items: center; gap: 8px; }
+  .gal-pick-info[hidden] { display: none; }
+  .gal-uni { position: fixed; z-index: 10050; width: 330px; padding: 14px 16px 12px; background: #1b1b1b; border: 1px solid #303030; border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.55); animation: cmpPopIn 140ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .gal-uni h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin: 12px 0 7px; }
+  .gal-uni h4:first-of-type { margin-top: 0; }
+  .gal-uni .who { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .gal-uni .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .gal-uni label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text3); }
+  .gal-uni input { width: 100%; box-sizing: border-box; padding: 5px 7px; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+  .gal-uni input::-webkit-inner-spin-button, .gal-uni input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .gal-uni .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
   .gal-grip svg { width: 14px; height: 14px; }
   .gal-list.reordering, .gal-list.reordering * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
   .gal-card.gal-moving { opacity: 0.45; }
@@ -631,7 +648,7 @@
   @keyframes galFlash { 0% { box-shadow: 0 0 0 2px rgba(200,16,46,0.9); } 100% { box-shadow: 0 0 0 2px rgba(200,16,46,0); } }
   .gal-card.gal-flash { animation: galFlash 900ms ease-out; }
   .gal-ph.sel { outline: 2px solid var(--red); outline-offset: 2px; }
-  .gal-ph.cur::after { content: ""; position: absolute; inset: 0; border-radius: 5px; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.92); pointer-events: none; }
+
   .gal-selinfo { color: #fff !important; opacity: 1 !important; text-transform: none; letter-spacing: 0; font-weight: 500; margin-left: 6px; }
   .gal-ghost { position: fixed; left: -1000px; top: -1000px; width: 64px; height: 64px; border-radius: 6px; overflow: visible; }
   .gal-ghost img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; box-shadow: 4px 4px 0 #333, 8px 8px 0 #222; }
@@ -5955,6 +5972,8 @@
         <div class="photos-header">
           <h3>Gallerie</h3>
           <div class="gal-head-acts">
+            <span class="gal-pick-info" id="galPickInfo" hidden></span>
+            <button type="button" class="sm ghost" id="galUni" title="Stessi valori per tutte le gallerie (o per quelle selezionate)">Uniforma</button>
             <button type="button" class="sm ghost" id="galFold"></button>
             <button type="button" class="sm" id="galAddTxt">${cmpIcon("text")}<span>Aggiungi testo</span></button>
             <button type="button" class="sm" id="galAdd">${cmpIcon("plus")}<span>Aggiungi galleria</span></button>
@@ -6577,14 +6596,14 @@
   }
   const galActive = {};   // progetto -> indice della composizione aperta
   const galFromOpen = {}; // progetto -> indici delle gallerie con "Dal progetto" aperto
-  const galClosed = new WeakSet(); // gallerie ridotte al solo titolo
-  const galNoPrev = new WeakSet(); // gallerie con l'anteprima del sito nascosta
+  const galOpen = new WeakSet();     // gallerie aperte (di serie sono chiuse, si vede solo il titolo)
+  const galShowPrev = new WeakSet(); // gallerie con l'anteprima del sito visibile (di serie nascosta)
   // Annulla/Ripeti ricostruiscono i dati: si ricorda quali gallerie erano ridotte o senza anteprima
   window.__mpGalUiSave = () => {
     const out = {};
     (state.projects || []).forEach(p => {
       const gs = Array.isArray(p.gallerie) && p.gallerie.length ? p.gallerie : galDerived.get(p);
-      if (gs) out[`${p.section}/${p.slug}`] = gs.map(g => ({ c: galClosed.has(g), n: galNoPrev.has(g), t: g.titolo || "", tipo: g.tipo }));
+      if (gs) out[`${p.section}/${p.slug}`] = gs.map(g => ({ c: !galOpen.has(g), n: !galShowPrev.has(g), t: g.titolo || "", tipo: g.tipo }));
     });
     return out;
   };
@@ -6596,8 +6615,8 @@
         const m = o.find(x => !x.used && x.t && x.t === (g.titolo || "") && x.tipo === g.tipo) || (o[i] && !o[i].used ? o[i] : null);
         if (!m) return;
         m.used = true;
-        if (m.c) galClosed.add(g);
-        if (m.n) galNoPrev.add(g);
+        if (!m.c) galOpen.add(g);
+        if (!m.n) galShowPrev.add(g);
       });
     });
   };
@@ -6644,6 +6663,32 @@
     // selezione di più foto (Cmd o Maiuscole + clic), sempre dentro una sola galleria
     let selI = -1, selN = new Set(), lastSel = null;
     let curSel = null, selAnchor = null, selBase = new Set();
+    // gallerie selezionate (Cmd o Maiuscole + clic sulla maniglia o sulla freccia)
+    const galPick = new Set();
+    let pickAnchor = -1;
+    function paintPick() {
+      const gs = galGet(p);
+      list.querySelectorAll(".gal-card").forEach(c => c.classList.toggle("picked", galPick.has(gs[+c.dataset.i])));
+      const info = document.getElementById("galPickInfo");
+      if (!info) return;
+      const n = gs.filter(g => galPick.has(g)).length;
+      info.hidden = !n;
+      info.innerHTML = n ? `${n} ${n === 1 ? "selezionata" : "selezionate"}<button type="button" class="sm ghost" id="galUnpick">Deseleziona</button>` : "";
+      const u = document.getElementById("galUnpick");
+      if (u) u.onclick = () => { galPick.clear(); paintPick(); };
+    }
+    function pickToggle(i, range) {
+      const gs = galGet(p), g = gs[i];
+      if (!g) return;
+      if (range && pickAnchor >= 0) {
+        const a = Math.min(pickAnchor, i), z = Math.max(pickAnchor, i);
+        for (let k = a; k <= z; k++) galPick.add(gs[k]);
+      } else {
+        galPick.has(g) ? galPick.delete(g) : galPick.add(g);
+        pickAnchor = i;
+      }
+      paintPick();
+    }
     const clearSel = () => { selI = -1; selN = new Set(); lastSel = null; curSel = null; selAnchor = null; selBase = new Set(); };
 
     function countOf(g) {
@@ -6654,7 +6699,7 @@
     function activeIdx() {
       const gs = galGet(p);
       let i = galActive[key];
-      const ok = (k) => k >= 0 && k < gs.length && gs[k].tipo === "composizione" && !galClosed.has(gs[k]) && !galNoPrev.has(gs[k]);
+      const ok = (k) => k >= 0 && k < gs.length && gs[k].tipo === "composizione" && galOpen.has(gs[k]) && galShowPrev.has(gs[k]);
       if (!ok(i)) i = gs.findIndex((g, k) => ok(k));
       galActive[key] = i;
       return i;
@@ -6846,8 +6891,9 @@
     const ib = (a, i, title, icon, dis, cls = "") => `<button type="button" class="cmp-ib ${cls}" data-g="${a}" data-i="${i}" title="${title}" aria-label="${title}" ${dis ? "disabled" : ""}>${cmpIcon(icon)}</button>`;
     function cardHtml(g, i, n, act) {
       const t = titleOf(g);
-      if (galClosed.has(g)) {
-        return `<div class="gal-card closed" data-i="${i}">
+      const picked = galPick.has(g) ? " picked" : "";
+      if (!galOpen.has(g)) {
+        return `<div class="gal-card closed${picked}" data-i="${i}">
           ${n > 1 ? `<span class="gal-grip" data-grip="${i}" title="Trascina per spostare">${cmpIcon("grip")}</span>` : ""}
           <button type="button" class="gal-bar" data-g="toggle" data-i="${i}" title="Apri">
             <span class="gal-chev">${cmpIcon("chev")}</span>
@@ -6857,7 +6903,7 @@
       }
       const tipo = g.tipo === "testo" ? "testo" : GAL_TIPI.some(x => x[0] === g.tipo) ? g.tipo : "mosaico";
       const editing = tipo === "composizione" && i === act;
-      const noPrev = galNoPrev.has(g) && !editing;
+      const noPrev = !galShowPrev.has(g) && !editing;
       let body = "";
       if (tipo === "testo") {
         const al = g.allinea || "sinistra", dm = g.dim || "m";
@@ -6873,7 +6919,7 @@
       else if (tipo === "composizione") body = (editing ? composerHtml : noPrev ? `<button type="button" class="ghost sm gal-mini-open" data-g="open" data-i="${i}">${cmpIcon("pen")}Modifica la composizione</button>` : miniHtml(g, i)) + `<div class="gal-mg-row">${ctrlsHtml(g, i, "margini")}</div><div class="gal-strip">${stripHtml(g, i)}</div>`;
       else if (tipo === "scorrimento") body = `${noPrev ? "" : `<div class="gal-sc-prev"></div>`}${ctrlsHtml(g, i, "scorrimento")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
       else body = `${noPrev ? "" : `<div class="gal-mo-prev"></div>`}${ctrlsHtml(g, i, "mosaico")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
-      return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
+      return `<div class="gal-card${editing ? " editing" : ""}${picked}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
         <div class="gal-top">
           ${n > 1 ? `<span class="gal-grip" data-grip="${i}" title="Trascina per spostare">${cmpIcon("grip")}</span>` : ""}
           <button type="button" class="cmp-ib gal-chev open" data-g="toggle" data-i="${i}" title="Riduci" aria-label="Riduci">${cmpIcon("chev")}</button>
@@ -6890,7 +6936,6 @@
             <button type="button" class="sm" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button></div>` : ""}
           <div class="gal-acts">
             ${ib("prev", i, noPrev ? "Mostra l'anteprima del sito" : "Nascondi l'anteprima del sito", noPrev ? "eyeoff" : "eye", false, noPrev ? "prev-off" : "")}
-            ${n > 1 ? ib("up", i, "Sposta sopra", "up", i === 0) + ib("down", i, "Sposta sotto", "down", i === n - 1) : ""}
             ${ib("del", i, n > 1 ? "Elimina questa galleria" : "Serve almeno una galleria", "clear", n < 2, "del")}
           </div>
         </div>
@@ -6917,12 +6962,12 @@
       if (!fold) return;
       const gs = galGet(p);
       fold.hidden = gs.length < 2;
-      fold.textContent = gs.some(g => !galClosed.has(g)) ? "Riduci tutte" : "Apri tutte";
+      fold.textContent = gs.some(g => galOpen.has(g)) ? "Riduci tutte" : "Apri tutte";
     }
     if (fold) fold.onclick = () => {
       const gs = galGet(p);
-      const close = gs.some(g => !galClosed.has(g));
-      gs.forEach(g => close ? galClosed.add(g) : galClosed.delete(g));
+      const close = gs.some(g => galOpen.has(g));
+      gs.forEach(g => close ? galOpen.delete(g) : galOpen.add(g));
       clearSel();
       render();
     };
@@ -6932,6 +6977,7 @@
       const act = activeIdx();
       paintFold();
       list.innerHTML = gs.map((g, i) => cardHtml(g, i, gs.length, act)).join("");
+      paintPick();
       list.querySelectorAll(".gal-card").forEach(card => paintPrev(card, gs[+card.dataset.i]));
       setupActive();
     }
@@ -7042,16 +7088,17 @@
       }
       if (a === "toggle") {
         const g = galGet(p)[i];
-        if (galClosed.has(g)) galClosed.delete(g); else galClosed.add(g);
+        if (e.metaKey || e.ctrlKey || e.shiftKey) { pickToggle(i, e.shiftKey); return; }
+        if (galOpen.has(g)) galOpen.delete(g); else galOpen.add(g);
         if (selI === i) clearSel();
         renderCard(i);
         paintFold();
         return;
       }
-      if (a === "open") { galNoPrev.delete(galGet(p)[i]); galActive[key] = i; render(); return; }
+      if (a === "open") { galShowPrev.add(galGet(p)[i]); galActive[key] = i; render(); return; }
       if (a === "prev") {
         const g = galGet(p)[i];
-        if (galNoPrev.has(g)) { galNoPrev.delete(g); if (g.tipo === "composizione") galActive[key] = i; } else galNoPrev.add(g);
+        if (!galShowPrev.has(g)) { galShowPrev.add(g); if (g.tipo === "composizione") galActive[key] = i; } else galShowPrev.delete(g);
         render();
         return;
       }
@@ -7170,19 +7217,31 @@
       if (!grip || e.button !== 0) return;
       e.preventDefault();
       const from = +grip.dataset.grip;
+      if (e.metaKey || e.ctrlKey || e.shiftKey) { pickToggle(from, e.shiftKey); return; }
       const card = cardEl(from);
       if (!card) return;
       grip.setPointerCapture(e.pointerId);
-      let to = from, lastY = e.clientY, raf = 0, moved = false;
+      const gs0 = galGet(p);
+      // si sposta tutto il gruppo selezionato, se la maniglia è di una galleria selezionata
+      const group = galPick.has(gs0[from]) ? gs0.filter(g => galPick.has(g)) : [gs0[from]];
+      let ins = -1, lastY = e.clientY, raf = 0, moved = false;
       list.classList.add("reordering");
-      card.classList.add("gal-moving");
+      list.querySelectorAll(".gal-card").forEach(c => { if (group.includes(gs0[+c.dataset.i])) c.classList.add("gal-moving"); });
+      const newOrder = () => {
+        if (ins < 0) return null;
+        const rest = gs0.filter(g => !group.includes(g));
+        let kk = 0;
+        for (let j = 0; j < ins; j++) if (!group.includes(gs0[j])) kk++;
+        rest.splice(kk, 0, ...group);
+        return rest.every((g, j) => g === gs0[j]) ? null : rest;
+      };
       const mark = () => {
         const cards = Array.from(list.querySelectorAll(".gal-card"));
         list.querySelectorAll(".ins-before, .ins-after").forEach(c => c.classList.remove("ins-before", "ins-after"));
         let k = cards.length;
         for (let j = 0; j < cards.length; j++) { const r = cards[j].getBoundingClientRect(); if (lastY < r.top + r.height / 2) { k = j; break; } }
-        to = k > from ? k - 1 : k;
-        if (to === from) return;
+        ins = k;
+        if (!newOrder()) return;
         if (k < cards.length) cards[k].classList.add("ins-before"); else cards[cards.length - 1].classList.add("ins-after");
       };
       const tick = () => {
@@ -7199,17 +7258,17 @@
         grip.removeEventListener("pointercancel", up);
         list.classList.remove("reordering");
         list.querySelectorAll(".gal-moving, .ins-before, .ins-after").forEach(c => c.classList.remove("gal-moving", "ins-before", "ins-after"));
-        if (!moved || to === from) return;
+        const order = moved && newOrder();
+        if (!order) return;
         const gs = mat();
         const act = gs[galActive[key]];
-        const [g] = gs.splice(from, 1);
-        gs.splice(to, 0, g);
+        gs.splice(0, gs.length, ...order);
         galActive[key] = act ? gs.indexOf(act) : -1;
         fromOpen().clear();
         clearSel();
         markDirty();
         render();
-        flash(to);
+        group.forEach(g => flash(gs.indexOf(g)));
       };
       grip.addEventListener("pointermove", move);
       grip.addEventListener("pointerup", up);
@@ -7264,6 +7323,7 @@
         }
         return;
       }
+      if (selI < 0 && e.key === "Escape" && galPick.size && document.body.contains(list) && !isTextField(document.activeElement)) { galPick.clear(); paintPick(); return; }
       if (selI < 0 || !document.body.contains(list) || document.querySelector(".lightbox-overlay")) return;
       if (isTextField(document.activeElement) || e.target.closest && e.target.closest("#cmpCanvas, .lightbox, #cmpPop")) return;
       const card = cardEl(selI);
@@ -7466,16 +7526,68 @@
       if (added || !copy) toast(`${nn === 1 ? "Foto" : nn + " foto"} ${copy ? (nn === 1 ? "copiata" : "copiate") : (nn === 1 ? "spostata" : "spostate")} in ${dest}.`, "ok");
     };
 
+    // uniforma: stessi valori per tutte le gallerie (o solo per quelle selezionate)
+    const uni = document.getElementById("galUni");
+    if (uni) uni.onclick = () => {
+      const old = document.querySelector(".gal-uni");
+      if (old) { old.remove(); return; }
+      const gs = galGet(p);
+      const targets = gs.some(g => galPick.has(g)) ? gs.filter(g => galPick.has(g)) : gs.slice();
+      const first = (t) => targets.find(g => g.tipo === t);
+      const fm = first("mosaico") || first(undefined), fs = first("scorrimento"), f0 = targets[0];
+      const vm = valsOf(fm || {}, "mosaico"), vs = valsOf(fs || {}, "scorrimento"), vg = valsOf(f0 || {}, "margini");
+      const fld = (f, k, label, v, unit) => { const it = GAL_CTRL[f].items.find(x => x[0] === k); return `<label>${label}${unit ? ` (${unit})` : ""}<input type="number" data-f="${f}" data-k="${k}" min="${it[2]}" max="${it[3]}" step="any" value="${v}"></label>`; };
+      const box = document.createElement("div");
+      box.className = "gal-uni";
+      box.innerHTML = `<div class="who">${galPick.size ? `Alle ${targets.length} gallerie selezionate` : `A tutte le ${targets.length} gallerie`}</div>
+        <h4>Mosaico</h4><div class="row">${fld("mosaico", "altezza", "Altezza", vm.altezza, "px")}${fld("mosaico", "spazio", "Spazio", vm.spazio, "px")}</div>
+        <h4>Scorrimento</h4><div class="row">${fld("scorrimento", "altezza", "Altezza", vs.altezza, "%")}${fld("scorrimento", "velocita", "Velocità", vs.velocita, "")}${fld("scorrimento", "spazio", "Spazio", vs.spazio, "px")}</div>
+        <h4>Margini</h4><div class="row">${fld("margini", "sopra", "Sopra", vg.sopra, "px")}${fld("margini", "sotto", "Sotto", vg.sotto, "px")}</div>
+        <div class="acts"><button type="button" class="sm ghost" data-u="no">Annulla</button><button type="button" class="sm primary" data-u="ok">Applica</button></div>`;
+      document.body.appendChild(box);
+      const r = uni.getBoundingClientRect();
+      box.style.left = Math.max(12, Math.min(r.right - box.offsetWidth, window.innerWidth - box.offsetWidth - 12)) + "px";
+      const below = r.bottom + 6 + box.offsetHeight < window.innerHeight;
+      box.style.top = (below ? r.bottom + 6 : Math.max(12, r.top - 6 - box.offsetHeight)) + "px";
+      const close = () => { box.remove(); document.removeEventListener("pointerdown", off, true); };
+      const off = (e) => { if (!box.contains(e.target) && e.target !== uni) close(); };
+      setTimeout(() => document.addEventListener("pointerdown", off, true), 0);
+      box.querySelector('[data-u="no"]').onclick = close;
+      box.addEventListener("keydown", (e) => { if (e.key === "Enter") box.querySelector('[data-u="ok"]').click(); if (e.key === "Escape") close(); e.stopPropagation(); });
+      box.querySelector('[data-u="ok"]').onclick = () => {
+        const vals = { mosaico: {}, scorrimento: {}, margini: {} };
+        box.querySelectorAll("input[data-f]").forEach(inp => {
+          const v = parseFloat(String(inp.value).replace(",", "."));
+          if (Number.isFinite(v)) vals[inp.dataset.f][inp.dataset.k] = Math.max(+inp.min, Math.min(+inp.max, Math.round(v * 10) / 10));
+        });
+        const gsm = mat();
+        const tg = galPick.size ? gsm.filter(g => galPick.has(g)) : gsm;
+        tg.forEach(g => {
+          if ((g.tipo === "mosaico" || !g.tipo) && Object.keys(vals.mosaico).length) g.mosaico = Object.assign(valsOf(g, "mosaico"), vals.mosaico);
+          if (g.tipo === "scorrimento" && Object.keys(vals.scorrimento).length) g.scorrimento = Object.assign(valsOf(g, "scorrimento"), vals.scorrimento);
+          if (Object.keys(vals.margini).length) g.margini = Object.assign(valsOf(g, "margini"), vals.margini);
+        });
+        close();
+        markDirty();
+        render();
+        toast(`Valori applicati a ${tg.length} ${tg.length === 1 ? "galleria" : "gallerie"}.`, "ok");
+      };
+      const fi = box.querySelector("input"); if (fi) fi.focus();
+    };
+
     // aggiungi testo: un blocco di testo tra le gallerie
     const addTxt = document.getElementById("galAddTxt");
     if (addTxt) addTxt.onclick = () => {
       const gs = mat();
-      gs.push({ tipo: "testo", testo: "", dim: "m", allinea: "sinistra" });
+      const g = { tipo: "testo", testo: "", dim: "m", allinea: "sinistra" };
+      gs.unshift(g);
+      galOpen.add(g); galShowPrev.add(g);
+      if (galActive[key] >= 0) galActive[key]++;
+      fromOpen().clear();
       clearSel();
       markDirty();
       render();
-      const cards = list.querySelectorAll(".gal-card");
-      const last = cards[cards.length - 1];
+      const last = list.querySelector(".gal-card");
       if (last) {
         last.scrollIntoView({ behavior: "smooth", block: "center" });
         const ta = last.querySelector(".gal-tx");
@@ -7506,13 +7618,15 @@
         const g = { tipo: t, foto: [] };
         if (t === "composizione") g.composizione = { righe: 6, foto: [] };
         if (t === "scorrimento") g.scorrimento = { ...GAL_SC_DEF };
-        gs.push(g);
-        if (t === "composizione") galActive[key] = gs.length - 1;
+        gs.unshift(g);
+        galOpen.add(g);
+        if (galActive[key] >= 0) galActive[key]++;
+        if (t === "composizione") { galShowPrev.add(g); galActive[key] = 0; }
+        fromOpen().clear();
         clearSel();
         markDirty();
         render();
-        const cards = list.querySelectorAll(".gal-card");
-        const last = cards[cards.length - 1];
+        const last = list.querySelector(".gal-card");
         if (last) {
           last.scrollIntoView({ behavior: "smooth", block: "center" });
           const ti = last.querySelector(".gal-title");
