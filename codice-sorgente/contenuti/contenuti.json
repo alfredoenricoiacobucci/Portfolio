@@ -1367,7 +1367,12 @@
           "h": 5228
         }
       },
-      "anteprima": "Shot by AE x Gioia Morisco (Q-50-100)-60.jpg"
+      "anteprima": "Shot by AE x Gioia Morisco (Q-50-100)-60.jpg",
+      "video": [],
+      "anteprimaScorrimento": {
+        "da": 30,
+        "a": 98.2
+      }
     },
     {
       "section": "pro",
@@ -5042,21 +5047,27 @@
       "video": [],
       "gallerie": [
         {
-          "tipo": "mosaico",
+          "tipo": "scorrimento",
           "foto": [
             "PB-01.jpg",
-            "PB-02.jpg",
             "PB-03.jpg",
-            "PB-04.jpg",
             "PB-05.jpg",
             "PB-06.jpg",
             "PB-07.jpg",
-            "PB-08.jpg",
-            "PB-09.jpg",
-            "PB-10.jpg",
-            "PB-11.jpg",
-            "PB-12.jpg",
-            "PB-13.jpg",
+            "PB-04.jpg",
+            "PB-02.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "bianco"
+          },
+          "titolo": "Humberto jimenez rios"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
             "PB-14.jpg",
             "PB-15.jpg",
             "PB-16.jpg",
@@ -5074,7 +5085,43 @@
             "PB-28.jpg",
             "PB-29.jpg",
             "PB-30.jpg",
-            "PB-31.jpg",
+            "PB-31.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Khao Niew Lao Theater"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "PB-50.jpg",
+            "PB-51.jpg",
+            "PB-52.jpg",
+            "PB-53.jpg",
+            "PB-54.jpg",
+            "PB-55.jpg",
+            "PB-56.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "bianco"
+          }
+        },
+        {
+          "tipo": "mosaico",
+          "foto": [
+            "PB-08.jpg",
+            "PB-09.jpg",
+            "PB-10.jpg",
+            "PB-11.jpg",
+            "PB-12.jpg",
+            "PB-13.jpg",
             "PB-32.jpg",
             "PB-33.jpg",
             "PB-34.jpg",
@@ -5093,13 +5140,6 @@
             "PB-47.jpg",
             "PB-48.jpg",
             "PB-49.jpg",
-            "PB-50.jpg",
-            "PB-51.jpg",
-            "PB-52.jpg",
-            "PB-53.jpg",
-            "PB-54.jpg",
-            "PB-55.jpg",
-            "PB-56.jpg",
             "PB-57.jpg",
             "PB-58.jpg",
             "PB-59.jpg",
@@ -5488,7 +5528,11 @@
           ],
           "titolo": "30° edizione"
         }
-      ]
+      ],
+      "anteprimaScorrimento": {
+        "da": 5.2,
+        "a": 88.5
+      }
     },
     {
       "section": "pro",
