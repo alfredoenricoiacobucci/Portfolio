@@ -697,7 +697,7 @@
       "section": "art",
       "slug": "labirinto-di-cemento",
       "titolo": "Labirinto di cemento\nJesi (AN) 2024",
-      "descrizione": "É freddo. Non so dove sono, non so dove andare... mi sono perso. Nel labirinto ho incontrato qualcuno che conoscevo gia, \nera il mio riflesso di qualche anno fa. Dopo essermi avventurato in qualcosa di più grande di me ho capito che se non fossi morto, avrei raggiunto un mondo nuovo. Proprio quando stavo per mollare ho incontrato colui che sarei diventato dopo, \nmi ha preso per mano e mi ha accompagnato fuori. Ora sono qui.",
+      "descrizione": "É freddo. Non so dove sono, non so dove andare... mi sono perso. Nel labirinto ho incontrato qualcuno che conoscevo gia, \nera il mio riflesso di qualche anno fa. Dopo essermi avventurato in qualcosa di più grande di me ho capito che se non fossi \nmorto, avrei raggiunto un mondo nuovo. Proprio quando stavo per mollare ho incontrato colui che sarei diventato dopo, \nmi ha preso per mano e mi ha accompagnato fuori. Ora sono qui.",
       "camera": "Sony Alpha 6000",
       "ottica": "Sony SEL24-105 G f4.0",
       "luce": "Naturale",
@@ -801,7 +801,8 @@
       "anteprimaPosizione": {
         "x": 50,
         "y": 17
-      }
+      },
+      "video": []
     },
     {
       "section": "art",
