@@ -729,24 +729,52 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     setTextRowMinW(Math.round(sw * (1 - 2 * ml / 100)));
   }, [ASP.marginLaterale]);
 
-  // About: testo e contatti tengono la loro larghezza (si scorre di lato);
-  // quando la finestra diventa molto stretta tutto il blocco si rimpicciolisce in proporzione.
+  // About: le due colonne hanno l'altezza che hanno sulla finestra larga.
+  // Stringendo, il testo che andrebbe a capo scivola nell'altra colonna (testo continuo);
+  // quando entrambe le colonne sono piene, tutto il blocco si rimpicciolisce in proporzione.
   const aboutTextRef = useRef(null);
-  const [aboutZoom, setAboutZoom] = useState(1);
+  const aboutMeasureRef = useRef(null);
+  const [aboutLay, setAboutLay] = useState({ mode: "normal" });
+  const aboutDesc = selectedProject && selectedProject.name === "About" ? `${selectedProject.description || ""}|${selectedProject.description2 || ""}` : "";
   useEffect(() => {
-    const el = aboutTextRef.current;
-    if (!el || !textRowMinW) return;
+    const sec = aboutTextRef.current, m = aboutMeasureRef.current;
+    if (!sec || !m || !textRowMinW) return;
+    const one = m.querySelector('[data-m="one"]'), two = m.querySelector('[data-m="two"]');
+    const cols = m.querySelector('[data-m="cols"]'), ct = m.querySelector('[data-m="contacts"]');
+    const gapPct = parseFloat(ASP.gapColonne) || 0;
+    const colW = (W) => (W - (W * gapPct) / 100) / 2;
+    const hAt = (el, W) => { el.style.width = colW(W) + "px"; return el.offsetHeight; };
+    const fits = (W, H) => { cols.style.width = W + "px"; cols.style.height = H + "px"; return cols.scrollWidth <= cols.clientWidth + 1; };
+    let raf = 0;
     const measure = () => {
-      const cs = getComputedStyle(el);
-      const avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const z = avail < textRowMinW * 0.6 ? Math.max(0.2, avail / textRowMinW) : 1;
-      setAboutZoom((prev) => (Math.abs(prev - z) < 0.002 ? prev : z));
+      raf = 0;
+      // telefoni e tablet: come sempre (colonne una sotto l'altra)
+      if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) { setAboutLay((p) => (p.mode === "normal" ? p : { mode: "normal" })); return; }
+      const cs = getComputedStyle(sec);
+      const A = sec.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const refW = Math.max(textRowMinW, A);
+      const H = Math.ceil(Math.max(hAt(one, refW), hAt(two, refW))) + 2;
+      const minW = ct.scrollWidth + 24; // i contatti non devono stringersi
+      let next;
+      if (Math.max(hAt(one, A), hAt(two, A)) <= H && A >= minW) next = { mode: "normal" };
+      else if (A >= minW && fits(A, H)) next = { mode: "flow", H };
+      else {
+        // larghezza minima in cui tutto sta in due colonne: lì si disegna e poi si rimpicciolisce
+        let lo = Math.max(A, minW), hi = Math.max(refW, lo);
+        if (!fits(hi, H)) hi = lo = hi;
+        else while (hi - lo > 1) { const mid = (lo + hi) / 2; if (fits(mid, H)) hi = mid; else lo = mid; }
+        const W = Math.ceil(hi);
+        next = { mode: "zoom", H, W, z: Math.min(1, A / W) };
+      }
+      setAboutLay((p) => (p.mode === next.mode && p.H === next.H && p.W === next.W && Math.abs((p.z || 1) - (next.z || 1)) < 0.002 ? p : next));
     };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  });
+    const ro = new ResizeObserver(schedule);
+    ro.observe(sec);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+    return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, [textRowMinW, aboutDesc, ASP.gapColonne, ASP.marginLaterale]);
 
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
@@ -1321,20 +1349,40 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
-            <div ref={aboutTextRef} className={`w-full about-text-section${aboutZoom < 1 ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflowX: aboutZoom < 1 ? 'hidden' : 'auto' }}>
-              <div style={{ minWidth: textRowMinW ? textRowMinW + 'px' : undefined, zoom: aboutZoom < 1 ? aboutZoom : undefined }}>
-              <div className={`flex ${aboutZoom < 1 ? "flex-row" : "flex-col md:flex-row"} text-base leading-relaxed`} style={{ gap: ASP.gapColonne + '%' }} lang="it">
+            <div ref={aboutTextRef} className={`w-full relative about-text-section${aboutLay.mode === "zoom" ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflow: 'hidden' }}>
+              {/* misure nascoste: servono a decidere come disporre il testo */}
+              <div ref={aboutMeasureRef} aria-hidden="true" className="text-base leading-relaxed" style={{ position: 'absolute', left: 0, top: 0, height: 0, overflow: 'hidden', visibility: 'hidden', pointerEvents: 'none' }}>
+                <div data-m="one"><p className="whitespace-pre-line project-text">{selectedProject.description}</p></div>
+                <div data-m="two"><p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p></div>
+                <div data-m="cols" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto' }}>
+                  <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
+                  <p className="whitespace-pre-line project-text" style={{ marginTop: '1.5em' }}>{selectedProject.description2 || ""}</p>
+                </div>
+                <div data-m="contacts" className="text-sm" style={{ display: 'inline-flex', gap: '3rem', whiteSpace: 'nowrap' }}>
+                  <span style={{ paddingLeft: 23 }}>{S.TELEFONO}</span><span style={{ paddingLeft: 23 }}>{S.EMAIL_DESTINATARIO}</span><span style={{ paddingLeft: 23 }}>{S.INSTAGRAM_HANDLE}</span>
+                </div>
+              </div>
+              <div style={aboutLay.mode === "zoom" ? { width: aboutLay.W + 'px', zoom: aboutLay.z } : undefined}>
+              {aboutLay.mode === "normal" ? (
+              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 </div>
                 {/* Colonna destra — testo */}
-                <div className={`flex-1 min-w-0 ${aboutZoom < 1 ? "" : "mt-6 md:mt-0"}`}>
+                <div className="flex-1 min-w-0 mt-6 md:mt-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
                 </div>
               </div>
+              ) : (
+              /* testo continuo su due colonne della stessa altezza */
+              <div className="text-base leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: aboutLay.H + 'px' }}>
+                <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
+                <p className="whitespace-pre-line project-text" style={{ marginTop: '1.5em' }}>{selectedProject.description2 || ""}</p>
+              </div>
+              )}
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
-              <div className={`flex items-center text-sm ${mode === "professional" ? "text-white/60" : "text-black/55"}`} style={{ marginTop: "4rem", justifyContent: "space-between" }}>
+              <div className={`flex items-center text-sm whitespace-nowrap ${mode === "professional" ? "text-white/60" : "text-black/55"}`} style={{ marginTop: "4rem", justifyContent: "space-between", gap: "2rem" }}>
                 <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {S.TELEFONO}
