@@ -159,9 +159,18 @@ export async function getStaticProps() {
     const galleries = rawGalleries.map((g) => {
       const titolo = typeof g.titolo === "string" ? g.titolo.trim() : "";
       const gal = galleryOf(g);
-      return gal ? { ...gal, title: titolo } : null;
+      // spazio sopra e sotto scelto nel Manager (px); senza: quello delle Impostazioni
+      const mg = g.margini || {};
+      const px = (v) => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(400, Number(v))));
+      return gal ? { ...gal, title: titolo, mt: px(mg.sopra), mb: px(mg.sotto) } : null;
     }).filter(Boolean);
     function galleryOf(g) {
+      // blocco di testo tra le gallerie
+      if (g.tipo === "testo") {
+        const text = typeof g.testo === "string" ? g.testo.replace(/\s+$/, "") : "";
+        if (!text.trim()) return null;
+        return { type: "testo", text, size: ["s", "m", "l", "xl"].includes(g.dim) ? g.dim : "m", align: { sinistra: "left", centro: "center", destra: "right" }[g.allinea] || "left", upper: !!g.maiuscolo };
+      }
       if (g.tipo === "composizione") {
         const composition = buildComposition(g.composizione);
         return composition ? { type: "composizione", composition } : null;
@@ -1333,16 +1342,30 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 {g.title}
               </div>
             ) : null;
+            if (g.type === "testo") {
+              const sz = { s: 1.1, m: 1.6, l: 2.6, xl: 4.2 }[g.size] || 1.6;
+              const big = g.size === "l" || g.size === "xl";
+              return (
+                <div key={gi} style={{ paddingTop: g.mt != null ? g.mt + "px" : ASP.galleriaMarginTop + "rem", paddingBottom: g.mb ? g.mb + "px" : undefined }}>
+                  {titleEl}
+                  <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+                    <div style={{ containerType: "inline-size" }}>
+                      <p className="whitespace-pre-wrap" lang="it" style={{ fontSize: `max(9px, ${sz}cqw)`, fontWeight: big ? 800 : 400, lineHeight: big ? 1.08 : 1.5, letterSpacing: big ? "-0.01em" : undefined, textAlign: g.align, textTransform: g.upper ? "uppercase" : undefined, overflowWrap: "break-word" }}>{g.text}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             if (g.type === "scorrimento") {
               return (
-                <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem" }}>
+                <div key={gi} style={{ paddingTop: g.mt != null ? g.mt + "px" : ASP.galleriaMarginTop + "rem", paddingBottom: g.mb ? g.mb + "px" : undefined }}>
                   {titleEl}
                   <ScrollGallery images={selectedProject.images || []} idx={g.idx} settings={g.scroll} altFor={viewerAlt} onImageClick={openAt} />
                 </div>
               );
             }
             return (
-              <div key={gi} style={{ paddingTop: ASP.galleriaMarginTop + "rem" }}>
+              <div key={gi} style={{ paddingTop: g.mt != null ? g.mt + "px" : ASP.galleriaMarginTop + "rem", paddingBottom: g.mb ? g.mb + "px" : undefined }}>
                 {titleEl}
                 <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
                 {g.type === "composizione" ? (
