@@ -622,6 +622,7 @@
   @keyframes galFlash { 0% { box-shadow: 0 0 0 2px rgba(200,16,46,0.9); } 100% { box-shadow: 0 0 0 2px rgba(200,16,46,0); } }
   .gal-card.gal-flash { animation: galFlash 900ms ease-out; }
   .gal-ph.sel { outline: 2px solid var(--red); outline-offset: 2px; }
+  .gal-ph.cur::after { content: ""; position: absolute; inset: 0; border-radius: 5px; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.92); pointer-events: none; }
   .gal-selinfo { color: #fff !important; opacity: 1 !important; text-transform: none; letter-spacing: 0; font-weight: 500; margin-left: 6px; }
   .gal-ghost { position: fixed; left: -1000px; top: -1000px; width: 64px; height: 64px; border-radius: 6px; overflow: visible; }
   .gal-ghost img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; box-shadow: 4px 4px 0 #333, 8px 8px 0 #222; }
@@ -715,9 +716,10 @@
   .gal-sw:hover { border-color: #666; }
   .gal-sw.on { box-shadow: 0 0 0 2px #0e0e0e, 0 0 0 4px var(--red); }
   .gal-sw[data-k="trasparente"] { background: var(--sec-bg, #f8f4ed); }
-  .gal-ph.narrow .gal-ph-acts { flex-direction: column; align-items: stretch; gap: 2px; padding: 22px 3px 3px; }
-  .gal-ph.narrow .gal-ph-acts button { padding: 2px 1px; font-size: 9.5px; letter-spacing: -0.01em; text-align: center; overflow: hidden; text-overflow: clip; }
-  .gal-ph.narrow .gal-ph-acts button.x { margin-left: 0; display: flex; justify-content: center; }
+  .gal-ph.narrow .gal-ph-acts { justify-content: space-between; gap: 2px; padding: 14px 3px 3px; }
+  .gal-ph.narrow .gal-ph-acts button { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 3px 0; }
+  .gal-ph.narrow .gal-ph-acts button.x { margin-left: 0; padding: 3px 0; }
+  .gal-ph.narrow .gal-ph-acts svg { width: 12px !important; height: 12px !important; }
   .gal-mini-open { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
   .gal-mini-open:hover { color: #fff; }
   .gal-mini-open + .gal-sub { margin-top: 16px; }
@@ -1332,6 +1334,31 @@
   .modal .field { margin-bottom: 14px; }
   .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
   .modal a { color: var(--red); text-decoration: underline; }
+  .mg-modal { max-width: 920px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; padding: 0; }
+  .mg-head { display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .mg-head h2 { margin: 0 !important; }
+  .mg-body { overflow-y: auto; padding: 18px 22px; overscroll-behavior: contain; }
+  .mg-foot { display: flex; gap: 8px; justify-content: flex-end; align-items: center; padding: 14px 22px; border-top: 1px solid var(--border); }
+  .mg-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+  .mg-pick label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text2); transition: border-color 140ms ease, background 140ms ease; }
+  .mg-pick label:hover { border-color: #444; color: var(--text); }
+  .mg-pick label.on { border-color: var(--red); background: rgba(200,16,46,0.08); color: #fff; }
+  .mg-pick input { accent-color: var(--red); }
+  .mg-pick img { width: 44px; height: 32px; object-fit: cover; border-radius: 3px; background: #000; flex-shrink: 0; }
+  .mg-pick .n { font-size: 11px; color: var(--text3); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .mg-field { margin-bottom: 22px; }
+  .mg-field > label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin-bottom: 8px; }
+  .mg-src { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .mg-src > div { position: relative; border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px 10px; background: #0d0d0d; min-width: 0; }
+  .mg-src .who { font-size: 10.5px; color: var(--text3); margin-bottom: 5px; padding-right: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mg-src .val { font-size: 12.5px; color: var(--text2); white-space: pre-wrap; max-height: 150px; overflow-y: auto; line-height: 1.5; }
+  .mg-src .val.empty { color: var(--text3); font-style: italic; }
+  .mg-src button { position: absolute; right: 7px; top: 6px; padding: 2px 8px; font-size: 11px; }
+  .mg-field textarea, .mg-field input[type=text] { width: 100%; }
+  .mg-exp { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .mg-gals { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mg-gals span { font-size: 11.5px; padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); color: var(--text2); }
+  .mg-gals span i { font-style: normal; color: var(--text3); margin-left: 6px; }
 
 
   /* ---- NOTIFICATIONS ---- */
@@ -5311,8 +5338,26 @@
     clearTimeout(undoTimer);
     undoTimer = setTimeout(() => { undoTimer = 1; undoFlush(); }, 400);
   }
-  function refreshView() {
+  // punto di riferimento nella pagina: la prima galleria visibile (o la posizione)
+  function viewAnchor() {
     const y = window.scrollY;
+    const side = Array.from(document.querySelectorAll(".sidebar, .sidebar *")).filter(el => el.scrollTop > 0).map(el => [el.className, el.scrollTop]);
+    for (const el of document.querySelectorAll("#content .gal-card[data-i]")) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > 120) return { y, side, sel: `#content .gal-card[data-i="${el.dataset.i}"]`, top: r.top };
+    }
+    return { y, side };
+  }
+  function restoreAnchor(a) {
+    const el = a.sel && document.querySelector(a.sel);
+    if (el) window.scrollBy(0, el.getBoundingClientRect().top - a.top);
+    else window.scrollTo(0, a.y);
+    a.side.forEach(([cls, top]) => { const s = Array.from(document.querySelectorAll(".sidebar, .sidebar *")).find(x => x.className === cls); if (s) s.scrollTop = top; });
+  }
+  function refreshView(anchor) {
+    const a = anchor || viewAnchor();
+    // la pagina non si accorcia mentre si ridisegna (altrimenti il browser sposta la vista)
+    document.body.style.minHeight = document.documentElement.scrollHeight + "px";
     renderSidebar();
     if (activeSection === "contenuti" && currentKey) {
       const isProj = currentKey !== "landing" && currentKey !== "aboutArt" && currentKey !== "aboutPro";
@@ -5334,16 +5379,23 @@
       }
     }
     if (activeSection === "versioni") renderVersioni();
-    requestAnimationFrame(() => window.scrollTo(0, y));
+    restoreAnchor(a);
+    requestAnimationFrame(() => {
+      restoreAnchor(a);
+      setTimeout(() => { document.body.style.minHeight = ""; }, 500);
+    });
   }
   function undoApply(json) {
+    const anchor = viewAnchor();
+    const ui = window.__mpGalUiSave ? window.__mpGalUiSave() : null;
     undoApplying = true;
     Object.keys(state).forEach(k => delete state[k]);
     Object.assign(state, JSON.parse(json));
+    if (ui && window.__mpGalUiRestore) window.__mpGalUiRestore(ui);
     undoLast = json;
     markDirty();
     undoApplying = false;
-    refreshView();
+    refreshView(anchor);
   }
   function isTextField(el) {
     return el && (el.tagName === "TEXTAREA" || el.isContentEditable ||
@@ -5646,6 +5698,143 @@
     else fetchPhotos(key);
   }
 
+  // ========== UNIRE PROGETTI ==========
+  // Si sceglie con quali progetti unire quello aperto, poi si scrivono titolo,
+  // descrizione e attrezzatura/esposizioni avendo davanti quelli originali.
+  // Le gallerie si mettono tutte in fila; le foto finiscono nella cartella del progetto aperto.
+  function openMerge(p) {
+    const keyOf = (x) => `${x.section}/${x.slug}`;
+    const short = (x) => (x.titolo || "").split("\n")[0].trim() || x.slug;
+    const others = state.projects.filter(x => x.section === p.section && x !== p);
+    if (!others.length) { toast("Non ci sono altri progetti in questa sezione.", ""); return; }
+    const picked = new Set();
+    const bg = document.createElement("div");
+    bg.className = "modal-backdrop";
+    bg.innerHTML = `<div class="modal mg-modal" role="dialog" aria-modal="true" aria-label="Unisci progetti">
+      <div class="mg-head"><h2>Unisci «${escapeHtml(short(p))}» con…</h2></div>
+      <div class="mg-body"></div>
+      <div class="mg-foot"><span class="cmp-sp" style="flex:1"></span><button class="ghost" data-m="back" hidden>Indietro</button><button class="ghost" data-m="close">Annulla</button><button class="primary" data-m="next" disabled>Avanti</button></div>
+    </div>`;
+    document.body.appendChild(bg);
+    requestAnimationFrame(() => bg.classList.add("show"));
+    const body = bg.querySelector(".mg-body"), next = bg.querySelector('[data-m="next"]'), back = bg.querySelector('[data-m="back"]');
+    const close = () => { bg.classList.remove("show"); setTimeout(() => bg.remove(), 220); document.removeEventListener("keydown", onKey, true); };
+    const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    bg.addEventListener("mousedown", (e) => { if (e.target === bg) close(); });
+    bg.querySelector('[data-m="close"]').onclick = close;
+    const cover = (x) => { const k = keyOf(x), ph = photosByProject[k]; const n = x.anteprima || x.banner || (x.ordine || [])[0]; if (!n) return ""; const f = ph && ph.find(y => y.name === n); const u = f ? f.url : localPhotoUrl(`codice-sorgente/contenuti/${x.section}/${x.slug}`, n); return u && u.startsWith("/local-photo/") ? "/thumb/" + u.slice(13) : u; };
+    let step = 1;
+    function showPick() {
+      step = 1; back.hidden = true; next.textContent = "Avanti"; next.disabled = !picked.size;
+      body.innerHTML = `<div class="mg-pick">${others.map((x, i) => `<label class="${picked.has(x) ? "on" : ""}"><input type="checkbox" data-i="${i}" ${picked.has(x) ? "checked" : ""}>${cover(x) ? `<img src="${cover(x)}" alt="" loading="lazy">` : ""}<span>${escapeHtml(short(x))}</span><span class="n">${(x.ordine || []).length}</span></label>`).join("")}</div>`;
+      body.querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
+        const x = others[+cb.dataset.i];
+        cb.checked ? picked.add(x) : picked.delete(x);
+        cb.closest("label").classList.toggle("on", cb.checked);
+        next.disabled = !picked.size;
+      });
+    }
+    const all = () => [p, ...others.filter(x => picked.has(x))];
+    const draft = {};
+    function srcHtml(field, label) {
+      return `<div class="mg-src">${all().map((x, i) => { const v = (x[field] || "").trim(); return `<div><div class="who">${escapeHtml(short(x))}</div><div class="val${v ? "" : " empty"}">${v ? escapeHtml(v) : "vuoto"}</div>${v ? `<button type="button" class="ghost sm" data-use="${field}" data-i="${i}" title="Usa questo testo">Usa</button>` : ""}</div>`; }).join("")}</div>`;
+    }
+    function showFields() {
+      step = 2; back.hidden = false; next.textContent = "Unisci"; next.disabled = false;
+      const ps = all();
+      if (!("titolo" in draft)) {
+        ["titolo", "descrizione", "camera", "ottica", "luce"].forEach(f => draft[f] = p[f] || "");
+        draft.esposizioni = [];
+        ps.forEach(x => (x.esposizioni || []).forEach(e => draft.esposizioni.push({ ...e })));
+      }
+      const txt = (f, label, rows) => `<div class="mg-field"><label>${label}</label>${srcHtml(f)}${rows ? `<textarea data-f="${f}" rows="${rows}" lang="it">${escapeHtml(draft[f])}</textarea>` : `<input type="text" data-f="${f}" value="${escapeHtml(draft[f])}">`}</div>`;
+      const gals = ps.map(x => galGet(x).map(g => `<span>${escapeHtml((g.titolo || "").trim() || short(x))}<i>${(GAL_TIPI.find(t => t[0] === g.tipo) || GAL_TIPI[0])[1]}</i></span>`).join("")).join("");
+      body.innerHTML = txt("titolo", "Titolo", 3) + txt("descrizione", "Descrizione", 7) +
+        (p.section === "art"
+          ? `<div class="mg-field"><label>Esposizioni</label><div id="mgExp"></div><button type="button" class="ghost sm" id="mgExpAdd">+ Aggiungi esposizione</button></div>`
+          : txt("camera", "Camera") + txt("ottica", "Ottica") + txt("luce", "Luce")) +
+        `<div class="mg-field"><label>Gallerie</label><div class="mg-gals">${gals}</div></div>`;
+      body.querySelectorAll("[data-f]").forEach(el => el.oninput = () => { draft[el.dataset.f] = el.value; });
+      body.querySelectorAll("[data-use]").forEach(b => b.onclick = () => {
+        const f = b.dataset.use, el = body.querySelector(`[data-f="${f}"]`);
+        el.value = draft[f] = ps[+b.dataset.i][f] || "";
+        el.focus();
+      });
+      if (p.section === "art") {
+        const box = body.querySelector("#mgExp");
+        const paint = () => {
+          box.innerHTML = draft.esposizioni.map((e, i) => `<div class="mg-exp">${["nome", "data", "luogo", "info"].map(k => `<input type="text" data-e="${i}" data-k="${k}" value="${escapeHtml(e[k] || "")}" placeholder="${{ nome: "Nome evento", data: "Data", luogo: "Luogo", info: "Info" }[k]}">`).join("")}<button type="button" class="cmp-ib" data-x="${i}" title="Togli" aria-label="Togli">${cmpIcon("remove")}</button></div>`).join("");
+          box.querySelectorAll("[data-e]").forEach(el => el.oninput = () => { draft.esposizioni[+el.dataset.e][el.dataset.k] = el.value; });
+          box.querySelectorAll("[data-x]").forEach(b => b.onclick = () => { draft.esposizioni.splice(+b.dataset.x, 1); paint(); });
+        };
+        paint();
+        body.querySelector("#mgExpAdd").onclick = () => { draft.esposizioni.push({ nome: "", data: "", luogo: "", info: "" }); paint(); };
+      }
+      body.scrollTop = 0;
+    }
+    back.onclick = showPick;
+    next.onclick = async () => {
+      if (step === 1) { showFields(); return; }
+      const ps = all(), rest = ps.slice(1);
+      if (!await confirm(`Unire ${rest.map(x => `«${short(x)}»`).join(", ")} in «${(draft.titolo || "").split("\n")[0] || short(p)}»?\n\nLe foto verranno spostate nella cartella di questo progetto. L'unione non si può annullare con Cmd+Z.`)) return;
+      next.disabled = true; next.innerHTML = '<span class="btn-spinner"></span> Unione…';
+      try {
+        await doMerge(p, rest, draft);
+        close();
+      } catch (e) {
+        toast("Unione non riuscita: " + e.message, "err");
+        next.disabled = false; next.textContent = "Unisci";
+      }
+    };
+    showPick();
+  }
+  async function doMerge(p, rest, draft) {
+    if (!await checkLocalServer()) throw new Error("si può fare solo dall'app sul Mac");
+    const folder = (x) => `codice-sorgente/contenuti/${x.section}/${x.slug}`;
+    const img = /\.(jpg|jpeg|png|webp|gif)$/i;
+    // le gallerie diventano elenchi espliciti prima di spostare le foto
+    const namesA = (await storageListMedia(folder(p))).map(f => f.name);
+    galMat(p, namesA);
+    for (const x of rest) {
+      const names = (await storageListMedia(folder(x))).map(f => f.name);
+      const gs = JSON.parse(JSON.stringify(galMat(x, names)));
+      const r = await fetch("/move-files", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ from: folder(x), to: folder(p) }) });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.ok) throw new Error(res.error || "spostamento delle foto non riuscito");
+      const map = res.map || {};
+      const m = (n) => map[n] || n;
+      gs.forEach(g => {
+        if (Array.isArray(g.foto)) g.foto = g.foto.map(m);
+        if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto.forEach(it => { if (it.file) it.file = m(it.file); });
+        p.gallerie.push(g);
+      });
+      const ord = (x.ordine || []).filter(n => names.includes(n));
+      names.forEach(n => { if (!ord.includes(n)) ord.push(n); });
+      p.ordine = [...(p.ordine || []), ...ord.map(m).filter(n => img.test(n))];
+      p.dimensioni = p.dimensioni || {};
+      Object.entries(x.dimensioni || {}).forEach(([n, d]) => { p.dimensioni[m(n)] = d; });
+      if (Array.isArray(x.video) && x.video.length) p.video = [...(p.video || []), ...x.video.map(m)];
+      if (!p.banner && x.banner) p.banner = m(x.banner);
+      if (!p.anteprima && x.anteprima) p.anteprima = m(x.anteprima);
+      state.projects = state.projects.filter(y => y !== x);
+      delete photosByProject[`${x.section}/${x.slug}`];
+    }
+    p.titolo = draft.titolo || p.titolo;
+    p.descrizione = draft.descrizione || "";
+    if (p.section === "art") p.esposizioni = (draft.esposizioni || []).filter(e => ["nome", "data", "luogo", "info"].some(k => (e[k] || "").trim()));
+    else ["camera", "ottica", "luce"].forEach(f => p[f] = draft[f] || "");
+    delete photosByProject[`${p.section}/${p.slug}`];
+    markDirty();
+    undoReset();
+    await saveLocal(true);
+    currentKey = `${p.section}/${p.slug}`;
+    renderSidebar();
+    refreshView();
+    window.scrollTo(0, 0);
+    toast(`Progetti uniti in «${(p.titolo || "").split("\n")[0]}». Pubblica per metterli online.`, "ok");
+  }
+
   function renderProject(key) {
     const [section, slug] = key.split("/");
     const p = state.projects.find(x => x.section === section && x.slug === slug);
@@ -5660,6 +5849,7 @@
           <div class="slug">contenuti/${section}/${slug}/</div>
         </div>
         <div class="actions">
+          <button class="ghost" id="btnMerge">Unisci con…</button>
           <button class="ghost" id="btnDelete">Elimina progetto</button>
         </div>
       </div>
@@ -5811,6 +6001,8 @@
     // Gallerie (mosaico, composizione, scorrimento) e video del banner
     setupGallerie(p, key);
     setupBannerVideos(p, key);
+
+    document.getElementById("btnMerge").onclick = () => openMerge(p);
 
     // Delete
     document.getElementById("btnDelete").onclick = async () => {
@@ -6317,6 +6509,8 @@
   const GAL_MO_DEF = { altezza: 640, spazio: 6 };
   Object.assign(CMP_ICO_EXTRA, {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+    banner: '<rect x="2" y="6" width="20" height="12" rx="1.5"/><path d="M2 14l5-4 4 3 4-3 7 5"/>',
+    home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
     eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     eyeoff: '<path d="M2 12s3.6-7 10-7c2 0 3.7.7 5.1 1.6M22 12s-3.6 7-10 7c-2 0-3.7-.7-5.1-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
     down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
@@ -6353,6 +6547,28 @@
   const galFromOpen = {}; // progetto -> indici delle gallerie con "Dal progetto" aperto
   const galClosed = new WeakSet(); // gallerie ridotte al solo titolo
   const galNoPrev = new WeakSet(); // gallerie con l'anteprima del sito nascosta
+  // Annulla/Ripeti ricostruiscono i dati: si ricorda quali gallerie erano ridotte o senza anteprima
+  window.__mpGalUiSave = () => {
+    const out = {};
+    (state.projects || []).forEach(p => {
+      const gs = Array.isArray(p.gallerie) && p.gallerie.length ? p.gallerie : galDerived.get(p);
+      if (gs) out[`${p.section}/${p.slug}`] = gs.map(g => ({ c: galClosed.has(g), n: galNoPrev.has(g), t: g.titolo || "", tipo: g.tipo }));
+    });
+    return out;
+  };
+  window.__mpGalUiRestore = (ui) => {
+    (state.projects || []).forEach(p => {
+      const o = ui[`${p.section}/${p.slug}`];
+      if (!o) return;
+      galGet(p).forEach((g, i) => {
+        const m = o.find(x => !x.used && x.t && x.t === (g.titolo || "") && x.tipo === g.tipo) || (o[i] && !o[i].used ? o[i] : null);
+        if (!m) return;
+        m.used = true;
+        if (m.c) galClosed.add(g);
+        if (m.n) galNoPrev.add(g);
+      });
+    });
+  };
 
   function setupGallerie(p, key) {
     const list = document.getElementById("galList");
@@ -6394,7 +6610,8 @@
 
     // selezione di più foto (Cmd o Maiuscole + clic), sempre dentro una sola galleria
     let selI = -1, selN = new Set(), lastSel = null;
-    const clearSel = () => { selI = -1; selN = new Set(); lastSel = null; };
+    let curSel = null, selAnchor = null, selBase = new Set();
+    const clearSel = () => { selI = -1; selN = new Set(); lastSel = null; curSel = null; selAnchor = null; selBase = new Set(); };
 
     function countOf(g) {
       if (g.tipo === "composizione") return ((g.composizione && g.composizione.foto) || []).filter(it => !cmpIsText(it)).length;
@@ -6426,23 +6643,48 @@
         const tags = (p.banner === n ? `<em>Banner</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
         const isPlaced = placed && placed.has(n);
         const isSel = selI === i && selN.has(n);
-        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}${isSel ? " sel" : ""}${ratio(n) * 92 < 150 ? " narrow" : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}">
+        const narrow = ratio(n) * 92 < 150;
+        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}${isSel ? " sel" : ""}${selI === i && n === curSel ? " cur" : ""}${narrow ? " narrow" : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}">
           <img src="${thumbOf(n)}" alt="" draggable="false" loading="lazy" decoding="async">
           ${tags ? `<span class="gal-tags">${tags}</span>` : ""}
           ${isPlaced ? `<span class="gal-in">${cmpIcon("check")}</span>` : ""}
           <span class="gal-ph-acts">
-            <button type="button" data-g="banner" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come banner">Banner</button>
-            <button type="button" data-g="ante" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come anteprima nella home">Anteprima</button>
+            <button type="button" data-g="banner" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come banner" aria-label="Usa come banner">${narrow ? cmpIcon("banner") : "Banner"}</button>
+            <button type="button" data-g="ante" data-i="${i}" data-name="${escapeHtml(n)}" title="Usa come anteprima nella home" aria-label="Usa come anteprima nella home">${narrow ? cmpIcon("home") : "Anteprima"}</button>
             <button type="button" class="x" data-g="rm" data-i="${i}" data-name="${escapeHtml(n)}" title="Togli dalla galleria" aria-label="Togli dalla galleria">${cmpIcon("remove")}</button>
           </span>
         </div>`;
       }).join("");
-      const nSel = selI === i ? selN.size : 0;
-      return `<div class="gal-sub">${g.tipo === "composizione" ? "Foto della galleria" : "Foto"} <span>${names.length}</span>
-          ${nSel > 1 ? `<span class="gal-selinfo">${nSel} selezionate</span><button type="button" class="sm ghost" data-g="rmsel" data-i="${i}">Togli</button><button type="button" class="sm ghost" data-g="unsel" data-i="${i}">Deseleziona</button>` : ""}
-          <span class="cmp-sp"></span>${fromBtn}</div>
+      return `${subHtml(g, i, names.length, fromBtn)}
         ${open ? fromHtml(others, i) : ""}
         <div class="gal-photos" data-i="${i}">${ph}<button type="button" class="gal-addtile" data-g="pick" data-i="${i}" title="Aggiungi foto dal computer">${cmpIcon("plus")}</button></div>`;
+    }
+    function subHtml(g, i, count, fromBtn) {
+      const nSel = selI === i ? selN.size : 0;
+      return `<div class="gal-sub">${g.tipo === "composizione" ? "Foto della galleria" : "Foto"} <span>${count}</span>
+          ${nSel ? `<span class="gal-selinfo">${nSel} ${nSel === 1 ? "selezionata" : "selezionate"}</span><button type="button" class="sm ghost" data-g="rmsel" data-i="${i}">Togli</button><button type="button" class="sm ghost" data-g="unsel" data-i="${i}">Deseleziona</button>` : ""}
+          <span class="cmp-sp"></span>${fromBtn}</div>`;
+    }
+    // selezione: solo classi e intestazione, le foto non si ridisegnano
+    function paintSel() {
+      list.querySelectorAll(".gal-ph.sel, .gal-ph.cur").forEach(el => {
+        if (+el.dataset.i !== selI || !selN.has(el.dataset.name)) el.classList.remove("sel");
+        if (+el.dataset.i !== selI || el.dataset.name !== curSel) el.classList.remove("cur");
+      });
+      const gs = galGet(p);
+      list.querySelectorAll(".gal-card").forEach(card => {
+        const i = +card.dataset.i, g = gs[i], strip = card.querySelector(".gal-strip");
+        if (!g || !strip) return;
+        if (i === selI) card.querySelectorAll(".gal-ph").forEach(el => { el.classList.toggle("sel", selN.has(el.dataset.name)); el.classList.toggle("cur", el.dataset.name === curSel); });
+        const old = strip.querySelector(":scope > .gal-sub");
+        if (!old || !strip.querySelector(".gal-photos")) return;
+        const has = old.querySelector(".gal-selinfo");
+        if (!has && i !== selI) return;
+        const fb = old.querySelector('[data-g="from"]');
+        const tmp = document.createElement("div");
+        tmp.innerHTML = subHtml(g, i, chosen(g).length, fb ? fb.outerHTML : "");
+        old.replaceWith(tmp.firstElementChild);
+      });
     }
     function fromHtml(others, i) {
       return `<div class="gal-from"><div class="gal-from-h"><span>Clicca le foto da aggiungere</span><span class="cmp-sp"></span><button type="button" class="sm ghost" data-g="fromall" data-i="${i}">Aggiungi tutte</button><button type="button" class="cmp-ib" data-g="from" data-i="${i}" title="Chiudi" aria-label="Chiudi">${cmpIcon("remove")}</button></div>
@@ -6706,20 +6948,23 @@
         const i = +ph.dataset.i, name = ph.dataset.name;
         // Cmd + clic: aggiungi/togli dalla selezione; Maiuscole + clic: da qui a lì
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
-          if (selI !== i) { selI = i; selN = new Set(); }
+          if (selI !== i) { selI = i; selN = new Set(); lastSel = null; }
           if (e.shiftKey && lastSel) {
             const names = chosen(galGet(p)[i]);
             const a = names.indexOf(lastSel), z = names.indexOf(name);
             names.slice(Math.min(a, z), Math.max(a, z) + 1).forEach(n => selN.add(n));
           } else selN.has(name) ? selN.delete(name) : selN.add(name);
-          lastSel = name;
+          lastSel = name; curSel = name; selAnchor = name; selBase = new Set(selN);
           if (!selN.size) clearSel();
-          refresh(i);
+          paintSel();
           return;
         }
-        if (selN.size) { const k = selI; clearSel(); refresh(k); }
         // composizione: un clic su una foto libera la mette nel riquadro
-        if (ph.classList.contains("free") && cmp && i === galActive[key]) cmp.add(name);
+        if (ph.classList.contains("free") && cmp && i === galActive[key]) { if (selN.size) { clearSel(); paintSel(); } cmp.add(name); return; }
+        // clic semplice: seleziona solo questa foto (poi si va avanti con le frecce)
+        if (selI === i && selN.size === 1 && selN.has(name)) clearSel();
+        else { selI = i; selN = new Set([name]); lastSel = curSel = selAnchor = name; selBase = new Set(); }
+        paintSel();
         return;
       }
       const i = +b.dataset.i, a = b.dataset.g;
@@ -6741,7 +6986,7 @@
       }
       if (a === "pick") { pickFor = i; input.click(); return; }
       if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); refresh(i); return; }
-      if (a === "unsel") { clearSel(); refresh(i); return; }
+      if (a === "unsel") { clearSel(); paintSel(); return; }
       if (a === "banner" || a === "ante") {
         const name = b.dataset.name;
         if (a === "banner") p.banner = name;
@@ -6833,9 +7078,86 @@
       const range = wrap.querySelector('input[type="range"]'), num = wrap.querySelector(".gal-num");
       if (r !== range) range.value = v;
       if (r !== num || writeBack) num.value = v;
-      paintPrev(r.closest(".gal-card"), g);
+      const card = r.closest(".gal-card");
+      if (!card._prevRaf) card._prevRaf = requestAnimationFrame(() => { card._prevRaf = 0; paintPrev(card, galGet(p)[+card.dataset.i]); });
       markDirty();
     }
+
+    // ---- tastiera ----
+    // Frecce: si passa alla foto vicina. Cmd (o Maiuscole) + frecce: si allarga la selezione.
+    // Cmd+A: tutte le foto della galleria. Esc: deseleziona. Cancella: toglie le foto selezionate.
+    if (window._galKey) document.removeEventListener("keydown", window._galKey);
+    if (window._galDown) document.removeEventListener("mousedown", window._galDown);
+    window._galKey = (e) => {
+      if (selI < 0 || !document.body.contains(list) || document.querySelector(".lightbox-overlay")) return;
+      if (isTextField(document.activeElement) || e.target.closest && e.target.closest("#cmpCanvas, .lightbox, #cmpPop")) return;
+      const card = cardEl(selI);
+      if (!card) return;
+      const els = Array.from(card.querySelectorAll(".gal-ph"));
+      if (!els.length) return;
+      const k = e.key;
+      if (k === "Escape") { clearSel(); paintSel(); e.preventDefault(); return; }
+      if ((k === "a" || k === "A") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        selN = new Set(els.map(el => el.dataset.name));
+        selAnchor = els[0].dataset.name; curSel = lastSel = els[els.length - 1].dataset.name; selBase = new Set();
+        paintSel();
+        return;
+      }
+      if (k === "Backspace" || k === "Delete") {
+        e.preventDefault();
+        const i = selI, names = [...selN];
+        if (!names.length) return;
+        removeNames(i, names);
+        clearSel();
+        markDirty(); refresh(i);
+        toast(`${names.length === 1 ? "Foto tolta" : names.length + " foto tolte"} dalla galleria. Cmd+Z per tornare indietro.`, "");
+        return;
+      }
+      if (!/^Arrow(Left|Right|Up|Down)$/.test(k)) return;
+      e.preventDefault();
+      let at = els.findIndex(el => el.dataset.name === curSel);
+      if (at < 0) at = 0;
+      let to = at;
+      if (k === "ArrowLeft") to = Math.max(0, at - 1);
+      else if (k === "ArrowRight") to = Math.min(els.length - 1, at + 1);
+      else {
+        // su e giù: la foto della riga sopra o sotto più vicina in orizzontale
+        const r0 = els[at].getBoundingClientRect(), cx = r0.left + r0.width / 2;
+        let best = -1, bestD = Infinity, rowTop = null;
+        const order = k === "ArrowDown" ? els.map((_, j) => j).slice(at + 1) : els.map((_, j) => j).slice(0, at).reverse();
+        for (const j of order) {
+          const r = els[j].getBoundingClientRect();
+          if (Math.abs(r.top - r0.top) < 4) continue;
+          if (rowTop === null) rowTop = r.top;
+          if (Math.abs(r.top - rowTop) > 4) break;
+          const d = Math.abs(r.left + r.width / 2 - cx);
+          if (d < bestD) { bestD = d; best = j; }
+        }
+        if (best >= 0) to = best;
+      }
+      const name = els[to].dataset.name;
+      curSel = lastSel = name;
+      if (e.metaKey || e.ctrlKey || e.shiftKey) {
+        const a = els.findIndex(el => el.dataset.name === selAnchor);
+        const from = a < 0 ? at : a;
+        selN = new Set(selBase);
+        els.slice(Math.min(from, to), Math.max(from, to) + 1).forEach(el => selN.add(el.dataset.name));
+        if (a < 0) selAnchor = els[at].dataset.name;
+      } else {
+        selN = new Set([name]); selAnchor = name; selBase = new Set();
+      }
+      paintSel();
+      els[to].scrollIntoView({ block: "nearest", inline: "nearest" });
+    };
+    document.addEventListener("keydown", window._galKey);
+    // un clic fuori dalle foto toglie la selezione
+    window._galDown = (e) => {
+      if (selI < 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      if (e.target.closest(".gal-ph, .gal-sub, .gal-ph-acts, #cmpCanvas, .cmp-pop, .toast")) return;
+      clearSel(); paintSel();
+    };
+    document.addEventListener("mousedown", window._galDown);
 
     // ---- trascinare ----
     // Una foto trascinata su un'altra galleria (aperta o chiusa) si SPOSTA lì;

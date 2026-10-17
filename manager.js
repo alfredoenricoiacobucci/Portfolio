@@ -418,6 +418,31 @@ class H(http.server.SimpleHTTPRequestHandler):
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length)) if length else {}
    self._json(git_sync(body.get('message','editor: aggiorna contenuti.json'),True,True))
+  elif self.path=='/move-files':
+   # unione di progetti: sposta tutti i file di una cartella in un'altra (nomi uguali: -2, -3...)
+   length=int(self.headers.get('Content-Length',0))
+   body=json.loads(self.rfile.read(length)) if length else {}
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   src=os.path.normpath(os.path.join(os.getcwd(),body.get('from','')))
+   dst=os.path.normpath(os.path.join(os.getcwd(),body.get('to','')))
+   if not src.startswith(base+os.sep) or not dst.startswith(base+os.sep) or src==dst or not os.path.isdir(src):
+    self._json({'ok':False,'error':'percorso non valido'},403);return
+   moved={}
+   try:
+    for root,dirs,files in os.walk(src):
+     for f in files:
+      if f.startswith('.'):continue
+      rel=os.path.relpath(os.path.join(root,f),src)
+      tgt=os.path.join(dst,rel)
+      os.makedirs(os.path.dirname(tgt),exist_ok=True)
+      stem,ext=os.path.splitext(tgt);k=2
+      while os.path.exists(tgt):
+       tgt=stem+'-'+str(k)+ext;k+=1
+      shutil.move(os.path.join(root,f),tgt)
+      moved[rel.replace(os.sep,'/')]=os.path.relpath(tgt,dst).replace(os.sep,'/')
+    shutil.rmtree(src,ignore_errors=True)
+    self._json({'ok':True,'map':moved})
+   except Exception as e:self._json({'ok':False,'error':str(e),'map':moved},500)
   elif self.path=='/delete-file':
    length=int(self.headers.get('Content-Length',0))
    body=json.loads(self.rfile.read(length))
