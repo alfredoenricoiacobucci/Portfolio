@@ -723,12 +723,33 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     setTextRowMinW(Math.round(sw * (1 - 2 * ml / 100)));
   }, [ASP.marginLaterale]);
 
+  // Progetti: sotto la larghezza dello schermo intero il blocco testo si rimpicciolisce tutto insieme
+  const projTextRef = useRef(null);
+  const [projZ, setProjZ] = useState(1);
+  const projKey = selectedProject && selectedProject.name !== "About" ? selectedProject.slug || selectedProject.name : "";
+  useEffect(() => {
+    const el = projTextRef.current;
+    if (!el || !textRowMinW) return;
+    let raf = 0;
+    const m = () => {
+      raf = 0;
+      if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) { setProjZ(1); return; }
+      const cs = getComputedStyle(el);
+      const A = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const z = Math.min(1, A / textRowMinW);
+      setProjZ((p) => (Math.abs(p - z) < 0.002 ? p : z));
+    };
+    m();
+    const ro = new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(m); });
+    ro.observe(el);
+    return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, [textRowMinW, projKey]);
+
   // About: le due colonne hanno l'altezza che hanno sulla finestra larga.
   // Stringendo, il testo che andrebbe a capo scivola nell'altra colonna (testo continuo);
   // quando entrambe le colonne sono piene, tutto il blocco si rimpicciolisce in proporzione.
   const aboutTextRef = useRef(null);
   const aboutMeasureRef = useRef(null);
-  const aboutOuterRef = useRef(null);
   const aboutInnerRef = useRef(null);
   const [aboutLay, setAboutLay] = useState({ mode: "normal" });
   const aboutFlowRef = useRef(null);
@@ -783,11 +804,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
     return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [textRowMinW, aboutDesc, ASP.gapColonne, ASP.marginLaterale]);
-  // con il rimpicciolimento (transform) il blocco occupa solo lo spazio visibile
+  // se il testo sborda comunque (arrotondamenti del browser), si rimpicciolisce ancora un poco
   useEffect(() => {
-    const o = aboutOuterRef.current, i = aboutInnerRef.current;
-    if (!o || !i) return;
-    o.style.height = aboutLay.mode === "zoom" ? Math.ceil(i.offsetHeight * aboutLay.z) + "px" : "";
     const f = aboutFlowRef.current;
     if (f && aboutLay.mode !== "normal" && f.scrollWidth > f.clientWidth + 1 && aboutBumpRef.current.k < 3) {
       aboutBumpRef.current.k *= 1.05;
@@ -1193,11 +1211,12 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         <div key={`project-${currentSlug}`} className="w-full" style={{ backgroundColor: mode === "professional" ? ASP.colorBgProfessional : ASP.colorBgArtwork }}>
           {/* Blocco testo — si rivela al click della chevron nel banner */}
           {(selectedProject.description || selectedProject.techData || selectedProject.esposizioni?.length) && (
-            <div style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflowX: 'auto' }}>
+            <div ref={projTextRef} style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%", overflow: 'hidden' }}>
               {/* Wrapper grid: anima l'altezza 0fr→1fr senza magic number */}
               <div id="project-text" inert={!textOpen} className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
               {/* Contenuto testo — opacity controllata dal wrapper */}
               <div className={`project-text-reveal__content ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
+                <div style={projZ < 1 ? { width: textRowMinW + 'px', zoom: projZ } : undefined}>
                 <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
@@ -1274,6 +1293,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                       <div>© {new Date().getFullYear()} Tutti i diritti riservati.</div>
                     </div>
                   </div>
+                </div>
                 </div>
               </div>
               </div>{/* chiude project-text-reveal__wrapper */}
@@ -1368,7 +1388,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
-            <div ref={aboutTextRef} className={`w-full relative about-text-section${aboutLay.mode === "zoom" ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflow: 'hidden' }}>
+            <div ref={aboutTextRef} className={`w-full relative about-text-section${aboutLay.mode === "zoom" ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: aboutLay.mode === "zoom" ? `${3 * aboutLay.z}rem` : '3rem', paddingBottom: aboutLay.mode === "zoom" ? `${2.5 * aboutLay.z}rem` : '2.5rem', overflow: 'hidden' }}>
               {/* misure nascoste: servono a decidere come disporre il testo */}
               <div ref={aboutMeasureRef} aria-hidden="true" lang="it" className="text-base leading-relaxed" style={{ position: 'absolute', left: 0, top: 0, height: 0, overflow: 'hidden', visibility: 'hidden', pointerEvents: 'none' }}>
                 <div data-m="one"><p className="whitespace-pre-line project-text">{selectedProject.description}</p></div>
@@ -1381,10 +1401,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <span style={{ paddingLeft: 23 }}>{S.TELEFONO}</span><span style={{ paddingLeft: 23 }}>{S.EMAIL_DESTINATARIO}</span><span style={{ paddingLeft: 23 }}>{S.INSTAGRAM_HANDLE}</span>
                 </div>
               </div>
-              <div ref={aboutOuterRef}>
-              <div ref={aboutInnerRef} style={aboutLay.mode === "zoom" ? { width: aboutLay.W + 'px', transform: `scale(${aboutLay.z})`, transformOrigin: '0 0' } : undefined}>
+              <div ref={aboutInnerRef} style={{ fontSize: aboutLay.mode === "zoom" ? `${aboutLay.z}rem` : '1rem' }}>
               {aboutLay.mode === "normal" ? (
-              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
+              <div className="flex flex-col md:flex-row leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
@@ -1396,32 +1415,31 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
               ) : (
               /* testo continuo su due colonne della stessa altezza */
-              <div ref={aboutFlowRef} className="text-base leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: aboutLay.H + 'px', overflow: 'hidden' }}>
+              <div ref={aboutFlowRef} className="leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: (aboutLay.mode === "zoom" ? aboutLay.H * aboutLay.z : aboutLay.H) + 'px', overflow: 'hidden' }}>
                 <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
               </div>
               )}
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
-              <div className={`flex items-center text-sm whitespace-nowrap ${mode === "professional" ? "text-white/60" : "text-black/55"}`} style={{ marginTop: "4rem", justifyContent: "space-between", gap: "2rem" }}>
-                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <div className={`flex items-center whitespace-nowrap ${mode === "professional" ? "text-white/60" : "text-black/55"}`} style={{ fontSize: "0.875em", marginTop: "4.5714em", justifyContent: "space-between", gap: "2.2857em" }}>
+                <a href={`tel:${S.TELEFONO.replace(/\s/g, "")}`} className="flex items-center transition-colors duration-300 hover-red" style={{ gap: "0.5714em" }}>
+                  <svg style={{ width: "1.0714em", height: "1.0714em", flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                   {S.TELEFONO}
                 </a>
-                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center gap-2 transition-colors duration-300 hover-red">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <a href={`mailto:${S.EMAIL_DESTINATARIO}`} className="flex items-center transition-colors duration-300 hover-red" style={{ gap: "0.5714em" }}>
+                  <svg style={{ width: "1.0714em", height: "1.0714em", flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   {S.EMAIL_DESTINATARIO}
                 </a>
-                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors duration-300 hover-red">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+                <a href={S.LINK_INSTA} target="_blank" rel="noopener noreferrer" className="flex items-center transition-colors duration-300 hover-red" style={{ gap: "0.5714em" }}>
+                  <svg style={{ width: "1.0714em", height: "1.0714em", flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
-              </div>
               </div>
               </div>
             </div>
 
             {/* BLOCCO CITAZIONE + FOTO — colori invertiti rispetto al resto */}
-            <div className="w-full about-quote-block" style={{ paddingTop: ASP.aboutQuotePadding + "rem", paddingBottom: ASP.aboutQuotePadding + "rem", backgroundColor: mode === "professional" ? ASP.colorBgArtwork : ASP.colorBgProfessional, color: mode === "professional" ? ASP.colorTextArtwork : ASP.colorTextProfessional }}>
+            <div className="w-full about-quote-block" style={{ paddingTop: `min(${ASP.aboutQuotePadding}rem, ${ASP.aboutQuotePadding * 1.11}vw)`, paddingBottom: `min(${ASP.aboutQuotePadding}rem, ${ASP.aboutQuotePadding * 1.11}vw)`, backgroundColor: mode === "professional" ? ASP.colorBgArtwork : ASP.colorBgProfessional, color: mode === "professional" ? ASP.colorTextArtwork : ASP.colorTextProfessional }}>
               {/* CITAZIONE — letta da content/about/citazione.txt */}
               {selectedProject.quote && (
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 text-center">
@@ -1433,7 +1451,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               )}
 
               {/* FOTO 3:2 — stessi margini laterali del testo (8%) */}
-              <div className="w-full about-photo-wrap" style={{ marginTop: ASP.aboutQuotePadding + "rem", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+              <div className="w-full about-photo-wrap" style={{ marginTop: `min(${ASP.aboutQuotePadding}rem, ${ASP.aboutQuotePadding * 1.11}vw)`, paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
                 <div className="w-full about-photo overflow-hidden flex items-center justify-center" style={{ aspectRatio: ASP.aboutPhotoAspect, border: selectedProject.photo ? undefined : "1px solid currentColor", borderColor: selectedProject.photo ? undefined : "color-mix(in srgb, currentColor 25%, transparent)" }}>
                   {selectedProject.photo ? (
                     <img src={selectedProject.photo} alt="" className="w-full h-full object-cover" />
