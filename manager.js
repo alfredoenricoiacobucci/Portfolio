@@ -197,6 +197,27 @@ def versioni_ripristina(kind,sha):
   if r.returncode!=0:return {'ok':False,'error':'ripristinato sul Mac ma non pubblicato: '+r.stderr.decode(errors='replace')[-200:]}
   head=_git(['rev-parse','HEAD']).stdout.decode().strip()
   return {'ok':True,'sha':head,'appCambiata':(kind=='manager' and app_cambia)}
+# ---- Miniature: fatte una volta con sips e tenute in cache ----
+_THUMBS=os.path.join(os.path.expanduser('~'),'Library','Caches','ManagerPortfolio','thumbs')
+_thumb_sem=threading.Semaphore(4)
+def _thumb(path):
+ try:
+  st=os.stat(path)
+  k=hashlib.sha1((path+'|'+str(st.st_mtime)+'|'+str(st.st_size)).encode()).hexdigest()
+  out=os.path.join(_THUMBS,k+'.jpg')
+  if os.path.isfile(out):return out
+  if not os.path.isfile('/usr/bin/sips'):return None
+  os.makedirs(_THUMBS,exist_ok=True)
+  with _thumb_sem:
+   if os.path.isfile(out):return out
+   tmp=out+'.'+uuid.uuid4().hex[:6]+'.jpg'
+   r=subprocess.run(['/usr/bin/sips','-Z','480','-s','format','jpeg','-s','formatOptions','72',path,'--out',tmp],capture_output=True,timeout=60)
+   if r.returncode==0 and os.path.isfile(tmp):
+    os.replace(tmp,out);return out
+   try:os.remove(tmp)
+   except Exception:pass
+ except Exception:pass
+ return None
 signal.signal(signal.SIGHUP,lambda s,f:sys.exit(0))
 signal.signal(signal.SIGTERM,lambda s,f:sys.exit(0))
 class H(http.server.SimpleHTTPRequestHandler):
@@ -279,6 +300,22 @@ class H(http.server.SimpleHTTPRequestHandler):
    j=_jobs.get(q.get('id',[''])[0],{'state':'error','error':'lavoro non trovato'})
    self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers()
    self.wfile.write(json.dumps(j).encode())
+  elif self.path.startswith('/thumb/'):
+   # miniatura leggera (lato lungo 480 px) per le gallerie del Manager
+   rel=urllib.parse.unquote(self.path[len('/thumb/'):].split('?')[0])
+   safe=os.path.normpath(os.path.join(os.getcwd(),rel))
+   base=os.path.normpath(os.path.join(os.getcwd(),'codice-sorgente','contenuti'))
+   if not safe.startswith(base) or not os.path.isfile(safe):
+    self.send_response(404);self.end_headers();return
+   out=_thumb(safe)
+   src=out or safe
+   ext='jpg' if out else safe.rsplit('.',1)[-1].lower()
+   ct={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif'}.get(ext,'application/octet-stream')
+   try:
+    with open(src,'rb') as fp:data=fp.read()
+    self.send_response(200);self.send_header('Content-Type',ct);self.send_header('Content-Length',str(len(data)));self.end_headers()
+    self.wfile.write(data)
+   except (BrokenPipeError,ConnectionResetError):pass
   elif self.path.startswith('/local-photo/'):
    # Serve foto locali: /local-photo/codice-sorgente/contenuti/...
    rel=urllib.parse.unquote(self.path[len('/local-photo/'):])
@@ -420,7 +457,9 @@ try { bundleHtml = ObjC.unwrap($.NSBundle.mainBundle.resourcePath) + "/manager.h
 task.arguments = $(["-c", pyCode, bundleHtml]);
 task.standardOutput = $.NSPipe.pipe;
 task.standardError = $.NSPipe.pipe;
+function mpLog(m) { try { console.log("[Manager] " + m); } catch (e) {} }
 task.launch;
+mpLog("server avviato");
 
 delay(2);
 
@@ -532,6 +571,7 @@ win.backgroundColor = $.NSColor.colorWithSRGBRedGreenBlueAlpha(0.11, 0.11, 0.11,
 // Imposta il FRAME (non content rect) alla zona visibile intera
 var vf = $.NSScreen.mainScreen.visibleFrame;
 win.setFrameDisplay(vf, true);
+mpLog("finestra creata");
 
 // WKWebView with no cache + injected JS overrides
 var cfg = $.WKWebViewConfiguration.alloc.init;
@@ -552,11 +592,13 @@ win.makeFirstResponder(wv);
 var pageURL = $.NSURL.URLWithString("http://127.0.0.1:8471/.Manager%20Portfolio.html");
 var mpTries = 0;
 function mpLoadPage() {
+  mpLog("carico la pagina (tentativo " + (mpTries + 1) + ")");
   var req = $.NSMutableURLRequest.requestWithURL(pageURL);
   req.cachePolicy = 1;
   wv.loadRequest(req);
 }
 function mpShowWin() {
+  mpLog("mostro la finestra (visibile: " + win.isVisible + ")");
   if (win.isVisible) return;
   win.makeKeyAndOrderFront(null);
   nsApp.activateIgnoringOtherApps(true);
@@ -564,8 +606,12 @@ function mpShowWin() {
 ObjC.registerSubclass({
   name:"NavDel2",superclass:"NSObject",protocols:["WKNavigationDelegate"],
   methods:{
-    "webView:didFinishNavigation:":{types:["void",["id","id"]],implementation:function(w,n){ mpShowWin(); }},
+    "webView:didFinishNavigation:":{types:["void",["id","id"]],implementation:function(w,n){ mpLog("pagina caricata"); mpShowWin(); }},
+    "webView:didFailNavigation:withError:":{types:["void",["id","id","id"]],implementation:function(w,n,e){ mpLog("errore nella pagina: " + ObjC.unwrap(e.localizedDescription)); mpShowWin(); }},
+    // se il motore della pagina si chiude (troppa memoria, ecc.) si ricarica
+    "webViewWebContentProcessDidTerminate:":{types:["void",["id"]],implementation:function(w){ mpLog("pagina chiusa dal sistema: ricarico"); mpShowWin(); mpLoadPage(); }},
     "webView:didFailProvisionalNavigation:withError:":{types:["void",["id","id","id"]],implementation:function(w,n,e){
+      mpLog("pagina non raggiungibile: " + ObjC.unwrap(e.localizedDescription));
       mpTries++;
       if (mpTries < 30) $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(1.0, navDel, "mpRetry:", null, false);
       else mpShowWin();
@@ -579,4 +625,5 @@ wv.navigationDelegate = navDel;
 mpLoadPage();
 $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(10.0, navDel, "mpShowNow:", null, false);
 
+mpLog("avvio completato");
 nsApp.run;
