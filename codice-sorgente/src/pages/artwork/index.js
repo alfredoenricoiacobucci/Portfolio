@@ -713,6 +713,25 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     setTextRowMinW(Math.round(sw * (1 - 2 * ml / 100)));
   }, [ASP.marginLaterale]);
 
+  // About: testo e contatti tengono la loro larghezza (si scorre di lato);
+  // quando la finestra diventa molto stretta tutto il blocco si rimpicciolisce in proporzione.
+  const aboutTextRef = useRef(null);
+  const [aboutZoom, setAboutZoom] = useState(1);
+  useEffect(() => {
+    const el = aboutTextRef.current;
+    if (!el || !textRowMinW) return;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      const avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const z = avail < textRowMinW * 0.6 ? Math.max(0.2, avail / textRowMinW) : 1;
+      setAboutZoom((prev) => (Math.abs(prev - z) < 0.002 ? prev : z));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
@@ -1285,14 +1304,15 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
           {/* CONTENUTO ABOUT */}
           <div key="about" className="w-full fade-in" style={{ animationDuration: '400ms' }}>
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
-            <div className={`w-full about-text-section ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflowX: 'auto' }}>
-              <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%', minWidth: textRowMinW ? textRowMinW + 'px' : undefined }} lang="it">
+            <div ref={aboutTextRef} className={`w-full about-text-section${aboutZoom < 1 ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflowX: aboutZoom < 1 ? 'hidden' : 'auto' }}>
+              <div style={{ minWidth: textRowMinW ? textRowMinW + 'px' : undefined, zoom: aboutZoom < 1 ? aboutZoom : undefined }}>
+              <div className={`flex ${aboutZoom < 1 ? "flex-row" : "flex-col md:flex-row"} text-base leading-relaxed`} style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
                 <div className="flex-1 min-w-0">
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 </div>
                 {/* Colonna destra — testo */}
-                <div className="flex-1 min-w-0 mt-6 md:mt-0">
+                <div className={`flex-1 min-w-0 ${aboutZoom < 1 ? "" : "mt-6 md:mt-0"}`}>
                   <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
                 </div>
               </div>
@@ -1310,6 +1330,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
+              </div>
               </div>
             </div>
 

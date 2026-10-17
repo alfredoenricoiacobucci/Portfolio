@@ -389,6 +389,8 @@ h1 { line-height: 1.05; }
 
   /* About testo stesso corpo dei progetti */
   .about-text-section { font-size: 11px !important; }
+  /* finestra stretta sul computer: il blocco si rimpicciolisce tutto insieme, stesse misure del desktop */
+  .about-text-section.about-zoomed, .about-zoomed .project-text { font-size: inherit !important; }
 
   /* About: blocco citazione + foto con spaziature uguali scalate per mobile */
   .about-quote-block { padding-top: 3rem !important; padding-bottom: 3rem !important; }
