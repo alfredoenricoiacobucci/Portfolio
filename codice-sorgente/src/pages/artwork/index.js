@@ -723,27 +723,39 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     setTextRowMinW(Math.round(sw * (1 - 2 * ml / 100)));
   }, [ASP.marginLaterale]);
 
-  // Progetti: sotto la larghezza dello schermo intero il blocco testo si rimpicciolisce tutto insieme
+  // Progetti: il blocco testo ha l'impaginazione dello schermo intero e, stringendo la finestra,
+  // si rimpicciolisce tutto insieme (le righe non cambiano). Quando diventa molto piccolo
+  // il riquadro attrezzatura/esposizioni va sotto la descrizione, che così resta più grande.
   const projTextRef = useRef(null);
-  const [projZ, setProjZ] = useState(1);
+  const projInnerRef = useRef(null);
+  const [projLay, setProjLay] = useState({ z: 1, W: 0, stack: false });
+  const [projInnerH, setProjInnerH] = useState(0);
   const projKey = selectedProject && selectedProject.name !== "About" ? selectedProject.slug || selectedProject.name : "";
   useEffect(() => {
-    const el = projTextRef.current;
+    const el = projTextRef.current, inner = projInnerRef.current;
     if (!el || !textRowMinW) return;
     let raf = 0;
     const m = () => {
       raf = 0;
-      if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) { setProjZ(1); return; }
+      if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) { setProjLay((p) => (p.z === 1 && !p.stack ? p : { z: 1, W: 0, stack: false })); return; }
       const cs = getComputedStyle(el);
       const A = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const z = Math.min(1, A / textRowMinW);
-      setProjZ((p) => (Math.abs(p - z) < 0.002 ? p : z));
+      const full = textRowMinW;
+      const gap = (full * (parseFloat(ASP.gapColonne) || 0)) / 100;
+      const descW = Math.max(200, full - gap - 180);
+      let next;
+      if (A >= full - 4) next = { z: 1, W: 0, stack: false };
+      else if (A / full >= 0.55) next = { z: A / full, W: full, stack: false };
+      else next = { z: Math.min(1, A / descW), W: descW, stack: true };
+      setProjLay((p) => (p.stack === next.stack && p.W === next.W && Math.abs(p.z - next.z) < 0.001 ? p : next));
     };
     m();
     const ro = new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(m); });
     ro.observe(el);
-    return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
-  }, [textRowMinW, projKey]);
+    const ro2 = inner ? new ResizeObserver(() => setProjInnerH(inner.offsetHeight)) : null;
+    if (ro2) ro2.observe(inner);
+    return () => { ro.disconnect(); if (ro2) ro2.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, [textRowMinW, projKey, ASP.gapColonne]);
 
   // About: le due colonne hanno l'altezza che hanno sulla finestra larga.
   // Stringendo, il testo che andrebbe a capo scivola nell'altra colonna (testo continuo);
@@ -753,7 +765,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   const aboutInnerRef = useRef(null);
   const [aboutLay, setAboutLay] = useState({ mode: "normal" });
   const aboutFlowRef = useRef(null);
-  const aboutBumpRef = useRef({ A: 0, k: 1 });
+  const aboutBumpRef = useRef({ key: "", k: 1 });
+  const aboutWminRef = useRef({ key: "", W: 0 });
+  const [aboutInnerH, setAboutInnerH] = useState(0);
   const aboutMeasureFnRef = useRef(null);
   const aboutDesc = selectedProject && selectedProject.name === "About" ? `${selectedProject.description || ""}|${selectedProject.description2 || ""}` : "";
   useEffect(() => {
@@ -775,25 +789,22 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       const refW = Math.max(textRowMinW, A);
       const H = Math.ceil(Math.max(hAt(one, refW), hAt(two, refW))) + 2;
       const minW = ct.scrollWidth + 24; // i contatti non devono stringersi
+      // larghezza minima in cui tutto sta in due colonne: non dipende dalla finestra,
+      // così sotto questa misura l'impaginazione resta identica e cambia solo la scala
+      const key = H + "|" + minW + "|" + textRowMinW;
+      if (aboutWminRef.current.key !== key) {
+        let lo = minW, hi = Math.max(textRowMinW, minW);
+        if (!fits(hi, H)) lo = hi;
+        else while (hi - lo > 0.5) { const mid = (lo + hi) / 2; if (fits(mid, H)) hi = mid; else lo = mid; }
+        aboutWminRef.current = { key, W: Math.ceil(hi) + 2 };
+      }
       const bump = aboutBumpRef.current;
-      if (Math.abs(bump.A - A) > 0.5) { bump.A = A; bump.k = 1; }
+      if (bump.key !== key) { bump.key = key; bump.k = 1; }
+      const Wz = Math.ceil(aboutWminRef.current.W * bump.k);
       let next;
-      if (bump.k > 1) {
-        let lo = Math.max(A, minW), hi = Math.max(refW, lo);
-        if (fits(hi, H)) while (hi - lo > 1) { const mid = (lo + hi) / 2; if (fits(mid, H)) hi = mid; else lo = mid; }
-        const W = Math.ceil(Math.max(hi, A) * bump.k);
-        next = { mode: "zoom", H, W, z: Math.min(1, A / W) };
-      }
-      else if (Math.max(hAt(one, A), hAt(two, A)) <= H && A >= minW) next = { mode: "normal" };
-      else if (A >= minW && fits(A, H)) next = { mode: "flow", H };
-      else {
-        // larghezza minima in cui tutto sta in due colonne: lì si disegna e poi si rimpicciolisce
-        let lo = Math.max(A, minW), hi = Math.max(refW, lo);
-        if (!fits(hi, H)) hi = lo = hi;
-        else while (hi - lo > 1) { const mid = (lo + hi) / 2; if (fits(mid, H)) hi = mid; else lo = mid; }
-        const W = Math.ceil(hi);
-        next = { mode: "zoom", H, W, z: Math.min(1, A / W) };
-      }
+      if (Math.max(hAt(one, A), hAt(two, A)) <= H && A >= minW) next = { mode: "normal" };
+      else if (A >= Wz) next = { mode: "flow", H };
+      else next = { mode: "zoom", H, W: Wz, z: Math.min(1, A / Wz) };
       setAboutLay((p) => (p.mode === next.mode && p.H === next.H && p.W === next.W && Math.abs((p.z || 1) - (next.z || 1)) < 0.002 ? p : next));
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
@@ -801,14 +812,18 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     measure();
     const ro = new ResizeObserver(schedule);
     ro.observe(sec);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
-    return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
+    // altezza vera del blocco (il rimpicciolimento non la cambia): serve per lo spazio occupato
+    const inner = aboutInnerRef.current;
+    const ro2 = inner ? new ResizeObserver(() => setAboutInnerH(inner.offsetHeight)) : null;
+    if (ro2) ro2.observe(inner);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { aboutWminRef.current.key = ""; schedule(); });
+    return () => { ro.disconnect(); if (ro2) ro2.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [textRowMinW, aboutDesc, ASP.gapColonne, ASP.marginLaterale]);
   // se il testo sborda comunque (arrotondamenti del browser), si rimpicciolisce ancora un poco
   useEffect(() => {
     const f = aboutFlowRef.current;
-    if (f && aboutLay.mode !== "normal" && f.scrollWidth > f.clientWidth + 1 && aboutBumpRef.current.k < 3) {
-      aboutBumpRef.current.k *= 1.05;
+    if (f && aboutLay.mode !== "normal" && f.scrollWidth > f.clientWidth + 1 && aboutBumpRef.current.k < 1.5) {
+      aboutBumpRef.current.k *= 1.02;
       aboutMeasureFnRef.current && aboutMeasureFnRef.current();
     }
   }, [aboutLay]);
@@ -1216,8 +1231,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               <div id="project-text" inert={!textOpen} className={`project-text-reveal__wrapper ${textOpen ? "project-text-reveal__wrapper--open" : ""}`}>
               {/* Contenuto testo — opacity controllata dal wrapper */}
               <div className={`project-text-reveal__content ${mode === "professional" ? "text-white/70" : "text-black/60"}`}>
-                <div style={projZ < 1 ? { width: textRowMinW + 'px', zoom: projZ } : undefined}>
-                <div className="flex flex-col md:flex-row pt-12 pb-4" style={{ gap: ASP.gapColonne + "%", minWidth: textRowMinW ? textRowMinW + 'px' : undefined }}>
+                <div style={projLay.z < 1 && projInnerH ? { height: Math.ceil(projInnerH * projLay.z) + 'px' } : undefined}>
+                <div ref={projInnerRef} style={projLay.W ? { width: projLay.W + 'px', transform: `scale(${projLay.z})`, transformOrigin: '0 0' } : undefined}>
+                <div className={`flex ${projLay.stack ? "flex-col" : "flex-col md:flex-row"} pt-12 pb-4`} style={projLay.stack ? undefined : { gap: ASP.gapColonne + "%", minWidth: !projLay.W && textRowMinW ? textRowMinW + 'px' : undefined }}>
                   {/* Descrizione — blocco unico */}
                   {selectedProject.description && (
                     <div className="flex-1 min-w-0">
@@ -1227,7 +1243,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                     </div>
                   )}
                   {/* Micro colonna: dati tecnici/esposizioni in alto, copyright in basso */}
-                  <div className="md:w-[180px] shrink-0 mt-6 md:mt-0 flex flex-col justify-between">
+                  <div className={projLay.stack ? "mt-10 flex flex-col" : "md:w-[180px] shrink-0 mt-6 md:mt-0 flex flex-col justify-between"}>
                     {/* Esposizioni per art, attrezzatura per pro */}
                     {selectedProject.section === "art" ? (
                       selectedProject.esposizioni?.length > 0 && (
@@ -1293,6 +1309,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                       <div>© {new Date().getFullYear()} Tutti i diritti riservati.</div>
                     </div>
                   </div>
+                </div>
                 </div>
                 </div>
               </div>
@@ -1401,7 +1418,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <span style={{ paddingLeft: 23 }}>{S.TELEFONO}</span><span style={{ paddingLeft: 23 }}>{S.EMAIL_DESTINATARIO}</span><span style={{ paddingLeft: 23 }}>{S.INSTAGRAM_HANDLE}</span>
                 </div>
               </div>
-              <div ref={aboutInnerRef} style={{ fontSize: aboutLay.mode === "zoom" ? `${aboutLay.z}rem` : '1rem' }}>
+              <div style={aboutLay.mode === "zoom" && aboutInnerH ? { height: Math.ceil(aboutInnerH * aboutLay.z) + 'px' } : undefined}>
+              <div ref={aboutInnerRef} style={aboutLay.mode === "zoom" ? { fontSize: '1rem', width: aboutLay.W + 'px', transform: `scale(${aboutLay.z})`, transformOrigin: '0 0' } : { fontSize: '1rem' }}>
               {aboutLay.mode === "normal" ? (
               <div className="flex flex-col md:flex-row leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
@@ -1415,7 +1433,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
               ) : (
               /* testo continuo su due colonne della stessa altezza */
-              <div ref={aboutFlowRef} className="leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: (aboutLay.mode === "zoom" ? aboutLay.H * aboutLay.z : aboutLay.H) + 'px', overflow: 'hidden' }}>
+              <div ref={aboutFlowRef} className="leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: aboutLay.H + 'px', overflow: 'hidden' }}>
                 <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
                 <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
               </div>
@@ -1434,6 +1452,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <svg style={{ width: "1.0714em", height: "1.0714em", flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
+              </div>
               </div>
               </div>
             </div>
