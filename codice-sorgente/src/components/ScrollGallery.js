@@ -2,7 +2,9 @@
 // Galleria a scorrimento: una striscia di foto a tutta larghezza che scorre
 // da sola, all'infinito. Altezza (in % dello schermo), velocità (px al
 // secondo), spazio tra le foto (px) e sfondo si scelgono nel Manager.
-// Al passaggio del mouse si ferma; un clic apre la foto a schermo intero.
+// Scorre sempre, anche col mouse sopra; un clic apre la foto a schermo intero.
+// Lo spazio sopra e sotto la striscia c'è solo con uno sfondo colorato, così
+// i margini sono gli stessi del mosaico e della composizione.
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -10,6 +12,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 export default function ScrollGallery({ images = [], idx = [], settings = {}, onImageClick, altFor }) {
   const { height = 50, speed = 40, gap = 16, background = "transparent" } = settings;
   const reduced = useReducedMotion();
+  const band = background && background !== "transparent";
   const [viewportH, setViewportH] = useState(0);
   const trackRef = useRef(null);
 
@@ -59,7 +62,7 @@ export default function ScrollGallery({ images = [], idx = [], settings = {}, on
   return (
     <div
       className="scroll-gallery w-full overflow-hidden"
-      style={{ background, paddingTop: gap + "px", paddingBottom: gap + "px", overflowX: reduced ? "auto" : "hidden" }}
+      style={{ background, paddingTop: band ? gap + "px" : 0, paddingBottom: band ? gap + "px" : 0, overflowX: reduced ? "auto" : "hidden" }}
     >
       {rowH > 0 && (
         <div
@@ -76,9 +79,6 @@ export default function ScrollGallery({ images = [], idx = [], settings = {}, on
           animation-name: scrollGalleryMove;
           animation-timing-function: linear;
           animation-iteration-count: infinite;
-        }
-        .scroll-gallery:hover .scroll-gallery__track--run {
-          animation-play-state: paused;
         }
         @keyframes scrollGalleryMove {
           from { transform: translateX(0); }

@@ -610,16 +610,15 @@
   .gal-card input.gal-title { flex: 1; min-width: 0; box-sizing: border-box; margin: 0; font-size: 15px; font-weight: 600; color: #fff; }
   .gal-chev svg { transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1); }
   .gal-chev.open svg { transform: rotate(90deg); }
-  .gal-card.closed { padding: 0; display: flex; align-items: center; }
-  .gal-card.closed .gal-bar { flex: 1; min-width: 0; padding-left: 4px; }
-  .gal-card.closed .gal-grip { margin-left: 10px; }
+  .gal-card.closed { padding: 8px 18px; }
+  .gal-card.closed .gal-top { margin-bottom: 0; }
+  .gal-card.closed .gal-bar { flex: 1; min-width: 0; padding: 10px 13px; border-radius: 8px; }
   .gal-grip { flex-shrink: 0; width: 22px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--text3); cursor: grab; border-radius: 5px; touch-action: none; }
-  .gal-grip:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .gal-grip:hover { color: #fff; background: rgba(255,255,255,0.08); }
   .gal-grip, .gal-top .gal-chev, .gal-bar .gal-chev { transition: color 140ms ease, background-color 140ms ease; }
   .gal-top .gal-chev { color: var(--text3); width: 26px; height: 30px; padding: 0; justify-content: center; border-radius: 5px; }
-  .gal-top .gal-chev:hover:not(:disabled) { color: #fff; background: rgba(255,255,255,0.05); }
-  .gal-bar .gal-chev { width: 26px; height: 30px; align-items: center; justify-content: center; border-radius: 5px; }
-  .gal-bar:hover .gal-chev { color: #fff; background: rgba(255,255,255,0.05); }
+  .gal-top .gal-chev:hover:not(:disabled) { color: #fff; background: rgba(255,255,255,0.08); }
+
   .gal-card.picked { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
   .gal-pick-info { font-size: 11.5px; color: #fff; display: inline-flex; align-items: center; gap: 8px; }
   .gal-pick-info[hidden] { display: none; }
@@ -638,10 +637,11 @@
   .gal-card.ins-before { box-shadow: 0 -10px 0 -7px var(--red); }
   .gal-card.ins-after { box-shadow: 0 10px 0 -7px var(--red); }
   .gal-bar { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 18px; border: 0; border-radius: 12px; background: transparent; text-align: left; color: #fff; }
-  .gal-bar:hover { background: rgba(255,255,255,0.03); border-color: transparent; }
+  .gal-bar:hover { background: transparent; border-color: transparent; }
+  .gal-bar:hover .gal-bar-t { color: #fff; }
   .gal-bar:active { transform: none; }
   .gal-bar .gal-chev { color: var(--text3); display: flex; }
-  .gal-bar-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gal-bar-t { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gal-bar-t.none { color: var(--text3); font-weight: 500; }
   .gal-list.dragging-ph .gal-card.closed { border-style: dashed; border-color: #3a3a3a; }
   .gal-list.dragging-ph .gal-card.closed.gal-over { border-style: solid; border-color: var(--red); background: rgba(200,16,46,0.08); }
@@ -722,7 +722,6 @@
   .gal-sc-band { overflow: hidden; }
   .gal-sc-track { display: flex; width: max-content; animation-name: galScMove; animation-timing-function: linear; animation-iteration-count: infinite; }
   .gal-sc-track img { display: block; object-fit: cover; flex-shrink: 0; }
-  .gal-sc-prev:hover .gal-sc-track { animation-play-state: paused; }
   @keyframes galScMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .gal-sc-ctrls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 26px; margin-bottom: 20px; align-items: center; }
   .gal-rng { display: grid; grid-template-columns: 62px minmax(0, 1fr) 78px; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); }
@@ -768,12 +767,14 @@
   .ban-auto { margin-left: auto; }
   .ban-pick { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; background: #0a0a0a; padding: 10px 12px 12px; }
   .ban-pick-h { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
-  .ban-pick-g { display: flex; flex-wrap: wrap; gap: 6px; max-height: 260px; overflow-y: auto; overscroll-behavior: contain; }
+  .ban-pick-g { display: flex; flex-wrap: wrap; gap: 8px; max-height: min(640px, 70vh); overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
   .ban-pk { position: relative; padding: 0; border: 0; border-radius: 4px; overflow: hidden; background: #000; line-height: 0; }
-  .ban-pk img { height: 58px; width: auto; display: block; opacity: 0.6; transition: opacity 140ms ease; }
-  .ban-pk:hover img, .ban-pk.on img { opacity: 1; }
-  .ban-pk.on { outline: 2px solid var(--red); outline-offset: -2px; }
-  .ban-pk b { position: absolute; left: 4px; top: 4px; font-size: 10px; font-weight: 600; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 3px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .ban-pk img { height: 128px; width: auto; display: block; transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .ban-pk:hover img { transform: scale(1.03); }
+  .ban-pk::after { content: ""; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 0 var(--red); transition: box-shadow 140ms ease; pointer-events: none; }
+  .ban-pk:hover::after { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5); }
+  .ban-pk.on::after { box-shadow: inset 0 0 0 3px var(--red); }
+  .ban-pk b { position: absolute; left: 6px; top: 6px; z-index: 1; font-size: 11px; font-weight: 600; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 4px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1; }
   .ban-vid-top { display: flex; justify-content: flex-end; margin-bottom: 10px; }
   #vidAdd { display: inline-flex; align-items: center; gap: 7px; }
   #vidAdd svg { width: 13px !important; height: 13px !important; }
@@ -6910,7 +6911,7 @@
       const loopW = names.reduce((t, n) => t + ratio(n) * h + gap, 0);
       const dur = loopW / Math.max(1, sc.velocita * k);
       box.style.padding = Math.round(Math.max(8, 30 * k)) + "px 0";
-      box.innerHTML = `<div class="gal-sc-band" style="background:${col};padding:${gap}px 0"><div class="gal-sc-track" style="animation-duration:${dur}s;padding-left:${gap}px">${imgs}${imgs}</div></div>`;
+      box.innerHTML = `<div class="gal-sc-band" style="background:${col};padding:${col === "transparent" ? 0 : gap}px 0"><div class="gal-sc-track" style="animation-duration:${dur}s;padding-left:${gap}px">${imgs}${imgs}</div></div>`;
     }
 
     // ---- composizione ----
@@ -6954,12 +6955,13 @@
       const t = titleOf(g);
       const picked = galPick.has(g) ? " picked" : "";
       if (!galOpen.has(g)) {
+        // stessa riga della galleria aperta: maniglia, freccia (si illumina allo stesso modo), titolo
         return `<div class="gal-card closed${picked}" data-i="${i}">
-          ${n > 1 ? `<span class="gal-grip" data-grip="${i}" title="Trascina per spostare">${cmpIcon("grip")}</span>` : ""}
-          <button type="button" class="gal-bar" data-g="toggle" data-i="${i}" title="Apri">
-            <span class="gal-chev">${cmpIcon("chev")}</span>
-            <span class="gal-bar-t${t ? "" : " none"}">${t ? escapeHtml(t) : "Senza titolo"}</span>
-          </button>
+          <div class="gal-top">
+            ${n > 1 ? `<span class="gal-grip" data-grip="${i}" title="Trascina per spostare">${cmpIcon("grip")}</span>` : ""}
+            <button type="button" class="cmp-ib gal-chev" data-g="toggle" data-i="${i}" title="Apri" aria-label="Apri">${cmpIcon("chev")}</button>
+            <button type="button" class="gal-bar" data-g="toggle" data-i="${i}"><span class="gal-bar-t${t ? "" : " none"}">${t ? escapeHtml(t) : "Senza titolo"}</span></button>
+          </div>
         </div>`;
       }
       const tipo = g.tipo === "testo" ? "testo" : GAL_TIPI.some(x => x[0] === g.tipo) ? g.tipo : "mosaico";

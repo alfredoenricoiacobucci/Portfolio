@@ -19,6 +19,9 @@ export default function FreeGallery({ composition, images = [], onImageClick, al
   const items = composition?.items || [];
 
   return (
+    // il mezzo spazio intorno alle foto esterne si recupera: i bordi coincidono con i margini, come nel mosaico
+    <div style={{ display: "flow-root" }}>
+    <div style={{ margin: `calc(${gap} * -1)` }}>
     <div className="relative w-full" style={{ aspectRatio: `${COLS} / ${rows}`, containerType: "inline-size" }}>
       {items.map((it, n) => {
         if (typeof it.text === "string") {
@@ -82,6 +85,8 @@ export default function FreeGallery({ composition, images = [], onImageClick, al
           </button>
         );
       })}
+    </div>
+    </div>
     </div>
   );
 }
