@@ -750,6 +750,8 @@
   .gal-mini-open:hover { color: #fff; }
   .gal-mini-open + .gal-sub { margin-top: 16px; }
   .gal-mg-row { margin-top: 18px; }
+  .gal-card textarea.gal-desc { display: block; width: 100%; box-sizing: border-box; margin: -6px 0 14px; padding: 8px 12px; min-height: 0; resize: none; overflow: hidden; font-size: 12.5px; line-height: 1.6; color: var(--text2); }
+  .gal-card textarea.gal-desc[hidden] { display: none; }
   .gal-ql { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); opacity: 0; transition: opacity 140ms ease; cursor: zoom-out; }
   .gal-ql.on { opacity: 1; }
   .gal-ql img { max-width: 88vw; max-height: 86vh; object-fit: contain; border-radius: 4px; box-shadow: 0 24px 70px rgba(0,0,0,0.6); transform: scale(0.97); transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1); }
@@ -6925,6 +6927,7 @@
           <button type="button" class="cmp-ib gal-chev open" data-g="toggle" data-i="${i}" title="Riduci" aria-label="Riduci">${cmpIcon("chev")}</button>
           <input type="text" class="gal-title" data-g="title" data-i="${i}" value="${escapeHtml(g.titolo || "")}" placeholder="${tipo === "testo" ? "Titolo del testo" : "Titolo della galleria"}" maxlength="120" aria-label="Titolo della galleria">
         </div>
+        ${tipo === "testo" ? "" : `<textarea class="gal-desc" data-g="gdesc" data-i="${i}" rows="1" lang="it" placeholder="Testo che si apre cliccando il titolo" aria-label="Testo sotto il titolo"${(g.titolo || "").trim() ? "" : " hidden"}>${escapeHtml(g.descrizione || "")}</textarea>`}
         <div class="gal-head">
           ${n > 1 ? `<span class="gal-n">${i + 1}</span>` : ""}
           ${tipo === "testo" ? `<span class="gal-kind">${cmpIcon("text")}Testo</span>` : `<div class="cmp-seg gal-type" role="group" aria-label="Tipo di galleria">${GAL_TIPI.map(([x, l, d]) =>
@@ -6977,6 +6980,7 @@
       const act = activeIdx();
       paintFold();
       list.innerHTML = gs.map((g, i) => cardHtml(g, i, gs.length, act)).join("");
+      list.querySelectorAll(".gal-desc:not([hidden])").forEach(growDesc);
       paintPick();
       list.querySelectorAll(".gal-card").forEach(card => paintPrev(card, gs[+card.dataset.i]));
       setupActive();
@@ -6989,6 +6993,7 @@
       const act = activeIdx();
       if (act !== before && before >= 0 && act >= 0) return render();
       el.outerHTML = cardHtml(gs[i], i, gs.length, act);
+      { const d = cardEl(i) && cardEl(i).querySelector(".gal-desc:not([hidden])"); if (d) growDesc(d); }
       paintPrev(cardEl(i), gs[i]);
       if (act === i) setupActive();
     }
@@ -7075,7 +7080,7 @@
         return;
       }
       const i = +b.dataset.i, a = b.dataset.g;
-      if (a === "rng" || a === "num" || a === "title" || a === "tx") return;
+      if (a === "rng" || a === "num" || a === "title" || a === "tx" || a === "gdesc") return;
       if (a === "tdim" || a === "tal" || a === "tup") {
         const g = mat()[i];
         if (!g) return;
@@ -7160,7 +7165,15 @@
       markDirty();
       render();
     };
+    function growDesc(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
     list.oninput = (e) => {
+      const gd = e.target.closest('textarea[data-g="gdesc"]');
+      if (gd) {
+        const g = mat()[+gd.dataset.i];
+        if (g) { const v = gd.value; if (v.trim()) g.descrizione = v; else delete g.descrizione; markDirty(); }
+        growDesc(gd);
+        return;
+      }
       const tx = e.target.closest('textarea[data-g="tx"]');
       if (tx) {
         const g = mat()[+tx.dataset.i];
@@ -7175,6 +7188,8 @@
       if (t) {
         const g = mat()[+t.dataset.i];
         if (g) { g.titolo = t.value; markDirty(); }
+        const d = t.closest(".gal-card").querySelector(".gal-desc");
+        if (d) { d.hidden = !t.value.trim(); if (!d.hidden) growDesc(d); }
         return;
       }
       const r = e.target.closest('input[data-g="rng"], input[data-g="num"]');

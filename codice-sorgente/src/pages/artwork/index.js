@@ -162,7 +162,8 @@ export async function getStaticProps() {
       // spazio sopra e sotto scelto nel Manager (px); senza: quello delle Impostazioni
       const mg = g.margini || {};
       const px = (v) => (v === undefined || v === null || v === "" || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(400, Number(v))));
-      return gal ? { ...gal, title: titolo, mt: px(mg.sopra), mb: px(mg.sotto) } : null;
+      const desc = typeof g.descrizione === "string" ? g.descrizione.trim() : "";
+      return gal ? { ...gal, title: titolo, desc: titolo ? desc : "", mt: px(mg.sopra), mb: px(mg.sotto) } : null;
     }).filter(Boolean);
     function galleryOf(g) {
       // blocco di testo tra le gallerie
@@ -837,6 +838,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     }
   }, [aboutLay]);
 
+  // gallerie: testo sotto il titolo aperto, mosaico con tutte le foto aperte
+  const [galUi, setGalUi] = useState({});
+
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
   const timerRef = useRef(null);
@@ -1334,12 +1338,33 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 trackPhoto(selectedProject.images[i].src || selectedProject.images[i], mode === "professional" ? "pro" : "art");
               }
             };
+            const gk = `${currentSlug}:${gi}`;
+            const tone = mode === "professional" ? "text-white/55" : "text-black/55";
+            const descOpen = !!galUi[gk + ":t"];
+            // titolo; se c'è un testo, un clic sul titolo lo apre (stesso corpo dei dati della fotocamera)
             const titleEl = g.title ? (
-              <div
-                className={`uppercase tracking-wider font-semibold mb-3 ${mode === "professional" ? "text-white/55" : "text-black/55"}`}
-                style={{ fontSize: "var(--text-xs)", paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}
-              >
-                {g.title}
+              <div className="mb-3" style={{ paddingLeft: ASP.marginLaterale + "%", paddingRight: ASP.marginLaterale + "%" }}>
+                {g.desc ? (
+                  <button
+                    type="button"
+                    onClick={() => setGalUi((u) => ({ ...u, [gk + ":t"]: !u[gk + ":t"] }))}
+                    aria-expanded={descOpen}
+                    className={`inline-flex items-center gap-1.5 uppercase tracking-wider font-semibold cursor-pointer transition-colors duration-300 hover-red ${tone}`}
+                    style={{ fontSize: "var(--text-xs)" }}
+                  >
+                    {g.title}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ transition: "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)", transform: descOpen ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6" /></svg>
+                  </button>
+                ) : (
+                  <div className={`uppercase tracking-wider font-semibold ${tone}`} style={{ fontSize: "var(--text-xs)" }}>{g.title}</div>
+                )}
+                {g.desc ? (
+                  <div className={`project-text-reveal__wrapper ${descOpen ? "project-text-reveal__wrapper--open" : ""}`} inert={!descOpen}>
+                    <div className="project-text-reveal__content">
+                      <p className={`text-xs leading-relaxed whitespace-pre-line pt-2 ${tone}`} lang="it" style={{ maxWidth: "42rem" }}>{g.desc}</p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null;
             if (g.type === "testo") {
@@ -1371,12 +1396,37 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                 {g.type === "composizione" ? (
                   <FreeGallery composition={g.composition} images={selectedProject.images || []} altFor={viewerAlt} onImageClick={openAt} />
                 ) : (
-                  <JustifiedGallery
-                    layout={g.layout}
-                    images={g.idx.map((i) => selectedProject.images[i])}
-                    altFor={(i) => viewerAlt(g.idx[i])}
-                    onImageClick={(i) => openAt(g.idx[i])}
-                  />
+                  (() => {
+                    // oltre 30 foto: le altre si aprono con la freccia
+                    const LIM = 30;
+                    const more = g.idx.length > LIM;
+                    const open = !!galUi[gk + ":m"];
+                    const shown = more && !open ? g.idx.slice(0, LIM) : g.idx;
+                    return (
+                      <>
+                        <JustifiedGallery
+                          layout={g.layout}
+                          images={shown.map((i) => selectedProject.images[i])}
+                          altFor={(i) => viewerAlt(shown[i])}
+                          onImageClick={(i) => openAt(shown[i])}
+                        />
+                        {more && (
+                          <div className="flex justify-center pt-4">
+                            <button
+                              type="button"
+                              onClick={() => setGalUi((u) => ({ ...u, [gk + ":m"]: !u[gk + ":m"] }))}
+                              aria-expanded={open}
+                              aria-label={open ? "Mostra meno foto" : `Mostra tutte le ${g.idx.length} foto`}
+                              className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 hover-red ${tone}`}
+                            >
+                              {!open && <span className="text-xs tracking-wide">+{g.idx.length - LIM}</span>}
+                              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ transition: "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)", transform: open ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
                 )}
                 </div>
               </div>
