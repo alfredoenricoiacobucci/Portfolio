@@ -454,12 +454,12 @@
   .cmp-stage { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
   .cmp-page {
     margin: 0 auto; box-sizing: border-box; position: relative;
-    background-color: #f8f4ed;
-    background-image: repeating-linear-gradient(135deg, rgba(0,0,0,0.045) 0 1px, transparent 1px 7px);
+    background-color: var(--sec-bg, #f8f4ed);
+    background-image: repeating-linear-gradient(135deg, var(--sec-hatch, rgba(0,0,0,0.045)) 0 1px, transparent 1px 7px);
     transition: width 260ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .cmp-canvas {
-    position: relative; width: 100%; background-color: #f8f4ed;
+    position: relative; width: 100%; background-color: var(--sec-bg, #f8f4ed);
     outline: none; user-select: none; -webkit-user-select: none;
     box-shadow: 0 0 0 1px rgba(200,16,46,0.75);
   }
@@ -468,7 +468,7 @@
   .cmp-canvas { container-type: inline-size; }
   .cmp-item.txt { background: transparent; overflow: visible; }
   .cmp-item.txt img { display: none; }
-  .cmp-txt { position: relative; width: 100%; height: 100%; color: #111; font-family: "Inter", -apple-system, sans-serif; white-space: pre-wrap; overflow-wrap: break-word; outline: none; cursor: inherit; }
+  .cmp-txt { position: relative; width: 100%; height: 100%; color: var(--sec-fg, #111); font-family: "Inter", -apple-system, sans-serif; white-space: pre-wrap; overflow-wrap: break-word; outline: none; cursor: inherit; }
   .cmp-txt i { font-style: normal; color: rgba(0,0,0,0.35); font-weight: 400; text-transform: none; }
   .cmp-item.txt:not(.sel):not(.editing) { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
   .cmp-item.editing { z-index: 999 !important; box-shadow: inset 0 0 0 1px var(--red); }
@@ -684,14 +684,14 @@
   .gal-from .gal-th img { opacity: 0.8; }
   .gal-from .gal-th:hover img { opacity: 1; }
   .gal-card .cmp-stage + .cmp-tray-h + .cmp-tray + .gal-sub, .gal-card .gal-mini + .gal-sub { margin-top: 18px; }
-  .gal-mini { position: relative; width: 100%; background: #f8f4ed; border-radius: 6px; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px var(--border); }
+  .gal-mini { position: relative; width: 100%; background: var(--sec-bg, #f8f4ed); border-radius: 6px; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px var(--border); }
   .gal-mini:hover { box-shadow: 0 0 0 1px var(--red); }
   .gal-mini img { position: absolute; object-fit: cover; padding: 0.25%; box-sizing: border-box; }
   .gal-mini { container-type: inline-size; }
-  .gal-mini-txt { position: absolute; box-sizing: border-box; padding: 0.25%; color: #111; white-space: pre-wrap; overflow: hidden; }
+  .gal-mini-txt { position: absolute; box-sizing: border-box; padding: 0.25%; color: var(--sec-fg, #111); white-space: pre-wrap; overflow: hidden; }
   .gal-mini-edit { position: absolute; right: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px; background: rgba(10,10,10,0.85); color: #fff; font-size: 12px; padding: 6px 11px; border-radius: 6px; opacity: 0; transition: opacity 160ms ease; pointer-events: none; }
   .gal-mini:hover .gal-mini-edit { opacity: 1; }
-  .gal-sc-prev { position: relative; background: #f8f4ed; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); padding: 14px 0; margin-bottom: 18px; }
+  .gal-sc-prev { position: relative; background: var(--sec-bg, #f8f4ed); border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); padding: 14px 0; margin-bottom: 18px; }
   .gal-sc-band { overflow: hidden; }
   .gal-sc-track { display: flex; width: max-content; animation-name: galScMove; animation-timing-function: linear; animation-iteration-count: infinite; }
   .gal-sc-track img { display: block; object-fit: cover; flex-shrink: 0; }
@@ -703,7 +703,7 @@
   .gal-card input.gal-num { width: 100%; min-width: 0; padding: 4px 6px; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
   .gal-card input.gal-num::-webkit-inner-spin-button, .gal-card input.gal-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .gal-numw i { font-style: normal; font-size: 11px; color: var(--text3); min-width: 14px; }
-  .gal-mo-prev { position: relative; max-height: 420px; overflow-y: auto; background: #f8f4ed; border-radius: 6px; padding: 18px; margin-bottom: 18px; box-shadow: 0 0 0 1px var(--border); overscroll-behavior: contain; }
+  .gal-mo-prev { position: relative; max-height: 420px; overflow-y: auto; background: var(--sec-bg, #f8f4ed); border-radius: 6px; padding: 18px; margin-bottom: 18px; box-shadow: 0 0 0 1px var(--border); overscroll-behavior: contain; }
   .gal-mo-page { margin: 0 auto; }
   .gal-mo-row { display: flex; }
   .gal-mo-row img { display: block; object-fit: cover; flex-shrink: 0; }
@@ -714,7 +714,14 @@
   .gal-sw { width: 24px; height: 24px; padding: 0; border-radius: 50%; border: 1px solid #3a3a3a; box-shadow: 0 0 0 2px transparent; }
   .gal-sw:hover { border-color: #666; }
   .gal-sw.on { box-shadow: 0 0 0 2px #0e0e0e, 0 0 0 4px var(--red); }
-  .gal-sw[data-bg="trasparente"] { background: repeating-conic-gradient(#d8d8d8 0 25%, #fff 0 50%) 50% / 10px 10px; }
+  .gal-sw[data-k="trasparente"] { background: var(--sec-bg, #f8f4ed); }
+  .gal-ph.narrow .gal-ph-acts { flex-direction: column; align-items: stretch; gap: 2px; padding: 22px 3px 3px; }
+  .gal-ph.narrow .gal-ph-acts button { padding: 2px 1px; font-size: 9.5px; letter-spacing: -0.01em; text-align: center; overflow: hidden; text-overflow: clip; }
+  .gal-ph.narrow .gal-ph-acts button.x { margin-left: 0; display: flex; justify-content: center; }
+  .gal-mini-open { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+  .gal-mini-open:hover { color: #fff; }
+  .gal-mini-open + .gal-sub { margin-top: 16px; }
+  .cmp-ib.prev-off { color: var(--text3); }
   .gal-add-row { display: flex; justify-content: center; margin-top: 16px; }
   #galAdd { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; color: var(--text2); border-style: dashed; }
   #galAdd:hover { color: #fff; }
@@ -6305,11 +6312,13 @@
     ["composizione", "Composizione", "Foto disposte a mano"],
     ["scorrimento", "Scorrimento", "Una striscia di foto che scorre da sola"],
   ];
-  const GAL_SFONDI = [["rosso", "#c8102e", "Rosso"], ["nero", "#0a0a0a", "Nero"], ["bianco", "#ffffff", "Bianco"], ["trasparente", "transparent", "Trasparente"]];
+  const GAL_SFONDI = [["rosso", "#c8102e", "Rosso"], ["nero", "#0a0a0a", "Nero"], ["bianco", "#ffffff", "Bianco"], ["trasparente", "transparent", "Colore della sezione"]];
   const GAL_SC_DEF = { altezza: 50, velocita: 40, spazio: 16, sfondo: "trasparente" };
   const GAL_MO_DEF = { altezza: 640, spazio: 6 };
   Object.assign(CMP_ICO_EXTRA, {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeoff: '<path d="M2 12s3.6-7 10-7c2 0 3.7.7 5.1 1.6M22 12s-3.6 7-10 7c-2 0-3.7-.7-5.1-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
     down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
     pen: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
     chev: '<path d="M9 6l6 6-6 6"/>',
@@ -6343,11 +6352,19 @@
   const galActive = {};   // progetto -> indice della composizione aperta
   const galFromOpen = {}; // progetto -> indici delle gallerie con "Dal progetto" aperto
   const galClosed = new WeakSet(); // gallerie ridotte al solo titolo
+  const galNoPrev = new WeakSet(); // gallerie con l'anteprima del sito nascosta
 
   function setupGallerie(p, key) {
     const list = document.getElementById("galList");
     if (!list) { window._updateComposer = null; return; }
     let cmp = null;
+    // le anteprime hanno lo sfondo e il testo della sezione (Art chiara, Pro scura)
+    {
+      const A = state.aspetto || {}, pro = p.section === "pro";
+      list.style.setProperty("--sec-bg", (pro ? A.colorBgProfessional : A.colorBgArtwork) || (pro ? "#0a0a0a" : "#f8f4ed"));
+      list.style.setProperty("--sec-fg", (pro ? A.colorTextProfessional : A.colorTextArtwork) || (pro ? "#f8f4ed" : "#0a0a0a"));
+      list.style.setProperty("--sec-hatch", pro ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.045)");
+    }
     const photos = () => {
       const all = photosByProject[key] || [];
       const ord = p.ordine || [];
@@ -6386,7 +6403,7 @@
     function activeIdx() {
       const gs = galGet(p);
       let i = galActive[key];
-      const ok = (k) => k >= 0 && k < gs.length && gs[k].tipo === "composizione" && !galClosed.has(gs[k]);
+      const ok = (k) => k >= 0 && k < gs.length && gs[k].tipo === "composizione" && !galClosed.has(gs[k]) && !galNoPrev.has(gs[k]);
       if (!ok(i)) i = gs.findIndex((g, k) => ok(k));
       galActive[key] = i;
       return i;
@@ -6409,7 +6426,7 @@
         const tags = (p.banner === n ? `<em>Banner</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
         const isPlaced = placed && placed.has(n);
         const isSel = selI === i && selN.has(n);
-        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}${isSel ? " sel" : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}">
+        return `<div class="gal-ph${placed ? (isPlaced ? " placed" : " free") : ""}${isSel ? " sel" : ""}${ratio(n) * 92 < 150 ? " narrow" : ""}" draggable="true" data-i="${i}" data-name="${escapeHtml(n)}">
           <img src="${thumbOf(n)}" alt="" draggable="false" loading="lazy" decoding="async">
           ${tags ? `<span class="gal-tags">${tags}</span>` : ""}
           ${isPlaced ? `<span class="gal-in">${cmpIcon("check")}</span>` : ""}
@@ -6557,10 +6574,11 @@
       }
       const tipo = GAL_TIPI.some(x => x[0] === g.tipo) ? g.tipo : "mosaico";
       const editing = tipo === "composizione" && i === act;
+      const noPrev = galNoPrev.has(g) && !editing;
       let body = "";
-      if (tipo === "composizione") body = (editing ? composerHtml : miniHtml(g, i)) + `<div class="gal-strip">${stripHtml(g, i)}</div>`;
-      else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${ctrlsHtml(g, i, "scorrimento")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
-      else body = `<div class="gal-mo-prev"></div>${ctrlsHtml(g, i, "mosaico")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      if (tipo === "composizione") body = (editing ? composerHtml : noPrev ? `<button type="button" class="ghost sm gal-mini-open" data-g="open" data-i="${i}">${cmpIcon("pen")}Modifica la composizione</button>` : miniHtml(g, i)) + `<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else if (tipo === "scorrimento") body = `${noPrev ? "" : `<div class="gal-sc-prev"></div>`}${ctrlsHtml(g, i, "scorrimento")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else body = `${noPrev ? "" : `<div class="gal-mo-prev"></div>`}${ctrlsHtml(g, i, "mosaico")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
       return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
         <div class="gal-top">
           <button type="button" class="cmp-ib gal-chev open" data-g="toggle" data-i="${i}" title="Riduci" aria-label="Riduci">${cmpIcon("chev")}</button>
@@ -6576,6 +6594,7 @@
             <button type="button" class="sm on" data-view="desk" title="Come si vede sul computer">Computer</button>
             <button type="button" class="sm" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button></div>` : ""}
           <div class="gal-acts">
+            ${ib("prev", i, noPrev ? "Mostra l'anteprima del sito" : "Nascondi l'anteprima del sito", noPrev ? "eyeoff" : "eye", false, noPrev ? "prev-off" : "")}
             ${n > 1 ? ib("up", i, "Sposta sopra", "up", i === 0) + ib("down", i, "Sposta sotto", "down", i === n - 1) : ""}
             ${ib("del", i, n > 1 ? "Elimina questa galleria" : "Serve almeno una galleria", "clear", n < 2, "del")}
           </div>
@@ -6713,7 +6732,13 @@
         paintFold();
         return;
       }
-      if (a === "open") { galActive[key] = i; render(); return; }
+      if (a === "open") { galNoPrev.delete(galGet(p)[i]); galActive[key] = i; render(); return; }
+      if (a === "prev") {
+        const g = galGet(p)[i];
+        if (galNoPrev.has(g)) { galNoPrev.delete(g); if (g.tipo === "composizione") galActive[key] = i; } else galNoPrev.add(g);
+        render();
+        return;
+      }
       if (a === "pick") { pickFor = i; input.click(); return; }
       if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); refresh(i); return; }
       if (a === "unsel") { clearSel(); refresh(i); return; }
