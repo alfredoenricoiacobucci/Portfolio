@@ -750,6 +750,18 @@
   .gal-mini-open:hover { color: #fff; }
   .gal-mini-open + .gal-sub { margin-top: 16px; }
   .gal-mg-row { margin-top: 18px; }
+  .ban-row { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; align-items: center; }
+  .ban-empty { font-size: 12.5px; color: var(--text3); }
+  .ban-it { position: relative; height: 72px; border-radius: 5px; overflow: hidden; background: #000; cursor: grab; flex-shrink: 0; transition: opacity 160ms ease; }
+  .ban-it img { height: 100%; width: auto; display: block; pointer-events: none; }
+  .ban-it b { position: absolute; left: 5px; top: 5px; font-size: 10px; font-weight: 600; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 3px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .ban-it button { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: rgba(10,10,10,0.75); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 140ms ease, background-color 140ms ease; }
+  .ban-it:hover button { opacity: 1; }
+  .ban-it button:hover { background: var(--red); }
+  .ban-it button svg { width: 11px !important; height: 11px !important; }
+  .ban-it.dragging { opacity: 0.35; }
+  .ban-it.drop-before { box-shadow: -4px 0 0 var(--red); }
+  .ban-it.drop-after { box-shadow: 4px 0 0 var(--red); }
   .gal-card textarea.gal-desc { display: block; width: 100%; box-sizing: border-box; margin: -6px 0 14px; padding: 8px 12px; min-height: 0; resize: none; overflow: hidden; font-size: 12.5px; line-height: 1.6; color: var(--text2); }
   .gal-card textarea.gal-desc[hidden] { display: none; }
   .gal-ql { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); opacity: 0; transition: opacity 140ms ease; cursor: zoom-out; }
@@ -5984,6 +5996,14 @@
         <div class="gal-list" id="galList"></div>
       </div>
 
+      <div class="photos-section" id="banSection">
+        <div class="photos-header">
+          <h3>Foto del banner</h3>
+          <button type="button" class="sm ghost" id="banClear" hidden>Automatico</button>
+        </div>
+        <div class="ban-row" id="banRow"></div>
+      </div>
+
       <div class="photos-section" id="vidSection">
         <div class="photos-header">
           <h3>Video del banner</h3>
@@ -6537,6 +6557,7 @@
     if (!p) return;
     const set = new Set(names);
     if (p.composizione && Array.isArray(p.composizione.foto)) p.composizione.foto = p.composizione.foto.filter(it => !set.has(it.file));
+    if (Array.isArray(p.bannerFoto)) { p.bannerFoto = p.bannerFoto.filter(f => !set.has(f)); if (!p.bannerFoto.length) delete p.bannerFoto; }
     if (Array.isArray(p.gallerie)) p.gallerie.forEach(g => {
       if (Array.isArray(g.foto)) g.foto = g.foto.filter(f => !set.has(f));
       if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => !set.has(it.file));
@@ -6721,7 +6742,8 @@
           ${open ? fromHtml(others, i) : ""}`;
       }
       const ph = names.map(n => {
-        const tags = (p.banner === n ? `<em>Banner</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
+        const bk = banList().indexOf(n);
+        const tags = (bk >= 0 ? `<em>Banner${banList().length > 1 ? " " + (bk + 1) : ""}</em>` : "") + (p.anteprima === n ? `<em>Anteprima</em>` : "");
         const isPlaced = placed && placed.has(n);
         const isSel = selI === i && selN.has(n);
         const narrow = ratio(n) * 92 < 150;
@@ -6938,7 +6960,7 @@
             <button type="button" class="sm on" data-view="desk" title="Come si vede sul computer">Computer</button>
             <button type="button" class="sm" data-view="phone" title="Come si vede sul telefono, in orizzontale">Telefono</button></div>` : ""}
           <div class="gal-acts">
-            ${ib("prev", i, noPrev ? "Mostra l'anteprima del sito" : "Nascondi l'anteprima del sito", noPrev ? "eyeoff" : "eye", false, noPrev ? "prev-off" : "")}
+            ${ib("prev", i, noPrev ? "Mostra l'anteprima del sito" : "Nascondi l'anteprima del sito", noPrev ? "eye" : "eyeoff", false, "")}
             ${ib("del", i, n > 1 ? "Elimina questa galleria" : "Serve almeno una galleria", "clear", n < 2, "del")}
           </div>
         </div>
@@ -7110,14 +7132,23 @@
       if (a === "pick") { pickFor = i; input.click(); return; }
       if (a === "from") { const s = fromOpen(); s.has(i) ? s.delete(i) : s.add(i); refresh(i); return; }
       if (a === "unsel") { clearSel(); paintSel(); return; }
-      if (a === "banner" || a === "ante") {
+      if (a === "banner") {
         const name = b.dataset.name;
-        if (a === "banner") p.banner = name;
-        else { p.anteprima = name; delete p.anteprimaScorrimento; }
+        const names = selI === i && selN.has(name) && selN.size > 1 ? chosen(galGet(p)[i]).filter(n => selN.has(n)) : [name];
+        const cur = banList().slice();
+        const add = !cur.includes(name);
+        const next = add ? [...cur, ...names.filter(n => !cur.includes(n))] : cur.filter(n => !names.includes(n));
+        setBan(next);
+        toast(add ? (names.length > 1 ? `${names.length} foto aggiunte al banner.` : "Foto aggiunta al banner.") : (names.length > 1 ? `${names.length} foto tolte dal banner.` : "Foto tolta dal banner."), "ok");
+        return;
+      }
+      if (a === "ante") {
+        const name = b.dataset.name;
+        p.anteprima = name; delete p.anteprimaScorrimento;
         markDirty();
         refreshAll();
         if (window._updateFocalPointUI) window._updateFocalPointUI();
-        toast(a === "banner" ? "Foto del banner scelta." : "Foto di anteprima scelta.", "ok");
+        toast("Foto di anteprima scelta.", "ok");
         return;
       }
       if (a === "rm" || a === "rmsel") {
@@ -7225,6 +7256,57 @@
       if (!card._prevRaf) card._prevRaf = requestAnimationFrame(() => { card._prevRaf = 0; paintPrev(card, galGet(p)[+card.dataset.i]); });
       markDirty();
     }
+
+    // ---- foto del banner: quelle che scorrono in alto (senza video) ----
+    function banList() { return Array.isArray(p.bannerFoto) ? p.bannerFoto.filter(n => allNames().includes(n)) : []; }
+    function setBan(list) {
+      if (list.length) { p.bannerFoto = list; p.banner = list[0]; }
+      else delete p.bannerFoto;
+      markDirty();
+      refreshAll();
+      paintBan();
+      if (window._updateFocalPointUI) window._updateFocalPointUI();
+    }
+    function paintBan() {
+      const row = document.getElementById("banRow"), clr = document.getElementById("banClear");
+      if (!row) return;
+      const l = banList();
+      if (clr) clr.hidden = !l.length;
+      row.innerHTML = l.length
+        ? l.map((n, k) => `<div class="ban-it" draggable="true" data-name="${escapeHtml(n)}"><img src="${thumbOf(n)}" alt="" draggable="false" loading="lazy"><b>${k + 1}</b><button type="button" data-ban-rm="${escapeHtml(n)}" title="Togli dal banner" aria-label="Togli dal banner">${cmpIcon("remove")}</button></div>`).join("")
+        : `<span class="ban-empty">Automatico. Premi «Banner» sulle foto per sceglierle.</span>`;
+    }
+    {
+      const row = document.getElementById("banRow"), clr = document.getElementById("banClear");
+      if (clr) clr.onclick = () => { setBan([]); toast("Banner automatico.", ""); };
+      if (row) {
+        let bd = null;
+        row.onclick = (e) => { const r = e.target.closest("[data-ban-rm]"); if (r) setBan(banList().filter(n => n !== r.dataset.banRm)); };
+        row.ondragstart = (e) => { const it = e.target.closest(".ban-it"); if (!it) return; bd = it.dataset.name; e.dataTransfer.setData("text/plain", "ban:" + bd); e.dataTransfer.effectAllowed = "move"; requestAnimationFrame(() => it.classList.add("dragging")); };
+        const clean = () => row.querySelectorAll(".dragging, .drop-before, .drop-after").forEach(x => x.classList.remove("dragging", "drop-before", "drop-after"));
+        row.ondragend = () => { bd = null; clean(); };
+        row.ondragover = (e) => {
+          if (!bd) return;
+          e.preventDefault();
+          row.querySelectorAll(".drop-before, .drop-after").forEach(x => x.classList.remove("drop-before", "drop-after"));
+          const it = e.target.closest(".ban-it");
+          if (it && it.dataset.name !== bd) { const r = it.getBoundingClientRect(); it.classList.add(e.clientX < r.left + r.width / 2 ? "drop-before" : "drop-after"); }
+        };
+        row.ondrop = (e) => {
+          if (!bd) return;
+          e.preventDefault();
+          const it = e.target.closest(".ban-it");
+          const before = it && it.classList.contains("drop-before");
+          const src = bd; bd = null; clean();
+          if (!it || it.dataset.name === src) return;
+          const l = banList().filter(n => n !== src);
+          let k = l.indexOf(it.dataset.name); if (!before) k++;
+          l.splice(k, 0, src);
+          setBan(l);
+        };
+      }
+    }
+    paintBan();
 
     // ---- spostare le gallerie trascinando la maniglia ----
     list.onpointerdown = (e) => {
@@ -7667,7 +7749,7 @@
     window._galResizeObs.observe(list);
 
     // foto caricate o eliminate: si ridisegna tutto
-    window._updateComposer = (k) => { if (!k || k === key) { urls = urlMap(); render(); } };
+    window._updateComposer = (k) => { if (!k || k === key) { urls = urlMap(); render(); paintBan(); } };
     render();
   }
 
@@ -9039,6 +9121,7 @@
         if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => cmpIsText(it) || has(it.file));
       });
       if (p.banner && !has(p.banner)) p.banner = "";
+      if (Array.isArray(p.bannerFoto)) { p.bannerFoto = p.bannerFoto.filter(has); if (!p.bannerFoto.length) delete p.bannerFoto; }
       if (p.anteprima && !has(p.anteprima)) { p.anteprima = ""; delete p.anteprimaScorrimento; }
       if (Array.isArray(p.video) && p.video.length) {
         try {

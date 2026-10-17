@@ -26,6 +26,7 @@ export default function TopRotator({
   interval = 5200,
   fadeMs = 1000,
   priorityFirst = true,
+  ordered = false, // true: tutte le foto date, nel loro ordine, dalla prima
 }) {
   // Rotazione guidata da setTimeout: il blocco @media in globals.css non la
   // ferma, quindi con la riduzione del movimento attiva resta la prima foto.
@@ -52,7 +53,16 @@ export default function TopRotator({
     // Normalizza: supporta sia stringhe che {src, w, h}
     const hasServerDims = typeof images[0] === "object" && images[0].w;
 
-    if (hasServerDims) {
+    if (ordered) {
+      // foto scelte a mano: tutte, nell'ordine dato, dalla prima
+      const list = images.map((m) => (typeof m === "string" ? m : m.src)).filter(Boolean);
+      slidesRef.current = list;
+      curIdxRef.current = 0;
+      setBufSrc([list[0], list[1 % list.length]]);
+      setTop(0);
+      setFading(false);
+      setReady(true);
+    } else if (hasServerDims) {
       // Usa dimensioni server-side — istantaneo, nessun caricamento
       const sample = images.slice(0, 8);
       const horiz = sample.filter((m) => m.w >= m.h).map((m) => m.src);
@@ -105,7 +115,7 @@ export default function TopRotator({
 
   // Ciclo crossfade
   useEffect(() => {
-    if (!ready || !slidesRef.current.length) return;
+    if (!ready || slidesRef.current.length < 2) return;
     if (reducedMotion) return;
 
     const loop = () => {

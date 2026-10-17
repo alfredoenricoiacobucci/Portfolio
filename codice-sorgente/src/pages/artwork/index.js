@@ -63,6 +63,11 @@ export async function getStaticProps() {
       h: dims[f] ? dims[f].h : 667,
     }));
 
+    // foto scelte nel Manager per il banner (scorrono in quest'ordine); senza scelta: automatico
+    const bannerImages = (Array.isArray(data.bannerFoto) ? data.bannerFoto : [])
+      .map((f) => images[files.indexOf(f)])
+      .filter(Boolean);
+
     let bannerStartIndex = 0;
     if (banner && files.length > 0) {
       const idx = files.findIndex((f) => f.toLowerCase() === banner.toLowerCase());
@@ -204,7 +209,7 @@ export async function getStaticProps() {
       bannerStartIndex = bi >= 0 ? bi : 0;
     }
 
-    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, cover, videos, galleries, bannerStartIndex, anteprimaIndex, anteprimaPosizione, anteprimaScorrimento, techData, esposizioni, section };
+    return { id, name: title || id, titleExtra, datePlace, description, images: galleryImages, bannerImages, cover, videos, galleries, bannerStartIndex, anteprimaIndex, anteprimaPosizione, anteprimaScorrimento, techData, esposizioni, section };
   });
 
   // ---- ABOUT: doppio (art + pro) con campi condivisibili ----
@@ -1163,7 +1168,8 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             />
           ) : (
           <TopRotator
-            images={selectedProject.images}
+            images={selectedProject.bannerImages?.length ? selectedProject.bannerImages : selectedProject.images}
+            ordered={!!selectedProject.bannerImages?.length}
             alt={selectedProject.name || ""}
             className="relative w-full h-full overflow-hidden bg-black"
             interval={4000}
