@@ -531,10 +531,16 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   const pageRef = useRef(null);
 
   const handleModeSwitch = (targetMode) => {
-    if (targetMode === mode || navigatingRef.current) return;
+    if (navigatingRef.current) return;
+    navHistoryRef.current = [];
+    if (targetMode === mode) {
+      // già in questa sezione: torna alla sua home
+      if (router.query?.p) router.push(`/${mode}`, undefined, { shallow: true });
+      window.scrollTo(0, 0);
+      return;
+    }
     navigatingRef.current = true;
-    const isAbout = router.query?.p === "about";
-    const target = isAbout ? `/${targetMode}?p=about` : `/${targetMode}`;
+    const target = `/${targetMode}`;
 
     // Fade out il contenuto
     if (pageRef.current) {
@@ -544,19 +550,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     setTimeout(() => {
       // Cambio mode locale (istantaneo, niente SSR round-trip)
       setMode(targetMode);
-      if (isAbout) {
-        const ab = targetMode === "professional" ? aboutPro : aboutArt;
-        setSelectedProject({
-          name: "About",
-          description: ab.text || "",
-          description2: ab.text2 || "",
-          quote: ab.quote || "",
-          photo: ab.photo || "",
-          video: ab.video || "",
-        });
-      } else {
-        setSelectedProject(null);
-      }
+      setSelectedProject(null);
       setViewerOpen(false);
       setTextOpen(false);
       window.scrollTo(0, 0);
@@ -734,7 +728,12 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
   // quando entrambe le colonne sono piene, tutto il blocco si rimpicciolisce in proporzione.
   const aboutTextRef = useRef(null);
   const aboutMeasureRef = useRef(null);
+  const aboutOuterRef = useRef(null);
+  const aboutInnerRef = useRef(null);
   const [aboutLay, setAboutLay] = useState({ mode: "normal" });
+  const aboutFlowRef = useRef(null);
+  const aboutBumpRef = useRef({ A: 0, k: 1 });
+  const aboutMeasureFnRef = useRef(null);
   const aboutDesc = selectedProject && selectedProject.name === "About" ? `${selectedProject.description || ""}|${selectedProject.description2 || ""}` : "";
   useEffect(() => {
     const sec = aboutTextRef.current, m = aboutMeasureRef.current;
@@ -744,7 +743,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
     const gapPct = parseFloat(ASP.gapColonne) || 0;
     const colW = (W) => (W - (W * gapPct) / 100) / 2;
     const hAt = (el, W) => { el.style.width = colW(W) + "px"; return el.offsetHeight; };
-    const fits = (W, H) => { cols.style.width = W + "px"; cols.style.height = H + "px"; return cols.scrollWidth <= cols.clientWidth + 1; };
+    const fits = (W, H) => { cols.style.width = W + "px"; cols.style.height = (H - 4) + "px"; return cols.scrollWidth <= cols.clientWidth + 1; };
     let raf = 0;
     const measure = () => {
       raf = 0;
@@ -755,8 +754,16 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       const refW = Math.max(textRowMinW, A);
       const H = Math.ceil(Math.max(hAt(one, refW), hAt(two, refW))) + 2;
       const minW = ct.scrollWidth + 24; // i contatti non devono stringersi
+      const bump = aboutBumpRef.current;
+      if (Math.abs(bump.A - A) > 0.5) { bump.A = A; bump.k = 1; }
       let next;
-      if (Math.max(hAt(one, A), hAt(two, A)) <= H && A >= minW) next = { mode: "normal" };
+      if (bump.k > 1) {
+        let lo = Math.max(A, minW), hi = Math.max(refW, lo);
+        if (fits(hi, H)) while (hi - lo > 1) { const mid = (lo + hi) / 2; if (fits(mid, H)) hi = mid; else lo = mid; }
+        const W = Math.ceil(Math.max(hi, A) * bump.k);
+        next = { mode: "zoom", H, W, z: Math.min(1, A / W) };
+      }
+      else if (Math.max(hAt(one, A), hAt(two, A)) <= H && A >= minW) next = { mode: "normal" };
       else if (A >= minW && fits(A, H)) next = { mode: "flow", H };
       else {
         // larghezza minima in cui tutto sta in due colonne: lì si disegna e poi si rimpicciolisce
@@ -769,12 +776,24 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
       setAboutLay((p) => (p.mode === next.mode && p.H === next.H && p.W === next.W && Math.abs((p.z || 1) - (next.z || 1)) < 0.002 ? p : next));
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    aboutMeasureFnRef.current = schedule;
     measure();
     const ro = new ResizeObserver(schedule);
     ro.observe(sec);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
     return () => { ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [textRowMinW, aboutDesc, ASP.gapColonne, ASP.marginLaterale]);
+  // con il rimpicciolimento (transform) il blocco occupa solo lo spazio visibile
+  useEffect(() => {
+    const o = aboutOuterRef.current, i = aboutInnerRef.current;
+    if (!o || !i) return;
+    o.style.height = aboutLay.mode === "zoom" ? Math.ceil(i.offsetHeight * aboutLay.z) + "px" : "";
+    const f = aboutFlowRef.current;
+    if (f && aboutLay.mode !== "normal" && f.scrollWidth > f.clientWidth + 1 && aboutBumpRef.current.k < 3) {
+      aboutBumpRef.current.k *= 1.05;
+      aboutMeasureFnRef.current && aboutMeasureFnRef.current();
+    }
+  }, [aboutLay]);
 
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
@@ -1351,18 +1370,19 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             {/* TESTO IN DUE COLONNE + CONTATTI — stessa struttura dei progetti */}
             <div ref={aboutTextRef} className={`w-full relative about-text-section${aboutLay.mode === "zoom" ? " about-zoomed" : ""} ${mode === "professional" ? "text-white" : "text-black"}`} style={{ paddingLeft: ASP.marginLaterale + '%', paddingRight: ASP.marginLaterale + '%', paddingTop: '3rem', paddingBottom: '2.5rem', overflow: 'hidden' }}>
               {/* misure nascoste: servono a decidere come disporre il testo */}
-              <div ref={aboutMeasureRef} aria-hidden="true" className="text-base leading-relaxed" style={{ position: 'absolute', left: 0, top: 0, height: 0, overflow: 'hidden', visibility: 'hidden', pointerEvents: 'none' }}>
+              <div ref={aboutMeasureRef} aria-hidden="true" lang="it" className="text-base leading-relaxed" style={{ position: 'absolute', left: 0, top: 0, height: 0, overflow: 'hidden', visibility: 'hidden', pointerEvents: 'none' }}>
                 <div data-m="one"><p className="whitespace-pre-line project-text">{selectedProject.description}</p></div>
                 <div data-m="two"><p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p></div>
                 <div data-m="cols" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto' }}>
                   <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
-                  <p className="whitespace-pre-line project-text" style={{ marginTop: '1.5em' }}>{selectedProject.description2 || ""}</p>
+                  <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
                 </div>
                 <div data-m="contacts" className="text-sm" style={{ display: 'inline-flex', gap: '3rem', whiteSpace: 'nowrap' }}>
                   <span style={{ paddingLeft: 23 }}>{S.TELEFONO}</span><span style={{ paddingLeft: 23 }}>{S.EMAIL_DESTINATARIO}</span><span style={{ paddingLeft: 23 }}>{S.INSTAGRAM_HANDLE}</span>
                 </div>
               </div>
-              <div style={aboutLay.mode === "zoom" ? { width: aboutLay.W + 'px', zoom: aboutLay.z } : undefined}>
+              <div ref={aboutOuterRef}>
+              <div ref={aboutInnerRef} style={aboutLay.mode === "zoom" ? { width: aboutLay.W + 'px', transform: `scale(${aboutLay.z})`, transformOrigin: '0 0' } : undefined}>
               {aboutLay.mode === "normal" ? (
               <div className="flex flex-col md:flex-row text-base leading-relaxed" style={{ gap: ASP.gapColonne + '%' }} lang="it">
                 {/* Colonna sinistra — testo */}
@@ -1376,9 +1396,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               </div>
               ) : (
               /* testo continuo su due colonne della stessa altezza */
-              <div className="text-base leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: aboutLay.H + 'px' }}>
+              <div ref={aboutFlowRef} className="text-base leading-relaxed" lang="it" style={{ columnCount: 2, columnGap: ASP.gapColonne + '%', columnFill: 'auto', height: aboutLay.H + 'px', overflow: 'hidden' }}>
                 <p className="whitespace-pre-line project-text">{selectedProject.description}</p>
-                <p className="whitespace-pre-line project-text" style={{ marginTop: '1.5em' }}>{selectedProject.description2 || ""}</p>
+                <p className="whitespace-pre-line project-text">{selectedProject.description2 || ""}</p>
               </div>
               )}
               {/* Contatti — sotto la bio, distribuiti: sinistra, centro, destra */}
@@ -1395,6 +1415,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
                   {S.INSTAGRAM_HANDLE}
                 </a>
+              </div>
               </div>
               </div>
             </div>
