@@ -9,6 +9,9 @@ const COLS = 12;
 // Mezzo spazio tra foto adiacenti, in % della larghezza della galleria
 // (circa 3px su uno schermo da 1300px, come il mosaico automatico).
 const HALF_GAP = "0.23%";
+// Testi: grandezza in proporzione alla larghezza della galleria (come nel Manager)
+const TXT = { s: 1.1, m: 1.6, l: 2.6, xl: 4.2 };
+const ALIGN = { sinistra: "left", centro: "center", destra: "right" };
 
 export default function FreeGallery({ composition, images = [], onImageClick, altFor }) {
   const rows = composition?.rows || 6;
@@ -16,8 +19,34 @@ export default function FreeGallery({ composition, images = [], onImageClick, al
   const items = composition?.items || [];
 
   return (
-    <div className="relative w-full" style={{ aspectRatio: `${COLS} / ${rows}` }}>
+    <div className="relative w-full" style={{ aspectRatio: `${COLS} / ${rows}`, containerType: "inline-size" }}>
       {items.map((it, n) => {
+        if (typeof it.text === "string") {
+          const big = it.dim === "l" || it.dim === "xl";
+          return (
+            <div
+              key={`t-${n}`}
+              className="absolute whitespace-pre-wrap"
+              style={{
+                left: `${(it.x / COLS) * 100}%`,
+                top: `${(it.y / rows) * 100}%`,
+                width: `${(it.w / COLS) * 100}%`,
+                height: `${(it.h / rows) * 100}%`,
+                padding: gap,
+                zIndex: n + 1,
+                fontSize: `max(9px, ${TXT[it.dim] || TXT.m}cqw)`,
+                fontWeight: big ? 800 : 400,
+                lineHeight: big ? 1.08 : 1.5,
+                letterSpacing: big ? "-0.01em" : undefined,
+                textAlign: ALIGN[it.align] || "left",
+                textTransform: it.upper ? "uppercase" : undefined,
+                overflowWrap: "break-word",
+              }}
+            >
+              {it.text}
+            </div>
+          );
+        }
         const img = images[it.idx];
         if (!img) return null;
         const src = typeof img === "string" ? img : img.src;

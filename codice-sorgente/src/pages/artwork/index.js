@@ -116,6 +116,16 @@ export async function getStaticProps() {
       if (!comp || !Array.isArray(comp.foto) || !comp.foto.length) return null;
       const placed = comp.foto
         .map((it) => {
+          // blocco di testo scritto nel Manager
+          if (typeof it.testo === "string") {
+            if (!it.testo.trim()) return null;
+            const w = Math.max(0.25, Math.min(12, num(it.w, 6)));
+            const h = Math.max(0.25, num(it.h, 1));
+            return { text: it.testo, x: Math.max(0, Math.min(12 - w, num(it.x, 0))), y: Math.max(0, num(it.y, 0)), w, h,
+              dim: ["s", "m", "l", "xl"].includes(it.dim) ? it.dim : "m",
+              align: ["sinistra", "centro", "destra"].includes(it.allinea) ? it.allinea : "sinistra",
+              upper: !!it.maiuscolo };
+          }
           if (files.indexOf(it.file) < 0) return null;
           const w = Math.max(0.25, Math.min(12, num(it.w, 4)));
           const h = Math.max(0.25, num(it.h, 3));
@@ -128,14 +138,16 @@ export async function getStaticProps() {
         .filter(Boolean);
       if (!placed.length) return null;
       // ordine di lettura (dall'alto, da sinistra) per il visore
-      [...placed].sort((a, b) => a.y - b.y || a.x - b.x).forEach((it) => addImg(it.file));
+      [...placed].filter((it) => !it.text).sort((a, b) => a.y - b.y || a.x - b.x).forEach((it) => addImg(it.file));
       const bottom = Math.max(...placed.map((it) => it.y + it.h));
       return {
         rows: Math.max(1, Math.ceil(bottom - 0.001), Math.round(num(comp.righe, 6))),
         // spazio tra le foto: metà distanza, in % della larghezza della galleria
         gap: Math.max(0, Math.min(3, num(comp.spazio, 0.23))),
         // l'ordine dell'array resta quello del Manager: decide chi sta sopra
-        items: placed.map((it) => ({ idx: viewerIdx.get(it.file), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit, pos: it.pos })),
+        items: placed.map((it) => it.text
+          ? { text: it.text, x: it.x, y: it.y, w: it.w, h: it.h, dim: it.dim, align: it.align, upper: it.upper }
+          : { idx: viewerIdx.get(it.file), x: it.x, y: it.y, w: it.w, h: it.h, fit: it.fit, pos: it.pos }),
       };
     };
     let rawGalleries = Array.isArray(data.gallerie) && data.gallerie.length ? data.gallerie : null;
@@ -167,7 +179,11 @@ export async function getStaticProps() {
           background: SFONDI[sc.sfondo] || "transparent",
         } };
       }
-      return { type: "mosaico", idx };
+      const mo = g.mosaico || {};
+      return { type: "mosaico", idx, layout: {
+        height: Math.max(120, Math.min(1000, num(mo.altezza, 640))),
+        gap: Math.max(0, Math.min(60, num(mo.spazio, 6))),
+      } };
     }
     const galleryImages = viewerImgs.length ? viewerImgs : images;
     {
@@ -321,10 +337,12 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
    Ogni riga ha MINIMO 2 foto. Se ne avanza 1, viene assorbita
    dalla riga precedente. Tutte le righe riempiono la larghezza.
    ============================================================ */
-function JustifiedGallery({ images = [], onImageClick, altFor }) {
+function JustifiedGallery({ images = [], onImageClick, altFor, layout }) {
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const GAP = 6;
+  // altezza delle righe e spazio scelti nel Manager (altezza pensata per lo schermo del computer)
+  const GAP = layout?.gap ?? 6;
+  const BASE_H = layout?.height ?? 640;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -348,7 +366,7 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
 
   const rows = useMemo(() => {
     if (!dims.length || containerWidth <= 0) return [];
-    const TARGET_H = containerWidth < 640 ? 360 : containerWidth < 1024 ? 500 : 640;
+    const TARGET_H = BASE_H * (containerWidth < 640 ? 360 / 640 : containerWidth < 1024 ? 500 / 640 : 1);
     const rawRows = [];
     let i = 0;
 
@@ -365,16 +383,14 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
         i++;
       }
 
-      // Prova ad aggiungere una terza se la riga non è ancora piena
-      if (i < dims.length && row.length < 3) {
+      // Aggiungi altre foto finché la riga non arriva alla larghezza
+      while (i < dims.length) {
+        if (ratioSum * TARGET_H + (row.length - 1) * GAP >= containerWidth) break;
         const candidateWidth = (ratioSum + dims[i].ratio) * TARGET_H + row.length * GAP;
-        // Aggiungi solo se non sfora troppo o se servono almeno 2 nella prossima riga
-        const remaining = dims.length - i;
-        if (candidateWidth <= containerWidth * 1.4 || remaining === 1) {
-          row.push(dims[i]);
-          ratioSum += dims[i].ratio;
-          i++;
-        }
+        if (candidateWidth > containerWidth * 1.4 && dims.length - i > 1) break;
+        row.push(dims[i]);
+        ratioSum += dims[i].ratio;
+        i++;
       }
 
       rawRows.push(row);
@@ -393,7 +409,7 @@ function JustifiedGallery({ images = [], onImageClick, altFor }) {
       const h = (containerWidth - totalGap) / ratioSum;
       return { items: row, height: h };
     });
-  }, [dims, containerWidth]);
+  }, [dims, containerWidth, BASE_H, GAP]);
 
   return (
     <div ref={containerRef} className="w-full">
@@ -1249,6 +1265,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                   <FreeGallery composition={g.composition} images={selectedProject.images || []} altFor={viewerAlt} onImageClick={openAt} />
                 ) : (
                   <JustifiedGallery
+                    layout={g.layout}
                     images={g.idx.map((i) => selectedProject.images[i])}
                     altFor={(i) => viewerAlt(g.idx[i])}
                     onImageClick={(i) => openAt(g.idx[i])}

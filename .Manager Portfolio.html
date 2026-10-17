@@ -465,6 +465,14 @@
   }
   .cmp-scale { font-size: 11px; color: var(--text3); margin-top: 12px; text-align: center; line-height: 1.5; }
   .cmp-canvas.dropping { box-shadow: 0 0 0 2px var(--red); }
+  .cmp-canvas { container-type: inline-size; }
+  .cmp-item.txt { background: transparent; overflow: visible; }
+  .cmp-item.txt img { display: none; }
+  .cmp-txt { position: relative; width: 100%; height: 100%; color: #111; font-family: "Inter", -apple-system, sans-serif; white-space: pre-wrap; overflow-wrap: break-word; outline: none; cursor: inherit; }
+  .cmp-txt i { font-style: normal; color: rgba(0,0,0,0.35); font-weight: 400; text-transform: none; }
+  .cmp-item.txt:not(.sel):not(.editing) { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
+  .cmp-item.editing { z-index: 999 !important; box-shadow: inset 0 0 0 1px var(--red); }
+  .cmp-item.editing .cmp-txt { cursor: text; user-select: text; -webkit-user-select: text; }
   .cmp-center { position: absolute; pointer-events: none; z-index: 0; }
   .cmp-center.v { top: 0; bottom: 0; left: 50%; border-left: 1px dashed rgba(200,16,46,0.55); }
   .cmp-center.h { left: 0; right: 0; border-top: 1px dashed rgba(200,16,46,0.55); }
@@ -522,7 +530,9 @@
   .cmp-ib:disabled { opacity: 0.35; }
   .cmp-mb { padding-right: 4px; }
   .cmp-mb svg:last-child { width: 12px; height: 12px; opacity: 0.6; }
-  .cmp-rows-n { font-size: 11.5px; color: var(--text2); padding: 0 6px; min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; }
+  .cmp-rows-n { font-size: 11.5px; color: var(--text2); padding: 0 4px; display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
+  .cmp-toolbar input.cmp-rows-in { width: 40px; padding: 3px 4px; font-size: 12px; text-align: center; -moz-appearance: textfield; }
+  .cmp-toolbar input.cmp-rows-in::-webkit-inner-spin-button, .cmp-toolbar input.cmp-rows-in::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .cmp-sp { flex: 1; }
   .cmp-chip { font-size: 11.5px; color: var(--text3); font-variant-numeric: tabular-nums; padding: 0 4px; }
   .cmp-pop { position: fixed; z-index: 10050; min-width: 230px; padding: 5px; background: #1b1b1b; border: 1px solid #303030; border-radius: 9px; box-shadow: 0 16px 40px rgba(0,0,0,0.55); animation: cmpPopIn 140ms cubic-bezier(0.23, 1, 0.32, 1); }
@@ -673,6 +683,8 @@
   .gal-mini { position: relative; width: 100%; background: #f8f4ed; border-radius: 6px; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px var(--border); }
   .gal-mini:hover { box-shadow: 0 0 0 1px var(--red); }
   .gal-mini img { position: absolute; object-fit: cover; padding: 0.25%; box-sizing: border-box; }
+  .gal-mini { container-type: inline-size; }
+  .gal-mini-txt { position: absolute; box-sizing: border-box; padding: 0.25%; color: #111; white-space: pre-wrap; overflow: hidden; }
   .gal-mini-edit { position: absolute; right: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px; background: rgba(10,10,10,0.85); color: #fff; font-size: 12px; padding: 6px 11px; border-radius: 6px; opacity: 0; transition: opacity 160ms ease; pointer-events: none; }
   .gal-mini:hover .gal-mini-edit { opacity: 1; }
   .gal-sc-prev { position: relative; background: #f8f4ed; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); padding: 14px 0; margin-bottom: 18px; }
@@ -682,7 +694,15 @@
   .gal-sc-prev:hover .gal-sc-track { animation-play-state: paused; }
   @keyframes galScMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .gal-sc-ctrls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 26px; margin-bottom: 20px; align-items: center; }
-  .gal-rng { display: grid; grid-template-columns: 70px minmax(0, 1fr) 54px; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); }
+  .gal-rng { display: grid; grid-template-columns: 62px minmax(0, 1fr) 78px; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); }
+  .gal-numw { display: flex; align-items: center; gap: 5px; }
+  .gal-card input.gal-num { width: 100%; min-width: 0; padding: 4px 6px; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+  .gal-card input.gal-num::-webkit-inner-spin-button, .gal-card input.gal-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .gal-numw i { font-style: normal; font-size: 11px; color: var(--text3); min-width: 14px; }
+  .gal-mo-prev { position: relative; max-height: 300px; overflow: hidden; background: #f8f4ed; border-radius: 6px; padding: 14px; margin-bottom: 18px; box-shadow: 0 0 0 1px var(--border); }
+  .gal-mo-prev.more::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to bottom, rgba(248,244,237,0), #f8f4ed); pointer-events: none; }
+  .gal-mo-row { display: flex; }
+  .gal-mo-row img { display: block; object-fit: cover; flex-shrink: 0; }
   .gal-rng em { font-style: normal; font-size: 11.5px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
   .gal-rng input[type=range] { width: 100%; accent-color: var(--red); }
   .gal-bg { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); }
@@ -6241,6 +6261,10 @@
   const CMP_COLS = 12;
   const CMP_ICO_EXTRA = {};
   const cmpR = (v) => Math.round(v * 100) / 100;
+  const cmpIsText = (it) => it && typeof it.testo === "string";
+  // dimensioni del testo in proporzione alla larghezza della galleria (uguale al sito)
+  const CMP_TXT = { s: ["Piccolo", 1.1], m: ["Medio", 1.6], l: ["Grande", 2.6], xl: ["Molto grande", 4.2] };
+  const cmpTxtStyle = (it) => { const d = CMP_TXT[it.dim] || CMP_TXT.m; const big = it.dim === "l" || it.dim === "xl"; return `font-size:max(9px, ${d[1]}cqw);font-weight:${big ? 800 : 400};line-height:${big ? 1.08 : 1.5};text-align:${{ sinistra: "left", centro: "center", destra: "right" }[it.allinea] || "left"};${it.maiuscolo ? "text-transform:uppercase;" : ""}${big ? "letter-spacing:-0.01em;" : ""}`; };
   const cmpClamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function cmpEnsure(p) {
@@ -6279,11 +6303,17 @@
   ];
   const GAL_SFONDI = [["rosso", "#c8102e", "Rosso"], ["nero", "#0a0a0a", "Nero"], ["bianco", "#ffffff", "Bianco"], ["trasparente", "transparent", "Trasparente"]];
   const GAL_SC_DEF = { altezza: 50, velocita: 40, spazio: 16, sfondo: "trasparente" };
+  const GAL_MO_DEF = { altezza: 640, spazio: 6 };
   Object.assign(CMP_ICO_EXTRA, {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
     down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
     pen: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
     chev: '<path d="M9 6l6 6-6 6"/>',
+    text: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
+    alleft: '<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>',
+    alcenter: '<path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>',
+    alright: '<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>',
+    upper: '<path d="M2 18l4-12 4 12M3.5 14h5M13 18l4-12 4 12M14.5 14h5"/>',
     mosaico: '<rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="11" height="7" rx="1"/><rect x="16" y="13" width="5" height="7" rx="1"/>',
     composizione: '<rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="15" y="11" width="6" height="10" rx="1"/><rect x="3" y="16" width="10" height="5" rx="1"/>',
     scorrimento: '<rect x="5" y="6" width="8" height="12" rx="1"/><rect x="15" y="6" width="6" height="12" rx="1"/><path d="M1 12h2M2 10l-1 2 1 2"/>',
@@ -6346,7 +6376,7 @@
     const clearSel = () => { selI = -1; selN = new Set(); lastSel = null; };
 
     function countOf(g) {
-      if (g.tipo === "composizione") return ((g.composizione && g.composizione.foto) || []).length;
+      if (g.tipo === "composizione") return ((g.composizione && g.composizione.foto) || []).filter(it => !cmpIsText(it)).length;
       return chosen(g).length;
     }
     function activeIdx() {
@@ -6399,16 +6429,64 @@
     }
 
     // ---- scorrimento ----
-    const scOf = (g) => Object.assign({}, GAL_SC_DEF, g.scorrimento || {});
-    function scCtrlsHtml(g, i) {
-      const sc = scOf(g);
-      const rng = (k, label, min, max, step, unit) => `<label class="gal-rng" title="${label}"><span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${sc[k]}" data-g="sc" data-k="${k}" data-i="${i}"><em>${sc[k]}${unit}</em></label>`;
-      return `<div class="gal-sc-ctrls">
-          ${rng("altezza", "Altezza", 15, 95, 1, "%")}
-          ${rng("velocita", "Velocità", 5, 300, 5, "")}
-          ${rng("spazio", "Spazio", 0, 120, 2, " px")}
-          <div class="gal-bg"><span>Sfondo</span>${GAL_SFONDI.map(([k, c, l]) => `<button type="button" class="gal-sw${sc.sfondo === k ? " on" : ""}" data-g="bg" data-k="${k}" data-i="${i}" title="${l}" aria-label="${l}" style="${c !== "transparent" ? `background:${c}` : ""}"></button>`).join("")}</div>
+    // regolazioni: cursore + numero scrivibile (anche con copia/incolla)
+    const GAL_CTRL = {
+      scorrimento: { def: GAL_SC_DEF, items: [["altezza", "Altezza", 15, 95, 1, "%"], ["velocita", "Velocità", 5, 300, 5, ""], ["spazio", "Spazio", 0, 120, 2, "px"]] },
+      mosaico: { def: GAL_MO_DEF, items: [["altezza", "Altezza", 120, 1000, 10, "px"], ["spazio", "Spazio", 0, 60, 1, "px"]] },
+    };
+    const valsOf = (g, f) => Object.assign({}, GAL_CTRL[f].def, g[f] || {});
+    const scOf = (g) => valsOf(g, "scorrimento");
+    function ctrlsHtml(g, i, f) {
+      const v = valsOf(g, f);
+      const rng = ([k, label, min, max, step, unit]) => `<div class="gal-rng"><span>${label}</span>
+          <input type="range" min="${min}" max="${max}" step="${step}" value="${v[k]}" data-g="rng" data-f="${f}" data-k="${k}" data-i="${i}" aria-label="${label}">
+          <span class="gal-numw"><input type="number" class="gal-num" min="${min}" max="${max}" step="any" value="${v[k]}" data-g="num" data-f="${f}" data-k="${k}" data-i="${i}" aria-label="${label}">${unit ? `<i>${unit}</i>` : ""}</span></div>`;
+      return `<div class="gal-sc-ctrls">${GAL_CTRL[f].items.map(rng).join("")}
+          ${f === "scorrimento" ? `<div class="gal-bg"><span>Sfondo</span>${GAL_SFONDI.map(([k, c, l]) => `<button type="button" class="gal-sw${v.sfondo === k ? " on" : ""}" data-g="bg" data-k="${k}" data-i="${i}" title="${l}" aria-label="${l}" style="${c !== "transparent" ? `background:${c}` : ""}"></button>`).join("")}</div>` : ""}
         </div>`;
+    }
+    // righe del mosaico: stesso calcolo del sito (almeno 2 foto per riga, riga giustificata)
+    function moRows(ratios, W, H, gap) {
+      const rows = [];
+      let i = 0;
+      while (i < ratios.length) {
+        const row = [i]; let sum = ratios[i]; i++;
+        if (i < ratios.length) { row.push(i); sum += ratios[i]; i++; }
+        while (i < ratios.length) {
+          if (sum * H + (row.length - 1) * gap >= W) break;
+          const next = (sum + ratios[i]) * H + row.length * gap;
+          if (next > W * 1.4 && ratios.length - i > 1) break;
+          row.push(i); sum += ratios[i]; i++;
+        }
+        rows.push(row);
+      }
+      if (rows.length > 1 && rows[rows.length - 1].length === 1) rows[rows.length - 2].push(rows.pop()[0]);
+      return rows.map(r => {
+        const sum = r.reduce((t, k) => t + ratios[k], 0);
+        return { items: r, h: (W - gap * (r.length - 1)) / sum };
+      });
+    }
+    function paintMoPreview(card, g) {
+      const box = card && card.querySelector(".gal-mo-prev");
+      if (!box) return;
+      const names = chosen(g);
+      if (!names.length) { box.style.display = "none"; return; }
+      box.style.display = "";
+      const mo = valsOf(g, "mosaico");
+      const ml = parseFloat((state.aspetto || {}).marginLaterale || 8);
+      const galW = (screen.width || 1440) * (1 - 2 * ml / 100);
+      const cs = getComputedStyle(box);
+      const W = (box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) || 800, k = W / galW;
+      const rows = moRows(names.map(ratio), galW, mo.altezza, mo.spazio);
+      let html = "", used = 0;
+      for (const r of rows) {
+        if (used > 300) break;
+        html += `<div class="gal-mo-row" style="gap:${mo.spazio * k}px;margin-bottom:${mo.spazio * k}px">` +
+          r.items.map(n => `<img src="${thumbOf(names[n])}" alt="" draggable="false" decoding="async" style="width:${ratio(names[n]) * r.h * k}px;height:${r.h * k}px">`).join("") + `</div>`;
+        used += (r.h + mo.spazio) * k;
+      }
+      box.innerHTML = html;
+      box.classList.toggle("more", used > 300);
     }
     function paintScPreview(card, g) {
       const box = card && card.querySelector(".gal-sc-prev");
@@ -6434,7 +6512,9 @@
     function miniHtml(g, i) {
       const c = g.composizione || { righe: 6, foto: [] };
       const rows = Math.max(1, c.righe || 6, ...(c.foto || []).map(it => Math.ceil(it.y + it.h - 0.001)));
-      const items = (c.foto || []).map(it => `<img src="${thumbOf(it.file)}" alt="" draggable="false" decoding="async" style="left:${it.x / CMP_COLS * 100}%;top:${it.y / rows * 100}%;width:${it.w / CMP_COLS * 100}%;height:${it.h / rows * 100}%;${it.adatta === "contain" ? "object-fit:contain;" : ""}${it.pos ? `object-position:${it.pos.x}% ${it.pos.y}%` : ""}">`).join("");
+      const items = (c.foto || []).map(it => cmpIsText(it)
+        ? `<div class="gal-mini-txt" style="left:${it.x / CMP_COLS * 100}%;top:${it.y / rows * 100}%;width:${it.w / CMP_COLS * 100}%;height:${it.h / rows * 100}%;${cmpTxtStyle(it)}">${escapeHtml(it.testo)}</div>`
+        : `<img src="${thumbOf(it.file)}" alt="" draggable="false" decoding="async" style="left:${it.x / CMP_COLS * 100}%;top:${it.y / rows * 100}%;width:${it.w / CMP_COLS * 100}%;height:${it.h / rows * 100}%;${it.adatta === "contain" ? "object-fit:contain;" : ""}${it.pos ? `object-position:${it.pos.x}% ${it.pos.y}%` : ""}">`).join("");
       return `<div class="gal-mini" data-g="open" data-i="${i}" style="aspect-ratio:${CMP_COLS} / ${rows}">${items}<span class="gal-mini-edit">${cmpIcon("pen")}Modifica</span></div>`;
     }
     const composerHtml = `
@@ -6479,8 +6559,8 @@
       const editing = tipo === "composizione" && i === act;
       let body = "";
       if (tipo === "composizione") body = (editing ? composerHtml : miniHtml(g, i)) + `<div class="gal-strip">${stripHtml(g, i)}</div>`;
-      else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${scCtrlsHtml(g, i)}<div class="gal-strip">${stripHtml(g, i)}</div>`;
-      else body = `<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else if (tipo === "scorrimento") body = `<div class="gal-sc-prev"></div>${ctrlsHtml(g, i, "scorrimento")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
+      else body = `<div class="gal-mo-prev"></div>${ctrlsHtml(g, i, "mosaico")}<div class="gal-strip">${stripHtml(g, i)}</div>`;
       return `<div class="gal-card${editing ? " editing" : ""}" data-i="${i}"${editing ? ' id="cmpSection"' : ""}>
         <div class="gal-top">
           <button type="button" class="cmp-ib gal-chev open" data-g="toggle" data-i="${i}" title="Riduci" aria-label="Riduci">${cmpIcon("chev")}</button>
@@ -6503,6 +6583,7 @@
         ${body}
       </div>`;
     }
+    const paintPrev = (card, g) => { if (!g) return; if (g.tipo === "scorrimento") paintScPreview(card, g); else if (g.tipo !== "composizione") paintMoPreview(card, g); };
     function setupActive() {
       const gs = galGet(p), act = galActive[key];
       cmp = act >= 0 && gs[act] && cardEl(act) && cardEl(act).id === "cmpSection"
@@ -6529,7 +6610,7 @@
       const act = activeIdx();
       paintFold();
       list.innerHTML = gs.map((g, i) => cardHtml(g, i, gs.length, act)).join("");
-      list.querySelectorAll(".gal-card").forEach(card => { const g = gs[+card.dataset.i]; if (g.tipo === "scorrimento") paintScPreview(card, g); });
+      list.querySelectorAll(".gal-card").forEach(card => paintPrev(card, gs[+card.dataset.i]));
       setupActive();
     }
     // una galleria sola (aprire, chiudere)
@@ -6540,7 +6621,7 @@
       const act = activeIdx();
       if (act !== before && before >= 0 && act >= 0) return render();
       el.outerHTML = cardHtml(gs[i], i, gs.length, act);
-      if (gs[i].tipo === "scorrimento") paintScPreview(cardEl(i), gs[i]);
+      paintPrev(cardEl(i), gs[i]);
       if (act === i) setupActive();
     }
     // solo le foto (e il numero, e l'anteprima dello scorrimento): veloce
@@ -6551,7 +6632,7 @@
       if (strip) strip.innerHTML = stripHtml(g, i);
       const cnt = card.querySelector(".gal-count");
       if (cnt) cnt.textContent = countOf(g) + " foto";
-      if (g.tipo === "scorrimento") paintScPreview(card, g);
+      paintPrev(card, g);
       if (g.tipo === "composizione") {
         if (cmp && galActive[key] === i) cmp.render();
         else { const mini = card.querySelector(".gal-mini"); if (mini) mini.outerHTML = miniHtml(g, i); }
@@ -6623,7 +6704,7 @@
         return;
       }
       const i = +b.dataset.i, a = b.dataset.g;
-      if (a === "sc" || a === "title") return;
+      if (a === "rng" || a === "num" || a === "title") return;
       if (a === "toggle") {
         const g = galGet(p)[i];
         if (galClosed.has(g)) galClosed.delete(g); else galClosed.add(g);
@@ -6698,15 +6779,38 @@
         if (g) { g.titolo = t.value; markDirty(); }
         return;
       }
-      const r = e.target.closest('input[data-g="sc"]');
+      const r = e.target.closest('input[data-g="rng"], input[data-g="num"]');
       if (!r) return;
-      const gs = mat(), g = gs[+r.dataset.i];
-      g.scorrimento = Object.assign(scOf(g), { [r.dataset.k]: +r.value });
-      const em = r.parentElement.querySelector("em");
-      em.textContent = r.value + (r.dataset.k === "altezza" ? "%" : r.dataset.k === "spazio" ? " px" : "");
-      paintScPreview(r.closest(".gal-card"), g);
-      markDirty();
+      const v = parseFloat(String(r.value).replace(",", "."));
+      // mentre si scrive: si applica solo un numero dentro i limiti
+      if (!Number.isFinite(v) || v < +r.min || v > +r.max) return;
+      setCtrl(r, v, false);
     };
+    // fine scrittura (Invio o clic fuori): il numero si riporta nei limiti
+    list.onchange = (e) => {
+      const r = e.target.closest('input[data-g="num"]');
+      if (!r) return;
+      const def = GAL_CTRL[r.dataset.f].def[r.dataset.k];
+      let v = parseFloat(String(r.value).replace(",", "."));
+      if (!Number.isFinite(v)) v = def;
+      v = Math.max(+r.min, Math.min(+r.max, Math.round(v * 10) / 10));
+      setCtrl(r, v, true);
+    };
+    list.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.matches('input[data-g="num"]')) e.target.blur();
+    });
+    function setCtrl(r, v, writeBack) {
+      const i = +r.dataset.i, f = r.dataset.f, k = r.dataset.k;
+      const gs = mat(), g = gs[i];
+      if (!g) return;
+      g[f] = Object.assign(valsOf(g, f), { [k]: v });
+      const wrap = r.closest(".gal-rng");
+      const range = wrap.querySelector('input[type="range"]'), num = wrap.querySelector(".gal-num");
+      if (r !== range) range.value = v;
+      if (r !== num || writeBack) num.value = v;
+      paintPrev(r.closest(".gal-card"), g);
+      markDirty();
+    }
 
     // ---- trascinare ----
     // Una foto trascinata su un'altra galleria (aperta o chiusa) si SPOSTA lì;
@@ -6883,7 +6987,7 @@
       if (w === lastW) return;
       lastW = w;
       const gs = galGet(p);
-      list.querySelectorAll(".gal-card").forEach(card => { const g = gs[+card.dataset.i]; if (g && g.tipo === "scorrimento") paintScPreview(card, g); });
+      list.querySelectorAll(".gal-card").forEach(card => paintPrev(card, gs[+card.dataset.i]));
     });
     window._galResizeObs.observe(list);
 
@@ -7025,7 +7129,7 @@
     function render() {
       const c = comp();
       const known = new Set((photosByProject[key] || []).map(x => x.name));
-      if (known.size) c.foto = c.foto.filter(it => known.has(it.file));
+      if (known.size) c.foto = c.foto.filter(it => cmpIsText(it) || known.has(it.file));
       sel = new Set([...sel].filter(it => c.foto.includes(it)));
       if (primary && !sel.has(primary)) primary = selected()[0] || null;
       fitRows();
@@ -7044,8 +7148,8 @@
       if (!c.foto.length) html += `<div class="cmp-empty">${cmpIcon("layout")}<span>Trascina qui le foto</span></div>`;
       c.foto.forEach((it, n) => {
         const op = it.pos ? `object-position:${it.pos.x}% ${it.pos.y}%` : "";
-        html += `<div class="cmp-item${it.adatta === "contain" ? " contain" : ""}${it === panIt ? " pan" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
-          `<img src="${urlOf(it.file)}" alt="" draggable="false" style="${op}">` +
+        html += `<div class="cmp-item${cmpIsText(it) ? " txt" : ""}${it.adatta === "contain" ? " contain" : ""}${it === panIt ? " pan" : ""}" data-n="${n}" style="z-index:${n + 1}">` +
+          (cmpIsText(it) ? `<div class="cmp-txt" style="${cmpTxtStyle(it)}">${it.testo ? escapeHtml(it.testo) : "<i>Doppio clic per scrivere</i>"}</div>` : `<img src="${urlOf(it.file)}" alt="" draggable="false" style="${op}">`) +
           (it.gruppo ? `<span class="cmp-gtag" title="Fa parte di un gruppo"></span>` : "") +
           ["nw","n","ne","e","se","s","sw","w"].map(h => `<span class="cmp-h" data-h="${h}"></span>`).join("") +
           `</div>`;
@@ -7103,13 +7207,16 @@
       const U = units(items);
       const grouped = items.some(it => it.gruppo);
       const allContain = n && items.every(it => it.adatta === "contain");
+      const txt = items.find(cmpIsText);
+      const onlyText = n && items.every(cmpIsText);
       const chip = !n ? `${c.foto.length} foto` : n === 1 ? `${cmpR(items[0].w)} × ${cmpR(items[0].h)}` : `${n} foto selezionate`;
       selBar.innerHTML = `
         <div class="cmp-tb-row">
           <div class="cmp-grp">
-            ${ib("rows-minus", "Togli una riga", { icon: "minus" })}<span class="cmp-rows-n" title="Altezza del riquadro">${c.righe} righe</span>${ib("rows-plus", "Aggiungi una riga", { icon: "plus" })}
+            ${ib("rows-minus", "Togli una riga", { icon: "minus" })}<label class="cmp-rows-n" title="Altezza del riquadro, in righe"><input type="number" class="cmp-rows-in" min="${minRows()}" max="80" step="1" value="${c.righe}" aria-label="Righe"><span>righe</span></label>${ib("rows-plus", "Aggiungi una riga", { icon: "plus" })}
           </div>
           <div class="cmp-grp">${mb("layout", "Disposizioni pronte", "layout", "Disponi")}${mb("gap", "Spazio tra le foto", "gap", "Spazio")}</div>
+          <div class="cmp-grp">${ib("add-text", "Aggiungi un testo", { icon: "text" })}</div>
           <div class="cmp-grp">${ib("toggle-snap", snapOn ? "Calamita accesa" : "Calamita spenta", { icon: "magnet", on: snapOn })}${ib("toggle-grid", gridOn ? "Nascondi la griglia" : "Mostra la griglia", { icon: "grid", on: gridOn })}</div>
           <div class="cmp-grp">${ib("undo", "Annulla (Cmd+Z)")}${ib("redo", "Ripeti (Maiuscole+Cmd+Z)")}</div>
           <span class="cmp-sp"></span>
@@ -7118,13 +7225,16 @@
         </div>
         <div class="cmp-tb-row${none ? " off" : ""}">
           <div class="cmp-grp">${mb("size", "Misura", "size", "Misura", none)}
-            ${ib(allContain ? "cover" : "contain", allContain ? "Riempi il riquadro" : "Mostra la foto intera", { icon: allContain ? "fill" : "fit", dis: none })}
-            ${ib("pan", "Sposta l'inquadratura (doppio clic sulla foto)", { icon: "crop", dis: n !== 1, on: !!panIt })}</div>
+            ${ib(allContain ? "cover" : "contain", allContain ? "Riempi il riquadro" : "Mostra la foto intera", { icon: allContain ? "fill" : "fit", dis: none || onlyText })}
+            ${ib("pan", "Sposta l'inquadratura (doppio clic sulla foto)", { icon: "crop", dis: n !== 1 || onlyText, on: !!panIt })}</div>
           <div class="cmp-grp">${ib("al-l", U.length > 1 ? "Allinea a sinistra" : "Accosta al bordo sinistro", { dis: none })}${ib("al-hc", "Centra in orizzontale", { dis: none })}${ib("al-r", U.length > 1 ? "Allinea a destra" : "Accosta al bordo destro", { dis: none })}</div>
           <div class="cmp-grp">${ib("al-t", U.length > 1 ? "Allinea in alto" : "Accosta al bordo alto", { dis: none })}${ib("al-vc", "Centra in verticale", { dis: none })}${ib("al-b", U.length > 1 ? "Allinea in basso" : "Accosta al bordo basso", { dis: none })}</div>
           <div class="cmp-grp">${ib("dist-h", "Spazi uguali in orizzontale", { dis: U.length < 3 })}${ib("dist-v", "Spazi uguali in verticale", { dis: U.length < 3 })}${ib("join-h", "Accosta in orizzontale", { dis: U.length < 2 })}${ib("join-v", "Accosta in verticale", { dis: U.length < 2 })}</div>
           <div class="cmp-grp">${grouped ? ib("ungroup", "Separa il gruppo") : ib("group", "Raggruppa (Cmd+G)", { dis: n < 2 })}${ib("front", "Porta sopra", { dis: none })}${ib("back", "Porta sotto", { dis: none })}</div>
           <div class="cmp-grp">${ib("remove", "Togli dalla composizione (Canc)", { dis: none })}</div>
+          ${txt ? `<div class="cmp-grp cmp-grp-txt">${mb("txt", "Dimensione del testo", "text", (CMP_TXT[txt.dim] || CMP_TXT.m)[0])}
+            ${ib("tal-sinistra", "Testo allineato a sinistra", { icon: "alleft", on: !txt.allinea || txt.allinea === "sinistra" })}${ib("tal-centro", "Testo al centro", { icon: "alcenter", on: txt.allinea === "centro" })}${ib("tal-destra", "Testo allineato a destra", { icon: "alright", on: txt.allinea === "destra" })}
+            ${ib("tup", txt.maiuscolo ? "Testo normale" : "Tutto maiuscolo", { icon: "upper", on: !!txt.maiuscolo })}${ib("edit-text", "Scrivi il testo (doppio clic)", { icon: "pen" })}</div>` : ""}
         </div>`;
     }
 
@@ -7143,6 +7253,9 @@
       } else if (kind === "gap") {
         const cur = c.spazio == null ? 0.23 : c.spazio;
         html = SPAZI.map(([l, v]) => it("gap-" + v, l, { on: Math.abs(cur - v) < 1e-6 })).join("");
+      } else if (kind === "txt") {
+        const cur = (items.find(cmpIsText) || {}).dim || "m";
+        html = Object.entries(CMP_TXT).map(([k, [l]]) => it("tsz-" + k, l, { on: cur === k })).join("");
       } else if (kind === "size") {
         html = it("size-3", "Un quarto della larghezza") + it("size-4", "Un terzo") + it("size-6", "Metà") + it("size-8", "Due terzi") + it("size-12", "Tutta la larghezza") +
           `<hr>` + it("same-long", "Stesso lato lungo della prima scelta", { dis: !many }) + it("same-h", "Stessa altezza", { dis: !many }) +
@@ -7197,7 +7310,30 @@
       }
       if (a.startsWith("gap-")) { c.spazio = parseFloat(a.slice(4)); markDirty(); render(); return; }
       if (a.startsWith("lay-")) { applyLayout(a.slice(4)); return; }
-      if (a === "pan") { const t = items[0]; panIt = (panIt === t || !t) ? null : t; render(); return; }
+      if (a === "pan") { const t = items[0]; panIt = (panIt === t || !t || cmpIsText(t)) ? null : t; render(); return; }
+      if (a === "add-text") {
+        snapshot();
+        const it = { testo: "", x: 0, y: cmpR(usedBottom()), w: 6, h: 1, dim: "m" };
+        if (it.y + it.h > c.righe) c.righe = Math.ceil(it.y + it.h - 0.001);
+        c.foto.push(it);
+        sel = new Set([it]); primary = it;
+        markDirty(); render();
+        editText(it);
+        return;
+      }
+      if (a.startsWith("tsz-") || a.startsWith("tal-") || a === "tup") {
+        const tx = items.filter(cmpIsText);
+        if (!tx.length) return;
+        snapshot();
+        tx.forEach(t => {
+          if (a.startsWith("tsz-")) t.dim = a.slice(4);
+          else if (a.startsWith("tal-")) t.allinea = a.slice(4);
+          else t.maiuscolo = !tx[0].maiuscolo || undefined;
+          if (!t.maiuscolo) delete t.maiuscolo;
+        });
+        markDirty(); render(); return;
+      }
+      if (a === "edit-text") { const t = items.find(cmpIsText); if (t) editText(t); return; }
       if (!items.length) return;
       snapshot();
       const U = units(items);
@@ -7261,6 +7397,20 @@
       markDirty();
       render();
     }
+    // righe scritte a mano (anche incollate)
+    selBar.addEventListener("change", (e) => {
+      const r = e.target.closest(".cmp-rows-in");
+      if (!r) return;
+      const c = comp();
+      let v = parseInt(r.value, 10);
+      if (!Number.isFinite(v)) v = c.righe;
+      v = Math.max(minRows(), Math.min(80, v));
+      if (v !== c.righe) { snapshot(); c.righe = v; markDirty(); }
+      render();
+    });
+    selBar.addEventListener("keydown", (e) => {
+      if (e.target.closest(".cmp-rows-in")) { e.stopPropagation(); if (e.key === "Enter") e.target.blur(); }
+    });
     selBar.addEventListener("click", (e) => {
       const mbtn = e.target.closest("button[data-menu]");
       if (mbtn && !mbtn.disabled) { openMenu(mbtn, mbtn.dataset.menu); return; }
@@ -7271,7 +7421,8 @@
     // Disposizioni pronte: tutte le foto della galleria (prima quelle già messe)
     function applyLayout(kind) {
       const c = comp();
-      const placedNames = [...c.foto].sort((m, n) => m.y - n.y || m.x - n.x).map(it => it.file);
+      const texts = c.foto.filter(cmpIsText);
+      const placedNames = c.foto.filter(it => !cmpIsText(it)).sort((m, n) => m.y - n.y || m.x - n.x).map(it => it.file);
       const names = [...placedNames, ...photoList().map(ph => ph.name).filter(n => !placedNames.includes(n))];
       if (!names.length) { toast("La galleria non ha ancora foto.", "err"); return; }
       const L = names.map(f => ({ file: f, r: cmpRatio(p, f) }));
@@ -7314,6 +7465,13 @@
         L.forEach((o, i) => out.push({ file: o.file, x: (i % cols) * w, y: Math.floor(i / cols) * h, w, h }));
       }
       c.foto = out.map(o => ({ file: o.file, x: cmpR(o.x), y: cmpR(o.y), w: cmpR(o.w), h: cmpR(o.h) }));
+      // i testi restano, nello stesso ordine, sotto alle foto
+      if (texts.length) {
+        const bottom = Math.max(...c.foto.map(o => o.y + o.h));
+        const tTop = Math.min(...texts.map(t => t.y));
+        texts.forEach(t => { t.y = cmpR(bottom + 0.5 + (t.y - tTop)); });
+        c.foto.push(...texts);
+      }
       c.righe = Math.max(1, Math.ceil(Math.max(...c.foto.map(o => o.y + o.h)) - 0.001));
       sel.clear(); primary = null; panIt = null;
       markDirty();
@@ -7388,6 +7546,7 @@
 
     canvas.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
+      if (e.target.isContentEditable) return;
       e.preventDefault();
       canvas.focus({ preventScroll: true });
       const c = comp();
@@ -7558,14 +7717,42 @@
       const el = e.target.closest(".cmp-item");
       if (!el) return;
       const it = comp().foto[+el.dataset.n];
+      if (cmpIsText(it)) { editText(it); return; }
       panIt = panIt === it ? null : it;
       sel = new Set([it]); primary = it;
       render();
     });
 
+    // scrivere un testo direttamente nel riquadro (Esc o clic fuori per finire)
+    function editText(it) {
+      const n = comp().foto.indexOf(it);
+      const el = canvas.querySelector(`.cmp-item[data-n="${n}"] .cmp-txt`);
+      if (!el) return;
+      sel = new Set([it]); primary = it; paintSel();
+      try { el.contentEditable = "plaintext-only"; } catch (err) { el.contentEditable = "true"; }
+      if (!el.isContentEditable) el.contentEditable = "true";
+      el.textContent = it.testo;
+      el.closest(".cmp-item").classList.add("editing");
+      el.focus();
+      const r = document.createRange(); r.selectNodeContents(el);
+      const sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(r);
+      const done = () => {
+        el.removeEventListener("blur", done);
+        const v = el.innerText.replace(/\n+$/, "");
+        if (v !== it.testo) { snapshot(); it.testo = v; markDirty(); }
+        render();
+      };
+      el.addEventListener("blur", done);
+      el.addEventListener("keydown", (ev) => {
+        ev.stopPropagation();
+        if (ev.key === "Escape" || (ev.key === "Enter" && (ev.metaKey || ev.ctrlKey))) { ev.preventDefault(); el.blur(); }
+      });
+    }
+
     // tastiera: frecce spostano (Maiuscole = una cella intera), Canc toglie,
     // Cmd+G raggruppa, Maiuscole+Cmd+G separa, Cmd+A seleziona tutto, Cmd+Z annulla
     canvas.addEventListener("keydown", (e) => {
+      if (e.target.isContentEditable) return;
       const c = comp();
       const cmd = e.metaKey || e.ctrlKey;
       const k = e.key.toLowerCase();
@@ -8163,10 +8350,10 @@
       if (!files.size) continue;
       const has = (f) => files.has(f);
       if (Array.isArray(p.ordine)) { const b = p.ordine.length; p.ordine = p.ordine.filter(has); n += b - p.ordine.length; }
-      if (p.composizione && Array.isArray(p.composizione.foto)) p.composizione.foto = p.composizione.foto.filter(it => has(it.file));
+      if (p.composizione && Array.isArray(p.composizione.foto)) p.composizione.foto = p.composizione.foto.filter(it => cmpIsText(it) || has(it.file));
       if (Array.isArray(p.gallerie)) p.gallerie.forEach(g => {
         if (Array.isArray(g.foto)) g.foto = g.foto.filter(has);
-        if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => has(it.file));
+        if (g.composizione && Array.isArray(g.composizione.foto)) g.composizione.foto = g.composizione.foto.filter(it => cmpIsText(it) || has(it.file));
       });
       if (p.banner && !has(p.banner)) p.banner = "";
       if (p.anteprima && !has(p.anteprima)) { p.anteprima = ""; delete p.anteprimaScorrimento; }
