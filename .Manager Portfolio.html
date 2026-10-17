@@ -255,6 +255,50 @@
     padding-left: 22px;
   }
   .sidebar .item[draggable="true"] { cursor: grab; }
+  .sidebar .home-item { margin: 4px 0 6px; font-weight: 600; }
+  .home-h { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 22px; letter-spacing: -0.01em; }
+  .home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 30px; }
+  .home-card { border: 1px solid var(--border); border-radius: 12px; background: #0e0e0e; padding: 16px 18px 18px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .home-card.click { cursor: pointer; transition: border-color 160ms ease; }
+  .home-card.click:hover { border-color: #3a3a3a; }
+  .home-k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; }
+  .home-v { font-size: 26px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .home-v small { font-size: 13px; font-weight: 500; color: var(--text3); margin-left: 6px; }
+  .home-s { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .home-s.dim { color: var(--text3); }
+  .home-state { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600; color: #fff; }
+  .home-dot { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+  .home-dot.work { background: #fbbf24; } .home-dot.idle { background: var(--red); }
+  .home-card .acts { margin-top: auto; padding-top: 4px; display: flex; gap: 8px; }
+  .home-bars { display: flex; align-items: flex-end; gap: 4px; height: 38px; margin-top: 2px; }
+  .home-bars i { flex: 1; background: rgba(200,16,46,0.75); border-radius: 2px 2px 0 0; min-height: 2px; }
+  .home-bars i.z { background: #2a2a2a; }
+  .home-sec { margin-bottom: 30px; }
+  .home-sec-h { display: flex; align-items: center; gap: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin-bottom: 12px; }
+  .home-sec-h span.n { background: var(--red); color: #fff; font-size: 10.5px; border-radius: 9px; padding: 1px 7px; letter-spacing: 0; }
+  .home-list { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #0e0e0e; }
+  .home-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 9px 14px; border: 0; border-radius: 0; border-bottom: 1px solid var(--border); background: transparent; text-align: left; color: var(--text2); }
+  .home-row:last-child { border-bottom: 0; }
+  .home-row:hover { background: rgba(255,255,255,0.03); color: #fff; }
+  .home-row .th { width: 52px; height: 36px; border-radius: 4px; background: #1a1a1a center / cover no-repeat; }
+  .home-row .tt { font-size: 13px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-row .ds { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .home-row .go { color: var(--text3); display: flex; }
+  .home-row:hover .go { color: #fff; }
+  .home-ok { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: #0e0e0e; }
+  .home-ok svg { color: #4ade80; }
+  .home-more { width: 100%; border: 0; border-radius: 0; padding: 10px; font-size: 12px; color: var(--text3); background: transparent; }
+  .home-more:hover { color: #fff; background: rgba(255,255,255,0.03); }
+  .home-recent { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .home-rc { padding: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #0e0e0e; text-align: left; transition: border-color 160ms ease; }
+  .home-rc:hover { border-color: #3a3a3a; }
+  .home-rc .im { aspect-ratio: 16 / 10; background: #1a1a1a center / cover no-repeat; transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .home-rc:hover .im { transform: scale(1.03); }
+  .home-rc .tx { padding: 10px 12px 12px; position: relative; background: #0e0e0e; }
+  .home-rc .tt { font-size: 13px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-rc .ds { font-size: 11.5px; color: var(--text3); margin-top: 3px; }
+  .home-flash { animation: homeFlash 1.4s ease; }
+  @keyframes homeFlash { 0%, 40% { box-shadow: 0 0 0 2px var(--red); } 100% { box-shadow: 0 0 0 2px transparent; } }
   .sidebar .item[draggable="true"]:active { cursor: grabbing; }
   .sidebar .item.drag-over-above {
     border-top: 2px solid var(--red) !important;
@@ -1762,6 +1806,7 @@
 <!-- SEZIONE CONTENUTI (sidebar + content) -->
 <div id="sectionContenuti" class="main">
   <aside class="sidebar">
+    <div class="item home-item" id="homeItem" role="button" tabindex="0"><span style="pointer-events:none;display:flex;align-items:center;gap:9px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Panoramica</span></div>
     <div class="section-title">Artwork</div>
     <div id="listArt"></div>
     <button class="add-btn" data-section="art">+ Nuovo progetto Artwork</button>
@@ -1777,9 +1822,7 @@
     <div id="listLanding"></div>
   </aside>
 
-  <main id="content" class="content empty-state">
-    Seleziona un progetto dalla lista a sinistra.
-  </main>
+  <main id="content" class="content"></main>
 </div>
 
 <!-- SEZIONE ANALYTICS (full width) -->
@@ -5381,6 +5424,13 @@
 
   // ========== DRAFT / DIRTY ==========
   function markDirty() {
+    if (currentKey && currentKey.includes("/")) {
+      try {
+        const r = JSON.parse(localStorage.getItem("mpRecent") || "[]").filter(x => x.k !== currentKey);
+        r.unshift({ k: currentKey, t: Date.now() });
+        localStorage.setItem("mpRecent", JSON.stringify(r.slice(0, 12)));
+      } catch (e) {}
+    }
     dirty = true;
     localStorage.setItem(STORAGE_DRAFT, JSON.stringify(state));
     updateStatusBadge();
@@ -5400,6 +5450,7 @@
     if (dirty) { b.style.display = "inline-block"; b.className = "status-badge work"; b.textContent = "Non salvato"; }
     else if (unpublished) { b.style.display = "inline-block"; b.className = "status-badge idle"; b.textContent = "Salvato, non pubblicato"; }
     else b.style.display = "none";
+    if (currentKey === "home" && window._homeStatus) window._homeStatus();
     const s = document.getElementById("btnSave"), p = document.getElementById("btnPublish");
     if (s && !s.querySelector(".btn-spinner")) s.disabled = !dirty;
     if (p && !p.querySelector(".btn-spinner")) p.disabled = !(dirty || unpublished);
@@ -5445,12 +5496,11 @@
     document.body.style.minHeight = document.documentElement.scrollHeight + "px";
     renderSidebar();
     if (activeSection === "contenuti" && currentKey) {
-      const isProj = currentKey !== "landing" && currentKey !== "aboutArt" && currentKey !== "aboutPro";
-      if (isProj && !state.projects.some(p => `${p.section}/${p.slug}` === currentKey)) {
-        currentKey = null;
-        const content = document.getElementById("content");
-        content.className = "content empty-state";
-        content.innerHTML = "Seleziona un progetto dalla lista a sinistra.";
+      const isProj = currentKey !== "landing" && currentKey !== "aboutArt" && currentKey !== "aboutPro" && currentKey !== "home";
+      if (currentKey === "home" || (isProj && !state.projects.some(p => `${p.section}/${p.slug}` === currentKey))) {
+        currentKey = "home";
+        renderSidebar();
+        renderHome();
       } else if (currentKey === "landing") renderLanding();
       else if (!isProj) renderAbout(currentKey);
       else {
@@ -5570,6 +5620,7 @@
   let sidebarDragKey = null; // chiave del progetto in trascinamento
 
   function renderSidebar() {
+    { const h = document.getElementById("homeItem"); if (h) h.classList.toggle("active", currentKey === "home"); }
     const listArt = document.getElementById("listArt");
     const listPro = document.getElementById("listPro");
     const listAbout = document.getElementById("listAbout");
@@ -5769,7 +5820,9 @@
   window.addEventListener("resize", syncSiteWidths);
 
   // ========== CONTENT RENDER ==========
+  function showHome() { currentKey = "home"; renderSidebar(); renderHome(); window.scrollTo(0, 0); }
   function selectProject(key) {
+    if (key === "home") { showHome(); return; }
     currentKey = key;
     renderSidebar();
     if (key === "landing") renderLanding();
@@ -5782,6 +5835,155 @@
     else if (key === "aboutArt" || key === "aboutPro") fetchAboutMedia();
     else fetchPhotos(key);
   }
+
+  // ========== PANORAMICA ==========
+  // Stato del sito, visite, cose da sistemare e ultimi progetti modificati.
+  function homeAgo(t) {
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return "adesso";
+    if (m < 60) return `${m} min fa`;
+    const h = Math.round(m / 60);
+    if (h < 24) return h === 1 ? "un'ora fa" : `${h} ore fa`;
+    const d = Math.round(h / 24);
+    return d === 1 ? "ieri" : d < 30 ? `${d} giorni fa` : new Date(t).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
+  }
+  const homeShort = (p) => (p.titolo || "").split("\n")[0].trim() || p.slug;
+  const homeNames = (p) => { const ph = photosByProject[`${p.section}/${p.slug}`]; return ph ? ph.map(x => x.name) : (p.ordine || []).slice(); };
+  function homeCover(p) {
+    const n = p.anteprima || p.banner || (p.ordine || [])[0];
+    if (!n) return "";
+    const ph = photosByProject[`${p.section}/${p.slug}`], f = ph && ph.find(x => x.name === n);
+    const u = f ? f.url : localPhotoUrl(`codice-sorgente/contenuti/${p.section}/${p.slug}`, n);
+    return u && u.startsWith("/local-photo/") ? "/thumb/" + u.slice(13) : (u || "");
+  }
+  function homeIssues() {
+    const out = [];
+    state.projects.forEach(p => {
+      const key = `${p.section}/${p.slug}`, add = (text, go) => out.push({ key, p, text, go });
+      const names = homeNames(p);
+      if (!(p.titolo || "").trim()) add("Manca il titolo", "f_titolo");
+      if (!names.length) { add("Nessuna foto", "galSection"); return; }
+      if (!(p.descrizione || "").trim()) add("Manca il testo", "f_descrizione");
+      if (!p.anteprima) add("Manca la foto di anteprima nella home", "focalPointSection");
+      if (Array.isArray(p.gallerie) && p.gallerie.length) {
+        const used = new Set();
+        p.gallerie.forEach(g => {
+          (Array.isArray(g.foto) ? g.foto : g.tipo === "testo" ? [] : names).forEach(n => used.add(n));
+          ((g.composizione && g.composizione.foto) || []).forEach(it => it.file && used.add(it.file));
+        });
+        const free = names.filter(n => !used.has(n)).length;
+        if (free) add(`${free} ${free === 1 ? "foto non è" : "foto non sono"} in nessuna galleria`, "galSection");
+        p.gallerie.forEach((g, i) => {
+          const nm = (g.titolo || "").trim() ? `«${g.titolo.trim()}»` : `${i + 1}`;
+          if (g.tipo === "testo") { if (!(g.testo || "").trim()) add(`Il testo ${nm} è vuoto`, "galSection"); }
+          else if (g.tipo === "composizione") { if (!((g.composizione && g.composizione.foto) || []).length) add(`La composizione ${nm} è vuota`, "galSection"); }
+          else if (Array.isArray(g.foto) && !g.foto.length) add(`La galleria ${nm} è vuota`, "galSection");
+        });
+      }
+    });
+    return out;
+  }
+  let homeShowAll = false;
+  function renderHome() {
+    const content = document.getElementById("content");
+    content.className = "content";
+    const arts = state.projects.filter(p => p.section === "art"), pros = state.projects.filter(p => p.section === "pro");
+    const photos = state.projects.reduce((t, p) => t + homeNames(p).length, 0);
+    const issues = homeIssues();
+    const LIM = 8;
+    const shown = homeShowAll ? issues : issues.slice(0, LIM);
+    let recent = [];
+    try { recent = JSON.parse(localStorage.getItem("mpRecent") || "[]"); } catch (e) {}
+    recent = recent.map(r => ({ ...r, p: state.projects.find(p => `${p.section}/${p.slug}` === r.k) })).filter(r => r.p).slice(0, 6);
+    const chev = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+    content.innerHTML = `
+      <h2 class="home-h">Panoramica</h2>
+      <div class="home-grid">
+        <div class="home-card" id="homeSite"></div>
+        <div class="home-card click" id="homeVisits" title="Apri Analytics">
+          <div class="home-k">Visite · 7 giorni</div>
+          <div class="home-v" id="homeVisitsN">–</div>
+          <div class="home-bars" id="homeBars"></div>
+          <div class="home-s dim" id="homeVisitsS"></div>
+        </div>
+        <div class="home-card">
+          <div class="home-k">Contenuti</div>
+          <div class="home-v">${arts.length + pros.length}<small>progetti</small></div>
+          <div class="home-s">${arts.length} Artwork · ${pros.length} Professional</div>
+          <div class="home-s dim">${photos.toLocaleString("it-IT")} foto</div>
+        </div>
+      </div>
+      <div class="home-sec">
+        <div class="home-sec-h">Da sistemare ${issues.length ? `<span class="n">${issues.length}</span>` : ""}</div>
+        ${issues.length ? `<div class="home-list">${shown.map((it, i) => `<button type="button" class="home-row" data-hi="${i}"><span class="th" style="${homeCover(it.p) ? `background-image:url('${homeCover(it.p)}')` : ""}"></span><span style="min-width:0"><div class="tt">${escapeHtml(homeShort(it.p))}</div><div class="ds">${escapeHtml(it.text)}</div></span><span class="go">${chev}</span></button>`).join("")}
+          ${issues.length > LIM ? `<button type="button" class="home-more" id="homeMore">${homeShowAll ? "Mostra meno" : `Mostra tutte (${issues.length})`}</button>` : ""}</div>`
+          : `<div class="home-ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Niente da sistemare</div>`}
+      </div>
+      ${recent.length ? `<div class="home-sec">
+        <div class="home-sec-h">Ultime modifiche</div>
+        <div class="home-recent">${recent.map(r => `<button type="button" class="home-rc" data-hk="${escapeHtml(r.k)}"><div style="overflow:hidden"><div class="im" style="${homeCover(r.p) ? `background-image:url('${homeCover(r.p)}')` : ""}"></div></div><div class="tx"><div class="tt">${escapeHtml(homeShort(r.p))}</div><div class="ds">${r.p.section === "art" ? "Artwork" : "Professional"} · ${homeAgo(r.t)}</div></div></button>`).join("")}</div>
+      </div>` : ""}`;
+    content.querySelectorAll("[data-hi]").forEach(b => b.onclick = () => {
+      const it = shown[+b.dataset.hi];
+      selectProject(it.key);
+      setTimeout(() => {
+        const el = document.getElementById(it.go);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const box = el.closest(".field, .photos-section") || el;
+        box.classList.remove("home-flash"); void box.offsetWidth; box.classList.add("home-flash");
+        if (/^f_/.test(it.go)) setTimeout(() => el.focus({ preventScroll: true }), 400);
+      }, 120);
+    });
+    content.querySelectorAll("[data-hk]").forEach(b => b.onclick = () => selectProject(b.dataset.hk));
+    const more = document.getElementById("homeMore");
+    if (more) more.onclick = () => { homeShowAll = !homeShowAll; renderHome(); };
+    document.getElementById("homeVisits").onclick = () => { const b = document.querySelector('.topbar-nav-btn[data-section="analytics"]'); if (b) b.click(); };
+    homeSiteCard();
+    window._homeStatus = homeSiteCard;
+    homeVisits();
+  }
+  let homePublished = null;
+  async function homeSiteCard() {
+    const box = document.getElementById("homeSite");
+    if (!box) return;
+    const st = dirty ? ["work", "Modifiche non salvate"] : unpublished ? ["idle", "Salvato, da pubblicare"] : ["", "Tutto pubblicato"];
+    const when = homePublished ? `Ultima pubblicazione ${homeAgo(homePublished)}` : "";
+    box.innerHTML = `<div class="home-k">Sito</div>
+      <div class="home-state"><span class="home-dot ${st[0]}"></span>${st[1]}</div>
+      <div class="home-s dim" id="homePubWhen">${when}</div>
+      ${dirty || unpublished ? `<div class="acts">${dirty ? `<button type="button" class="sm" id="homeSave">Salva</button>` : ""}<button type="button" class="sm primary" id="homePub">Pubblica</button></div>` : ""}`;
+    const sv = document.getElementById("homeSave"), pb = document.getElementById("homePub");
+    if (sv) sv.onclick = () => document.getElementById("btnSave").click();
+    if (pb) pb.onclick = () => document.getElementById("btnPublish").click();
+    if (homePublished === null) {
+      homePublished = 0;
+      try {
+        if (await checkLocalServer()) {
+          const v = await (await fetch("/versioni/elenco", { cache: "no-store" })).json();
+          const last = v && v.contenuti && v.contenuti.pubblicate && v.contenuti.pubblicate[0];
+          if (last && last.data) { homePublished = new Date(last.data).getTime(); const w = document.getElementById("homePubWhen"); if (w) w.textContent = `Ultima pubblicazione ${homeAgo(homePublished)}`; }
+        }
+      } catch (e) {}
+    }
+  }
+  async function homeVisits() {
+    const n = document.getElementById("homeVisitsN"), bars = document.getElementById("homeBars"), sub = document.getElementById("homeVisitsS");
+    if (!n) return;
+    if (!getToken()) { n.textContent = "–"; sub.textContent = "Collega GitHub nelle Impostazioni"; return; }
+    const data = await fetchAnalyticsData(false);
+    if (!document.getElementById("homeVisitsN")) return;
+    if (!data || !data.daily) { sub.textContent = "Nessun dato"; return; }
+    const s = anSeries(data.daily, 14), last = s.slice(7), prev = s.slice(0, 7);
+    const tot = last.reduce((t, d) => t + d.total, 0), ptot = prev.reduce((t, d) => t + d.total, 0);
+    n.textContent = tot.toLocaleString("it-IT");
+    const max = Math.max(1, ...last.map(d => d.total));
+    bars.innerHTML = last.map(d => `<i class="${d.total ? "" : "z"}" style="height:${Math.max(4, Math.round(d.total / max * 100))}%" title="${new Date(d.key).toLocaleDateString("it-IT", { weekday: "short", day: "numeric" })}: ${d.total}"></i>`).join("");
+    const diff = ptot ? Math.round((tot - ptot) / ptot * 100) : null;
+    sub.textContent = diff === null ? "" : `${diff >= 0 ? "+" : ""}${diff}% rispetto ai 7 giorni prima`;
+  }
+  document.getElementById("homeItem").onclick = () => showHome();
+  document.getElementById("homeItem").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showHome(); } };
 
   // ========== UNIRE PROGETTI ==========
   // Si sceglie con quali progetti unire quello aperto, poi si scrivono titolo,
@@ -6119,10 +6321,7 @@
       if (!await confirm(`Eliminare il progetto "${slug}"?\n\nLa cartella del progetto verrà rimossa da GitHub al prossimo Salva.`)) return;
       state.projects = state.projects.filter(x => !(x.section === section && x.slug === slug));
       markDirty();
-      currentKey = null;
-      renderSidebar();
-      document.getElementById("content").className = "content empty-state";
-      document.getElementById("content").innerHTML = "Seleziona un progetto dalla lista a sinistra.";
+      showHome();
       toast("Progetto rimosso. Salva per rendere effettivo.", "ok");
     };
   }
@@ -9269,12 +9468,8 @@
     state.landing = state.landing || { artworkImages: [], professionalImages: [] };
     const tolti = await verPruneMissing();
     markDirty();
-    currentKey = null;
-    renderSidebar();
-    const content = document.getElementById("content");
-    content.className = "content empty-state";
-    content.innerHTML = "Seleziona un progetto dalla lista a sinistra.";
     switchSection("contenuti");
+    showHome();
     toast(`Ripristinata «${label}». Salva per tenerla, Pubblica per metterla online.` +
       (tolti ? ` Tolti ${tolti} file che non esistono più.` : ""), "ok");
   }
@@ -9705,6 +9900,7 @@
         } catch { /* cartella vuota o inesistente */ }
       }));
       renderSidebar();
+      if (currentKey === "home" && activeSection === "contenuti") renderHome();
     }
   }
 
@@ -12037,7 +12233,7 @@
     // Step 4: progetti
     await revealStep(4);
     renderSidebar();
-    if (currentKey) selectProject(currentKey);
+    if (currentKey) selectProject(currentKey); else showHome();
     undoReset();
     updateStatusBadge();
     initStepOk(4);
