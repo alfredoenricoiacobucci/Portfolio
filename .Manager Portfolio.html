@@ -750,8 +750,33 @@
   .gal-mini-open:hover { color: #fff; }
   .gal-mini-open + .gal-sub { margin-top: 16px; }
   .gal-mg-row { margin-top: 18px; }
-  .ban-row { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; align-items: center; }
-  .ban-empty { font-size: 12.5px; color: var(--text3); }
+  .ban-live { font-size: 11.5px; color: var(--text3); }
+  .ban-live b { color: #fff; font-weight: 600; }
+  .ban-stage { position: relative; width: 100%; aspect-ratio: 16 / 6.2; max-height: 380px; border-radius: 10px; overflow: hidden; background: #000; container-type: inline-size; box-shadow: 0 0 0 1px var(--border); margin-bottom: 16px; }
+  .ban-stage .ban-l, .ban-stage .ban-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1100ms ease; }
+  .ban-stage .ban-l.on, .ban-stage .ban-v.on { opacity: 1; }
+  .ban-stage .ban-l.zoom { animation: banZoom 7s linear forwards; }
+  @keyframes banZoom { from { transform: scale(1.06); } to { transform: scale(1); } }
+  .ban-grad { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.6) 50%, #000 100%); pointer-events: none; }
+  .ban-ttl { position: absolute; left: 3.3cqw; bottom: 7%; right: 3.3cqw; font-weight: 800; font-size: 4.2cqw; line-height: 1.1; color: #fff; letter-spacing: -0.01em; text-shadow: 0 3px 8px rgba(0,0,0,0.9); pointer-events: none; }
+  .ban-ttl i { display: block; font-style: normal; color: #c8102e; }
+  .ban-empty-stage[hidden] { display: none; }
+  .ban-empty-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--text3); }
+  .ban-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .ban-add { height: 72px; width: 72px; flex-shrink: 0; border: 1px dashed #3a3a3a; border-radius: 5px; color: var(--text3); display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; }
+  .ban-add:hover, .ban-add.on { border-color: var(--red); color: #fff; background: rgba(200,16,46,0.06); }
+  .ban-auto { margin-left: auto; }
+  .ban-pick { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; background: #0a0a0a; padding: 10px 12px 12px; }
+  .ban-pick-h { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
+  .ban-pick-g { display: flex; flex-wrap: wrap; gap: 6px; max-height: 260px; overflow-y: auto; overscroll-behavior: contain; }
+  .ban-pk { position: relative; padding: 0; border: 0; border-radius: 4px; overflow: hidden; background: #000; line-height: 0; }
+  .ban-pk img { height: 58px; width: auto; display: block; opacity: 0.6; transition: opacity 140ms ease; }
+  .ban-pk:hover img, .ban-pk.on img { opacity: 1; }
+  .ban-pk.on { outline: 2px solid var(--red); outline-offset: -2px; }
+  .ban-pk b { position: absolute; left: 4px; top: 4px; font-size: 10px; font-weight: 600; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 3px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .ban-vid-top { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  #vidAdd { display: inline-flex; align-items: center; gap: 7px; }
+  #vidAdd svg { width: 13px !important; height: 13px !important; }
   .ban-it { position: relative; height: 72px; border-radius: 5px; overflow: hidden; background: #000; cursor: grab; flex-shrink: 0; transition: opacity 160ms ease; }
   .ban-it img { height: 100%; width: auto; display: block; pointer-events: none; }
   .ban-it b { position: absolute; left: 5px; top: 5px; font-size: 10px; font-weight: 600; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 3px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; pointer-events: none; }
@@ -5982,6 +6007,35 @@
         </div>
       </div>
 
+      <div class="photos-section ban-card" id="banSection">
+        <div class="photos-header">
+          <h3>Banner</h3>
+          <div class="gal-head-acts">
+            <span class="ban-live" id="banLive"></span>
+            <div class="cmp-seg" role="group" aria-label="Banner">
+              <button type="button" class="sm" data-bt="foto">Foto</button>
+              <button type="button" class="sm" data-bt="video">Video</button>
+            </div>
+          </div>
+        </div>
+        <div class="ban-stage" id="banStage">
+          <img class="ban-l" alt=""><img class="ban-l" alt=""><video class="ban-v" muted playsinline loop></video>
+          <div class="ban-grad"></div>
+          <div class="ban-ttl" id="banTtl"></div>
+          <span class="ban-empty-stage" id="banEmptyStage" hidden></span>
+        </div>
+        <div class="ban-pane" id="banFotoPane">
+          <div class="ban-row" id="banRow"></div>
+          <div class="ban-pick" id="banPick" hidden></div>
+        </div>
+        <div class="ban-pane" id="vidSection" hidden>
+          <div class="ban-vid-top"><button type="button" class="sm" id="vidAdd">${cmpIcon("plus")}<span>Aggiungi video</span></button></div>
+          <input type="file" id="vidInput" accept="video/*" multiple style="display:none;">
+          <div class="vid-list" id="vidList"></div>
+          <div id="vidWork"></div>
+        </div>
+      </div>
+
       <div class="photos-section" id="galSection">
         <div class="photos-header">
           <h3>Gallerie</h3>
@@ -5996,23 +6050,6 @@
         <div class="gal-list" id="galList"></div>
       </div>
 
-      <div class="photos-section" id="banSection">
-        <div class="photos-header">
-          <h3>Foto del banner</h3>
-          <button type="button" class="sm ghost" id="banClear" hidden>Automatico</button>
-        </div>
-        <div class="ban-row" id="banRow"></div>
-      </div>
-
-      <div class="photos-section" id="vidSection">
-        <div class="photos-header">
-          <h3>Video del banner</h3>
-          <button type="button" id="vidAdd">Aggiungi video</button>
-        </div>
-        <input type="file" id="vidInput" accept="video/*" multiple style="display:none;">
-        <div class="vid-list" id="vidList"></div>
-        <div id="vidWork"></div>
-      </div>
     `;
 
     // Wire fields
@@ -7267,21 +7304,94 @@
       paintBan();
       if (window._updateFocalPointUI) window._updateFocalPointUI();
     }
-    function paintBan() {
-      const row = document.getElementById("banRow"), clr = document.getElementById("banClear");
-      if (!row) return;
-      const l = banList();
-      if (clr) clr.hidden = !l.length;
-      row.innerHTML = l.length
-        ? l.map((n, k) => `<div class="ban-it" draggable="true" data-name="${escapeHtml(n)}"><img src="${thumbOf(n)}" alt="" draggable="false" loading="lazy"><b>${k + 1}</b><button type="button" data-ban-rm="${escapeHtml(n)}" title="Togli dal banner" aria-label="Togli dal banner">${cmpIcon("remove")}</button></div>`).join("")
-        : `<span class="ban-empty">Automatico. Premi «Banner» sulle foto per sceglierle.</span>`;
+    // pannello Banner: anteprima come sul sito, foto scelte (o automatiche) e video
+    let banTab = Array.isArray(p.video) && p.video.length ? "video" : "foto";
+    let banPickOpen = false;
+    const banFolder = `codice-sorgente/contenuti/${p.section}/${p.slug}`;
+    function banAuto() {
+      const first = allNames().slice(0, 8);
+      const horiz = first.filter(n => ratio(n) >= 1);
+      return horiz.length ? horiz : first;
     }
+    function paintStage() {
+      const st = document.getElementById("banStage");
+      if (!st) return;
+      clearInterval(window._banTimer);
+      const imgs = st.querySelectorAll(".ban-l"), vid = st.querySelector(".ban-v"), empty = document.getElementById("banEmptyStage");
+      const t = (p.titolo || "").split("\n").map(x => x.trim()).filter(Boolean);
+      document.getElementById("banTtl").innerHTML = t.length ? `${escapeHtml(t[0])}${t.slice(1).map(x => `<i>${escapeHtml(x)}</i>`).join("")}` : "";
+      const vids = Array.isArray(p.video) ? p.video : [];
+      if (banTab === "video") {
+        imgs.forEach(im => im.classList.remove("on"));
+        if (vids.length) {
+          const src = localPhotoUrl(banFolder, vids[0]).replace(/%2F/gi, "/");
+          if (vid.getAttribute("src") !== src) vid.setAttribute("src", src);
+          vid.classList.add("on"); vid.play().catch(() => {});
+          empty.hidden = true;
+        } else { vid.classList.remove("on"); vid.removeAttribute("src"); empty.hidden = false; empty.textContent = "Nessun video"; }
+        return;
+      }
+      vid.classList.remove("on"); vid.pause();
+      const l = banList().length ? banList() : banAuto();
+      empty.hidden = !!l.length; empty.textContent = "Nessuna foto";
+      if (!l.length) { imgs.forEach(im => im.classList.remove("on")); return; }
+      let k = 0, top = 0;
+      const show = (n) => {
+        const nx = imgs[1 - top];
+        nx.src = urlOf(n) || thumbOf(n);
+        nx.classList.remove("zoom"); void nx.offsetWidth; nx.classList.add("zoom");
+        nx.classList.add("on"); imgs[top].classList.remove("on");
+        top = 1 - top;
+      };
+      show(l[0]);
+      if (l.length > 1) window._banTimer = setInterval(() => {
+        if (!document.body.contains(st)) { clearInterval(window._banTimer); return; }
+        k = (k + 1) % l.length; show(l[k]);
+      }, 3500);
+    }
+    function paintBan() {
+      const sec = document.getElementById("banSection");
+      if (!sec) return;
+      const l = banList(), vids = Array.isArray(p.video) ? p.video : [];
+      const live = document.getElementById("banLive");
+      if (live) live.innerHTML = vids.length ? `Sul sito: <b>video</b>` : l.length ? `Sul sito: <b>${l.length} ${l.length === 1 ? "foto scelta" : "foto scelte"}</b>` : `Sul sito: <b>automatico</b>`;
+      sec.querySelectorAll("[data-bt]").forEach(b => b.classList.toggle("on", b.dataset.bt === banTab));
+      document.getElementById("banFotoPane").hidden = banTab !== "foto";
+      document.getElementById("vidSection").hidden = banTab !== "video";
+      const row = document.getElementById("banRow");
+      row.innerHTML = l.map((n, k) => `<div class="ban-it" draggable="true" data-name="${escapeHtml(n)}"><img src="${thumbOf(n)}" alt="" draggable="false" loading="lazy"><b>${k + 1}</b><button type="button" data-ban-rm="${escapeHtml(n)}" title="Togli dal banner" aria-label="Togli dal banner">${cmpIcon("remove")}</button></div>`).join("")
+        + `<button type="button" class="ban-add${banPickOpen ? " on" : ""}" data-ban-add title="Scegli le foto del banner" aria-label="Scegli le foto del banner">${cmpIcon("plus")}</button>`
+        + (l.length ? `<button type="button" class="sm ghost ban-auto" data-ban-auto title="Il sito sceglie da solo le prime foto orizzontali">Automatico</button>` : "");
+      const pick = document.getElementById("banPick");
+      pick.hidden = !banPickOpen;
+      if (banPickOpen) {
+        const all = allNames();
+        pick.innerHTML = `<div class="ban-pick-h"><span>${l.length ? `${l.length} di ${all.length}` : `${all.length} foto`}</span><span class="cmp-sp" style="flex:1"></span><button type="button" class="sm ghost" data-ban-done>Fatto</button></div>
+          <div class="ban-pick-g">${all.map(n => { const k = l.indexOf(n); return `<button type="button" class="ban-pk${k >= 0 ? " on" : ""}" data-ban-pk="${escapeHtml(n)}" title="${k >= 0 ? "Togli dal banner" : "Aggiungi al banner"}"><img src="${thumbOf(n)}" alt="" loading="lazy" decoding="async" draggable="false">${k >= 0 ? `<b>${k + 1}</b>` : ""}</button>`; }).join("")}</div>`;
+      }
+      paintStage();
+    }
+    window._banPaint = () => paintBan();
     {
-      const row = document.getElementById("banRow"), clr = document.getElementById("banClear");
-      if (clr) clr.onclick = () => { setBan([]); toast("Banner automatico.", ""); };
+      const sec = document.getElementById("banSection"), row = document.getElementById("banRow"), pick = document.getElementById("banPick");
+      if (sec) sec.querySelectorAll("[data-bt]").forEach(b => b.onclick = () => { banTab = b.dataset.bt; paintBan(); });
+      if (pick) pick.onclick = (e) => {
+        if (e.target.closest("[data-ban-done]")) { banPickOpen = false; paintBan(); return; }
+        const b = e.target.closest("[data-ban-pk]");
+        if (!b) return;
+        const n = b.dataset.banPk, l = banList();
+        const g = pick.querySelector(".ban-pick-g"), y = g ? g.scrollTop : 0;
+        setBan(l.includes(n) ? l.filter(x => x !== n) : [...l, n]);
+        const g2 = pick.querySelector(".ban-pick-g"); if (g2) g2.scrollTop = y;
+      };
       if (row) {
         let bd = null;
-        row.onclick = (e) => { const r = e.target.closest("[data-ban-rm]"); if (r) setBan(banList().filter(n => n !== r.dataset.banRm)); };
+        row.onclick = (e) => {
+          const r = e.target.closest("[data-ban-rm]");
+          if (r) { setBan(banList().filter(n => n !== r.dataset.banRm)); return; }
+          if (e.target.closest("[data-ban-add]")) { banPickOpen = !banPickOpen; paintBan(); return; }
+          if (e.target.closest("[data-ban-auto]")) { setBan([]); toast("Banner automatico.", ""); }
+        };
         row.ondragstart = (e) => { const it = e.target.closest(".ban-it"); if (!it) return; bd = it.dataset.name; e.dataTransfer.setData("text/plain", "ban:" + bd); e.dataTransfer.effectAllowed = "move"; requestAnimationFrame(() => it.classList.add("dragging")); };
         const clean = () => row.querySelectorAll(".dragging, .drop-before, .drop-after").forEach(x => x.classList.remove("dragging", "drop-before", "drop-after"));
         row.ondragend = () => { bd = null; clean(); };
@@ -8612,8 +8722,9 @@
     if (!Array.isArray(p.video)) p.video = [];
 
     function render() {
+      if (window._banPaint) setTimeout(window._banPaint, 0);
       if (!p.video.length) {
-        list.innerHTML = `<div class="vid-empty">Nessun video</div>`;
+        list.innerHTML = "";
         return;
       }
       list.innerHTML = p.video.map((rel, i) => `
