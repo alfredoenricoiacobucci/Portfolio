@@ -111,8 +111,8 @@
       },
       "video": [],
       "anteprimaScorrimento": {
-        "da": 11.5,
-        "a": 75.8
+        "da": 9.7,
+        "a": 82.3
       }
     },
     {
@@ -163,7 +163,8 @@
       "anteprimaPosizione": {
         "x": 55,
         "y": 30
-      }
+      },
+      "video": []
     },
     {
       "section": "art",
@@ -2863,7 +2864,7 @@
       "camera": "Leica SL2S",
       "ottica": "Sigma Art 24-70 f2.8 DG DN",
       "luce": "Naturale",
-      "banner": "PB-24.jpg",
+      "banner": "PB-14.jpg",
       "ordine": [
         "PB-01.jpg",
         "PB-02.jpg",
@@ -5184,155 +5185,6 @@
         {
           "tipo": "scorrimento",
           "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-351.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-352.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-353.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-354.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-355.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-356.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-357.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-358.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-359.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-360.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-361.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-362.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-363.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-364.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-365.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-366.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-367.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-368.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Collettivo il Nido"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-4.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-5.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-34.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-35.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-38.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-39.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-40.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 16,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Chien Barbu Mal Rasè"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-14.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-15.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-16.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-17.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-18.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-19.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-20.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-21.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-22.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-23.jpg"
-          ],
-          "composizione": {
-            "righe": 6,
-            "foto": []
-          },
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Centre de Titelles de Lleida"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-25.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-29.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-30.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-31.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-32.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-33.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-28.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Cho Kairin"
-        },
-        {
-          "tipo": "mosaico",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-41.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-42.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-43.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-44.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-45.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-46.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-47.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-48.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-49.jpg"
-          ],
-          "titolo": "Rulas Quetzal",
-          "composizione": {
-            "righe": 6,
-            "foto": []
-          },
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 16,
-            "sfondo": "trasparente"
-          },
-          "mosaico": {
-            "altezza": 120,
-            "spazio": 40
-          },
-          "margini": {
-            "sopra": 64,
-            "sotto": 48
-          }
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "PB-01.jpg",
-            "PB-02.jpg",
-            "PB-03.jpg",
-            "PB-05.jpg",
-            "PB-06.jpg",
-            "PB-07.jpg",
-            "PB-04.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-015.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-016.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-017.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Humberto jimenez rios"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
             "PB-14.jpg",
             "PB-15.jpg",
             "PB-16.jpg",
@@ -5359,182 +5211,6 @@
             "sfondo": "trasparente"
           },
           "titolo": "Khao Niew Lao Theater"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "PB-50.jpg",
-            "PB-51.jpg",
-            "PB-52.jpg",
-            "PB-53.jpg",
-            "PB-54.jpg",
-            "PB-55.jpg",
-            "PB-56.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Lupa Maimone"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "PB-65.jpg",
-            "PB-66.jpg",
-            "PB-67.jpg",
-            "PB-68.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-125.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-127.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-128.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-129.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-130.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-132.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-134.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-136.jpg",
-            "AlfredoEnrico_Iacobucci_AIP2025_-137.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Duounpie"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-53.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-56.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-59.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-60.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-62.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-63.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-65.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-66.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-67.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-70.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-73.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-76.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-78.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-79.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-80.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-87.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-89.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-94.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-95.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-101.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-103.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-106.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-108.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-114.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-116.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-117.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-119.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-122.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-124.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-125.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-126.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-127.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-128.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-129.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-130.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-138.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-142.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-146.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-151.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-154.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-155.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-156.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-157.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-158.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-159.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-160.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-161.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-165.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-166.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Balletto civile"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-252.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-253.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-254.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-255.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-256.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-257.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-258.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-259.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-260.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-261.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-262.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-263.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-264.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-265.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-266.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-267.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-268.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Tsubasa Watanabe"
-        },
-        {
-          "tipo": "scorrimento",
-          "foto": [
-            "Shot by AEI x 30° Artisti in Piazza-370.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-371.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-372.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-373.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-374.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-375.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-376.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-377.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-378.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-379.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-380.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-381.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-382.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-383.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-384.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-385.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-386.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-387.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-388.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-389.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-390.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-391.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-392.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-393.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-394.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-395.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-396.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-397.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-398.jpg",
-            "Shot by AEI x 30° Artisti in Piazza-399.jpg"
-          ],
-          "scorrimento": {
-            "altezza": 50,
-            "velocita": 40,
-            "spazio": 64,
-            "sfondo": "trasparente"
-          },
-          "titolo": "Tony Clifton Circus"
         },
         {
           "tipo": "scorrimento",
@@ -5703,6 +5379,204 @@
         {
           "tipo": "scorrimento",
           "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-53.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-56.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-59.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-60.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-62.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-63.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-65.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-66.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-67.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-70.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-73.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-76.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-78.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-79.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-80.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-87.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-89.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-94.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-95.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-101.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-103.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-106.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-108.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-114.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-116.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-117.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-119.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-122.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-124.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-125.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-126.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-127.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-128.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-129.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-130.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-138.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-142.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-146.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-151.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-154.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-155.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-156.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-157.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-158.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-159.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-160.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-161.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-165.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-166.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Balletto civile"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "PB-01.jpg",
+            "PB-02.jpg",
+            "PB-03.jpg",
+            "PB-05.jpg",
+            "PB-06.jpg",
+            "PB-07.jpg",
+            "PB-04.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-015.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-016.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-017.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Humberto jimenez rios"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "PB-50.jpg",
+            "PB-51.jpg",
+            "PB-52.jpg",
+            "PB-53.jpg",
+            "PB-54.jpg",
+            "PB-55.jpg",
+            "PB-56.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Lupa Maimone"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "PB-65.jpg",
+            "PB-66.jpg",
+            "PB-67.jpg",
+            "PB-68.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-125.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-127.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-128.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-129.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-130.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-132.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-134.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-136.jpg",
+            "AlfredoEnrico_Iacobucci_AIP2025_-137.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Duounpie"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-252.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-253.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-254.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-255.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-256.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-257.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-258.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-259.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-260.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-261.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-262.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-263.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-264.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-265.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-266.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-267.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-268.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Tsubasa Watanabe"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-370.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-371.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-372.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-373.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-374.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-375.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-376.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-377.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-378.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-379.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-380.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-381.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-382.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-383.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-384.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-385.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-386.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-387.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-388.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-389.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-390.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-391.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-392.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-393.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-394.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-395.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-396.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-397.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-398.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-399.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Tony Clifton Circus"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
             "Shot by AEI x 30° Artisti in Piazza-169.jpg",
             "Shot by AEI x 30° Artisti in Piazza-170.jpg",
             "Shot by AEI x 30° Artisti in Piazza-171.jpg",
@@ -5792,6 +5666,133 @@
           "titolo": "Compañía de Circo eia"
         },
         {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-351.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-352.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-353.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-354.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-355.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-356.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-357.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-358.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-359.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-360.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-361.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-362.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-363.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-364.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-365.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-366.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-367.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-368.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Collettivo il Nido"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-4.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-5.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-34.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-35.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-38.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-39.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-40.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 16,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Chien Barbu Mal Rasè"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-14.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-15.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-16.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-17.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-18.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-19.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-20.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-21.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-22.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-23.jpg"
+          ],
+          "composizione": {
+            "righe": 6,
+            "foto": []
+          },
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Centre de Titelles de Lleida"
+        },
+        {
+          "tipo": "scorrimento",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-25.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-29.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-30.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-31.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-32.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-33.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-28.jpg"
+          ],
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 64,
+            "sfondo": "trasparente"
+          },
+          "titolo": "Cho Kairin"
+        },
+        {
+          "tipo": "mosaico",
+          "foto": [
+            "Shot by AEI x 30° Artisti in Piazza-41.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-42.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-43.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-44.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-45.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-46.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-47.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-48.jpg",
+            "Shot by AEI x 30° Artisti in Piazza-49.jpg"
+          ],
+          "titolo": "Rulas Quetzal",
+          "composizione": {
+            "righe": 6,
+            "foto": []
+          },
+          "scorrimento": {
+            "altezza": 50,
+            "velocita": 40,
+            "spazio": 16,
+            "sfondo": "trasparente"
+          },
+          "mosaico": {
+            "altezza": 120,
+            "spazio": 40
+          },
+          "margini": {
+            "sopra": 64,
+            "sotto": 48
+          }
+        },
+        {
           "tipo": "mosaico",
           "foto": [
             "PB-08.jpg",
@@ -5865,7 +5866,21 @@
       "anteprimaScorrimento": {
         "da": 4.6,
         "a": 87.3
-      }
+      },
+      "bannerFoto": [
+        "PB-14.jpg",
+        "PB-24.jpg",
+        "PB-31.jpg",
+        "PB-47.jpg",
+        "PB-13.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-70.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-67.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-40.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-234.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-227.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-306.jpg",
+        "Shot by AEI x 30° Artisti in Piazza-464.jpg"
+      ]
     },
     {
       "section": "pro",
