@@ -845,6 +845,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
 
   // gallerie: testo sotto il titolo aperto, mosaico con tutte le foto aperte
   const [galUi, setGalUi] = useState({});
+  const scrollRev = [];
 
   const [bannerIndex, setBannerIndex] = useState(0);
   const [prevBannerIndex, setPrevBannerIndex] = useState(null);
@@ -1336,7 +1337,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
             </div>
           )}
           {/* Gallerie — una sotto l'altra, con lo stesso margine sopra ciascuna */}
-          {(selectedProject.galleries?.length ? selectedProject.galleries : [{ type: "mosaico", idx: (selectedProject.images || []).map((_, i) => i) }]).map((g, gi) => {
+          {(selectedProject.galleries?.length ? selectedProject.galleries : [{ type: "mosaico", idx: (selectedProject.images || []).map((_, i) => i) }]).map((g, gi, gl) => {
+            // gallerie a scorrimento una sotto l'altra: ognuna va nel verso opposto a quella sopra
+            if (gi === 0) { scrollRev.length = 0; gl.forEach((x, i) => { scrollRev[i] = x.type === "scorrimento" && i > 0 && gl[i - 1].type === "scorrimento" ? !scrollRev[i - 1] : false; }); }
             const openAt = (i) => {
               setViewerIndex(i);
               setViewerOpen(true);
@@ -1391,7 +1394,7 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
               return (
                 <div key={gi} style={{ paddingTop: g.mt != null ? g.mt + "px" : ASP.galleriaMarginTop + "rem", paddingBottom: g.mb ? g.mb + "px" : undefined }}>
                   {titleEl}
-                  <ScrollGallery images={selectedProject.images || []} idx={g.idx} settings={g.scroll} altFor={viewerAlt} onImageClick={openAt} />
+                  <ScrollGallery images={selectedProject.images || []} idx={g.idx} settings={g.scroll} altFor={viewerAlt} onImageClick={openAt} reverse={!!(gi > 0 && scrollRev[gi])} />
                 </div>
               );
             }
@@ -1417,16 +1420,24 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
                           onImageClick={(i) => openAt(shown[i])}
                         />
                         {more && (
-                          <div className="flex justify-center pt-4">
+                          <div className="flex justify-center">
+                            {/* stessa freccia del banner: rimbalzo, etichetta al passaggio, rossa al passaggio */}
                             <button
                               type="button"
                               onClick={() => setGalUi((u) => ({ ...u, [gk + ":m"]: !u[gk + ":m"] }))}
                               aria-expanded={open}
                               aria-label={open ? "Mostra meno foto" : `Mostra tutte le ${g.idx.length} foto`}
-                              className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 hover-red ${tone}`}
+                              className="flex flex-col items-center justify-center cursor-pointer select-none project-chevron-wrap px-6"
+                              style={{ height: "80px" }}
                             >
-                              {!open && <span className="text-xs tracking-wide">+{g.idx.length - LIM}</span>}
-                              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ transition: "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)", transform: open ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6" /></svg>
+                              {!open && (
+                                <span className={`project-chevron-label text-xs tracking-wide ${tone}`} style={{ marginBottom: "2px" }} aria-hidden>
+                                  +{g.idx.length - LIM}
+                                </span>
+                              )}
+                              <svg className={`project-chevron ${open ? "project-chevron--open" : ""}`} width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <polyline points="6 9 12 15 18 9" className="project-chevron__stroke" stroke={mode === "professional" ? ASP.colorTextProfessional : ASP.colorTextArtwork} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
                             </button>
                           </div>
                         )}

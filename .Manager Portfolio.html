@@ -7093,6 +7093,12 @@
         `<div class="gal-mo-row" style="gap:${mo.spazio * k}px;margin-bottom:${ri < rows.length - 1 ? mo.spazio * k : 0}px">` +
         r.items.map(n => `<img src="${thumbOf(names[n])}" alt="" draggable="false" loading="lazy" decoding="async" style="width:${ratio(names[n]) * r.h * k}px;height:${r.h * k}px">`).join("") + `</div>`).join("") + `</div>`;
     }
+    // scorrimenti uno sotto l'altro: versi alternati, come sul sito
+    function scRev(i) {
+      const gs = galGet(p); let r = false;
+      for (let k = 1; k <= i; k++) r = gs[k] && gs[k].tipo === "scorrimento" && gs[k - 1].tipo === "scorrimento" ? !r : false;
+      return r;
+    }
     function paintScPreview(card, g) {
       const box = card && card.querySelector(".gal-sc-prev");
       if (!box) return;
@@ -7110,7 +7116,7 @@
       const loopW = names.reduce((t, n) => t + ratio(n) * h + gap, 0);
       const dur = loopW / Math.max(1, sc.velocita * k);
       box.style.padding = Math.round(Math.max(8, 30 * k)) + "px 0";
-      box.innerHTML = `<div class="gal-sc-band" style="background:${col};padding:${col === "transparent" ? 0 : gap}px 0"><div class="gal-sc-track" style="animation-duration:${dur}s;padding-left:${gap}px">${imgs}${imgs}</div></div>`;
+      box.innerHTML = `<div class="gal-sc-band" style="background:${col};padding:${col === "transparent" ? 0 : gap}px 0"><div class="gal-sc-track" style="animation-duration:${dur}s;animation-direction:${scRev(+card.dataset.i) ? "reverse" : "normal"};padding-left:${gap}px">${imgs}${imgs}</div></div>`;
     }
 
     // ---- composizione ----

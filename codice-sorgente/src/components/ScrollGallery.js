@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
-export default function ScrollGallery({ images = [], idx = [], settings = {}, onImageClick, altFor }) {
+export default function ScrollGallery({ images = [], idx = [], settings = {}, onImageClick, altFor, reverse = false }) {
   const { height = 50, speed = 40, gap = 16, background = "transparent" } = settings;
   const reduced = useReducedMotion();
   const band = background && background !== "transparent";
@@ -68,7 +68,7 @@ export default function ScrollGallery({ images = [], idx = [], settings = {}, on
         <div
           ref={trackRef}
           className={`scroll-gallery__track flex w-max${reduced ? "" : " scroll-gallery__track--run"}`}
-          style={{ animationDuration: duration + "s", paddingLeft: gap + "px" }}
+          style={{ animationDuration: duration + "s", animationDirection: reverse ? "reverse" : "normal", paddingLeft: gap + "px" }}
         >
           {strip(0)}
           {!reduced && strip(1)}
