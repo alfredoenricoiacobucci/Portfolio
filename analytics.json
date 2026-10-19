@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 12,
+    "total": 13,
     "art": 3,
     "pro": 7,
-    "landing": 2,
+    "landing": 3,
     "about": 0
   },
   "projects": {
@@ -25,11 +25,18 @@
       "art": 1,
       "pro": 7,
       "sessions": 3
+    },
+    "2026-10-19": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 4
+    "IT": 4,
+    "US": 1
   },
   "cities": {
     "IT|Naples": {
@@ -39,15 +46,23 @@
       "cc": "IT",
       "lat": 40.85,
       "lon": 14.27
+    },
+    "US|The Dalles": {
+      "n": 1,
+      "city": "The Dalles",
+      "region": "OR",
+      "cc": "US",
+      "lat": 45.59,
+      "lon": -121.18
     }
   },
   "referrers": {
-    "direct": 4
+    "direct": 5
   },
   "devices": {
-    "desktop": 2,
+    "desktop": 3,
     "mobile": 2,
     "tablet": 0
   },
-  "sessions": 4
+  "sessions": 5
 }
