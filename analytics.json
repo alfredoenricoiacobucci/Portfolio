@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 15,
+    "total": 16,
     "art": 3,
     "pro": 7,
-    "landing": 5,
+    "landing": 6,
     "about": 0
   },
   "projects": {
@@ -39,15 +39,15 @@
       "sessions": 1
     },
     "2026-10-21": {
-      "total": 1,
+      "total": 2,
       "art": 0,
       "pro": 0,
-      "sessions": 1
+      "sessions": 2
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 6,
+    "IT": 7,
     "US": 1
   },
   "cities": {
@@ -66,16 +66,24 @@
       "cc": "US",
       "lat": 45.59,
       "lon": -121.18
+    },
+    "IT|Rome": {
+      "n": 1,
+      "city": "Rome",
+      "region": "62",
+      "cc": "IT",
+      "lat": 41.89,
+      "lon": 12.51
     }
   },
   "referrers": {
-    "direct": 5,
+    "direct": 6,
     "l.instagram.com": 2
   },
   "devices": {
     "desktop": 3,
-    "mobile": 4,
+    "mobile": 5,
     "tablet": 0
   },
-  "sessions": 7
+  "sessions": 8
 }
