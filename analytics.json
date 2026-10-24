@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 35,
+    "total": 36,
     "art": 7,
-    "pro": 16,
+    "pro": 17,
     "landing": 12,
     "about": 0
   },
@@ -19,7 +19,8 @@
     "pro/sono-manifesto-2-bianchi": 1
   },
   "photos": {
-    "/projects/pro/sono-manifesto-2-bianchi/PB-01.jpg": 1
+    "/projects/pro/sono-manifesto-2-bianchi/PB-01.jpg": 1,
+    "/projects/pro/artisti-in-piazza/PB-14.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -59,9 +60,9 @@
       "sessions": 1
     },
     "2026-10-24": {
-      "total": 18,
+      "total": 19,
       "art": 4,
-      "pro": 9,
+      "pro": 10,
       "sessions": 5
     }
   },
