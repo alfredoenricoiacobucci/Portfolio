@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 25,
-    "art": 5,
+    "total": 26,
+    "art": 6,
     "pro": 8,
     "landing": 12,
     "about": 0
@@ -11,7 +11,8 @@
     "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 1,
     "pro/untitled-comelli": 2,
     "pro/artisti-in-piazza": 1,
-    "art/gemelli-cosmici": 1
+    "art/gemelli-cosmici": 1,
+    "art/labirinto-di-cemento": 1
   },
   "photos": {},
   "daily": {
@@ -52,8 +53,8 @@
       "sessions": 1
     },
     "2026-10-24": {
-      "total": 8,
-      "art": 2,
+      "total": 9,
+      "art": 3,
       "pro": 1,
       "sessions": 5
     }
