@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 30,
+    "total": 31,
     "art": 7,
-    "pro": 11,
+    "pro": 12,
     "landing": 12,
     "about": 0
   },
@@ -13,7 +13,8 @@
     "pro/artisti-in-piazza": 1,
     "art/gemelli-cosmici": 1,
     "art/labirinto-di-cemento": 1,
-    "art/benzina-senza-piombo": 1
+    "art/benzina-senza-piombo": 1,
+    "pro/sono-manifesto-1-fantini": 1
   },
   "photos": {},
   "daily": {
@@ -54,9 +55,9 @@
       "sessions": 1
     },
     "2026-10-24": {
-      "total": 13,
+      "total": 14,
       "art": 4,
-      "pro": 4,
+      "pro": 5,
       "sessions": 5
     }
   },
