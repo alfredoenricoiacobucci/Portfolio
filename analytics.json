@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 38,
+    "total": 39,
     "art": 7,
-    "pro": 19,
+    "pro": 20,
     "landing": 12,
     "about": 0
   },
@@ -22,7 +22,8 @@
     "/projects/pro/sono-manifesto-2-bianchi/PB-01.jpg": 1,
     "/projects/pro/artisti-in-piazza/PB-14.jpg": 1,
     "/projects/pro/artisti-in-piazza/PB-68.jpg": 1,
-    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-383.jpg": 1
+    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-383.jpg": 1,
+    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-362.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -62,9 +63,9 @@
       "sessions": 1
     },
     "2026-10-24": {
-      "total": 21,
+      "total": 22,
       "art": 4,
-      "pro": 12,
+      "pro": 13,
       "sessions": 5
     }
   },
