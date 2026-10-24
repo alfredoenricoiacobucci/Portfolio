@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 21,
+    "total": 22,
     "art": 3,
     "pro": 8,
-    "landing": 10,
+    "landing": 11,
     "about": 0
   },
   "projects": {
@@ -51,16 +51,16 @@
       "sessions": 1
     },
     "2026-10-24": {
-      "total": 4,
+      "total": 5,
       "art": 0,
       "pro": 1,
-      "sessions": 3
+      "sessions": 4
     }
   },
   "contacts": 0,
   "countries": {
     "IT": 11,
-    "US": 1
+    "US": 2
   },
   "cities": {
     "IT|Naples": {
@@ -86,16 +86,25 @@
       "cc": "IT",
       "lat": 41.89,
       "lon": 12.51
+    },
+    "US|Springfield": {
+      "n": 1,
+      "city": "Springfield",
+      "region": "NE",
+      "cc": "US",
+      "lat": 41.08,
+      "lon": -96.13
     }
   },
   "referrers": {
     "direct": 8,
-    "l.instagram.com": 4
+    "l.instagram.com": 4,
+    "m.facebook.com": 1
   },
   "devices": {
     "desktop": 3,
-    "mobile": 9,
+    "mobile": 10,
     "tablet": 0
   },
-  "sessions": 12
+  "sessions": 13
 }
