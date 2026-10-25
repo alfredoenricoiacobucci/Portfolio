@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 55,
-    "art": 20,
+    "total": 56,
+    "art": 21,
     "pro": 21,
     "landing": 14,
     "about": 0
@@ -13,7 +13,7 @@
     "pro/artisti-in-piazza": 2,
     "art/gemelli-cosmici": 2,
     "art/labirinto-di-cemento": 2,
-    "art/benzina-senza-piombo": 1,
+    "art/benzina-senza-piombo": 2,
     "pro/sono-manifesto-1-fantini": 1,
     "pro/cult-ca-romanino": 1,
     "pro/sono-manifesto-2-bianchi": 1,
@@ -79,8 +79,8 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 14,
-      "art": 13,
+      "total": 15,
+      "art": 14,
       "pro": 0,
       "sessions": 1
     }
