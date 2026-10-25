@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 58,
+    "total": 59,
     "art": 22,
-    "pro": 22,
+    "pro": 23,
     "landing": 14,
     "about": 0
   },
@@ -18,7 +18,8 @@
     "pro/cult-ca-romanino": 1,
     "pro/sono-manifesto-2-bianchi": 1,
     "art/le-radici-ca-tieni": 1,
-    "art/totem": 1
+    "art/totem": 1,
+    "pro/benevierre-store": 1
   },
   "photos": {
     "/projects/pro/sono-manifesto-2-bianchi/PB-01.jpg": 1,
@@ -80,9 +81,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 17,
+      "total": 18,
       "art": 15,
-      "pro": 1,
+      "pro": 2,
       "sessions": 1
     }
   },
