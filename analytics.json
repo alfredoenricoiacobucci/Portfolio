@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 64,
+    "total": 65,
     "art": 22,
-    "pro": 28,
+    "pro": 29,
     "landing": 14,
     "about": 0
   },
@@ -39,7 +39,8 @@
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-103.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-155.jpg": 1,
-    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-2.jpg": 1
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-2.jpg": 1,
+    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-366.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -85,9 +86,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 23,
+      "total": 24,
       "art": 15,
-      "pro": 7,
+      "pro": 8,
       "sessions": 1
     }
   },
