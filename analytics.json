@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 63,
+    "total": 64,
     "art": 22,
-    "pro": 27,
+    "pro": 28,
     "landing": 14,
     "about": 0
   },
@@ -10,7 +10,7 @@
     "art/xylella": 2,
     "pro/metalinguaggio-somatico-workshop-con-gioia-morisco": 2,
     "pro/untitled-comelli": 3,
-    "pro/artisti-in-piazza": 2,
+    "pro/artisti-in-piazza": 3,
     "art/gemelli-cosmici": 2,
     "art/labirinto-di-cemento": 2,
     "art/benzina-senza-piombo": 2,
@@ -85,9 +85,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 22,
+      "total": 23,
       "art": 15,
-      "pro": 6,
+      "pro": 7,
       "sessions": 1
     }
   },
