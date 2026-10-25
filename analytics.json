@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 53,
-    "art": 18,
+    "total": 54,
+    "art": 19,
     "pro": 21,
     "landing": 14,
     "about": 0
@@ -31,7 +31,8 @@
     "/projects/art/gemelli-cosmici/gemelli-2.jpg": 1,
     "/projects/art/gemelli-cosmici/gemelli-5.jpg": 1,
     "/projects/art/le-radici-ca-tieni/radici-003.jpg": 1,
-    "/projects/art/labirinto-di-cemento/cimitero-14.jpg": 1
+    "/projects/art/labirinto-di-cemento/cimitero-14.jpg": 1,
+    "/projects/art/totem/totem-1.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -77,8 +78,8 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 12,
-      "art": 11,
+      "total": 13,
+      "art": 12,
       "pro": 0,
       "sessions": 1
     }
