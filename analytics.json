@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 62,
+    "total": 63,
     "art": 22,
-    "pro": 26,
+    "pro": 27,
     "landing": 14,
     "about": 0
   },
@@ -38,7 +38,8 @@
     "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-103.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1,
-    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-155.jpg": 1
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-155.jpg": 1,
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-2.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -84,9 +85,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 21,
+      "total": 22,
       "art": 15,
-      "pro": 5,
+      "pro": 6,
       "sessions": 1
     }
   },
