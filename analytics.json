@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 49,
-    "art": 14,
+    "total": 50,
+    "art": 15,
     "pro": 21,
     "landing": 14,
     "about": 0
@@ -28,7 +28,8 @@
     "/projects/pro/artisti-in-piazza/PB-47.jpg": 1,
     "/projects/art/xylella/xylella-3.jpg": 1,
     "/projects/art/gemelli-cosmici/gemelli-2.jpg": 1,
-    "/projects/art/gemelli-cosmici/gemelli-5.jpg": 1
+    "/projects/art/gemelli-cosmici/gemelli-5.jpg": 1,
+    "/projects/art/le-radici-ca-tieni/radici-003.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -74,8 +75,8 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 8,
-      "art": 7,
+      "total": 9,
+      "art": 8,
       "pro": 0,
       "sessions": 1
     }
