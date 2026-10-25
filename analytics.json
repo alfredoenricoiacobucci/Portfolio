@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 56,
-    "art": 21,
+    "total": 57,
+    "art": 22,
     "pro": 21,
     "landing": 14,
     "about": 0
@@ -33,7 +33,8 @@
     "/projects/art/le-radici-ca-tieni/radici-003.jpg": 1,
     "/projects/art/labirinto-di-cemento/cimitero-14.jpg": 1,
     "/projects/art/totem/totem-1.jpg": 1,
-    "/projects/art/totem/totem-2.jpg": 1
+    "/projects/art/totem/totem-2.jpg": 1,
+    "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -79,8 +80,8 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 15,
-      "art": 14,
+      "total": 16,
+      "art": 15,
       "pro": 0,
       "sessions": 1
     }
