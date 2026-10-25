@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 66,
+    "total": 67,
     "art": 22,
-    "pro": 30,
+    "pro": 31,
     "landing": 14,
     "about": 0
   },
@@ -40,7 +40,8 @@
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-155.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-2.jpg": 1,
-    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-366.jpg": 1
+    "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-366.jpg": 1,
+    "/projects/pro/metalinguaggio-somatico-workshop-con-gioia-morisco/Shot by AE x Gioia Morisco (Q-50-100)-92.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -86,9 +87,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 25,
+      "total": 26,
       "art": 15,
-      "pro": 9,
+      "pro": 10,
       "sessions": 1
     }
   },
