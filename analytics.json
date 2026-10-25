@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 59,
+    "total": 60,
     "art": 22,
-    "pro": 23,
+    "pro": 24,
     "landing": 14,
     "about": 0
   },
@@ -35,7 +35,8 @@
     "/projects/art/labirinto-di-cemento/cimitero-14.jpg": 1,
     "/projects/art/totem/totem-1.jpg": 1,
     "/projects/art/totem/totem-2.jpg": 1,
-    "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1
+    "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1,
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-103.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -81,9 +82,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 18,
+      "total": 19,
       "art": 15,
-      "pro": 2,
+      "pro": 3,
       "sessions": 1
     }
   },
