@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 61,
+    "total": 62,
     "art": 22,
-    "pro": 25,
+    "pro": 26,
     "landing": 14,
     "about": 0
   },
@@ -37,7 +37,8 @@
     "/projects/art/totem/totem-2.jpg": 1,
     "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-103.jpg": 1,
-    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1,
+    "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-155.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -83,9 +84,9 @@
       "sessions": 6
     },
     "2026-10-25": {
-      "total": 20,
+      "total": 21,
       "art": 15,
-      "pro": 4,
+      "pro": 5,
       "sessions": 1
     }
   },
