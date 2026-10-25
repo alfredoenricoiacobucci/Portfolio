@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 41,
+    "total": 42,
     "art": 7,
     "pro": 21,
-    "landing": 13,
+    "landing": 14,
     "about": 0
   },
   "projects": {
@@ -68,16 +68,22 @@
       "art": 4,
       "pro": 14,
       "sessions": 6
+    },
+    "2026-10-25": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 13,
+    "IT": 14,
     "US": 2
   },
   "cities": {
     "IT|Naples": {
-      "n": 12,
+      "n": 13,
       "city": "Naples",
       "region": "72",
       "cc": "IT",
@@ -112,12 +118,13 @@
   "referrers": {
     "direct": 9,
     "l.instagram.com": 5,
-    "m.facebook.com": 1
+    "m.facebook.com": 1,
+    "google.com": 1
   },
   "devices": {
     "desktop": 4,
-    "mobile": 11,
+    "mobile": 12,
     "tablet": 0
   },
-  "sessions": 15
+  "sessions": 16
 }
