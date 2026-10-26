@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 69,
+    "total": 70,
     "art": 22,
     "pro": 33,
-    "landing": 14,
+    "landing": 15,
     "about": 0
   },
   "projects": {
@@ -92,12 +92,19 @@
       "art": 15,
       "pro": 12,
       "sessions": 1
+    },
+    "2026-10-26": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
   "countries": {
     "IT": 14,
-    "US": 2
+    "US": 2,
+    "NL": 1
   },
   "cities": {
     "IT|Naples": {
@@ -131,18 +138,27 @@
       "cc": "US",
       "lat": 41.08,
       "lon": -96.13
+    },
+    "NL|Kerkrade": {
+      "n": 1,
+      "city": "Kerkrade",
+      "region": "LI",
+      "cc": "NL",
+      "lat": 50.87,
+      "lon": 6.06
     }
   },
   "referrers": {
     "direct": 9,
     "l.instagram.com": 5,
     "m.facebook.com": 1,
-    "google.com": 1
+    "google.com": 1,
+    "scriblihelp.com": 1
   },
   "devices": {
-    "desktop": 4,
+    "desktop": 5,
     "mobile": 12,
     "tablet": 0
   },
-  "sessions": 16
+  "sessions": 17
 }
