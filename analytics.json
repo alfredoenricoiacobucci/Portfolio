@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 82,
+    "total": 83,
     "art": 23,
-    "pro": 43,
+    "pro": 44,
     "landing": 16,
     "about": 0
   },
@@ -47,7 +47,8 @@
     "/projects/pro/cult-ca-romanino/L1010797.jpg": 1,
     "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-16.jpg": 1,
     "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-20.jpg": 1,
-    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-30.jpg": 1
+    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-30.jpg": 1,
+    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-33.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -105,9 +106,9 @@
       "sessions": 1
     },
     "2026-10-27": {
-      "total": 12,
+      "total": 13,
       "art": 1,
-      "pro": 10,
+      "pro": 11,
       "sessions": 1
     }
   },
