@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 77,
+    "total": 78,
     "art": 23,
-    "pro": 38,
+    "pro": 39,
     "landing": 16,
     "about": 0
   },
@@ -42,7 +42,8 @@
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-2.jpg": 1,
     "/projects/pro/artisti-in-piazza/Shot by AEI x 30° Artisti in Piazza-366.jpg": 1,
     "/projects/pro/metalinguaggio-somatico-workshop-con-gioia-morisco/Shot by AE x Gioia Morisco (Q-50-100)-92.jpg": 2,
-    "/projects/pro/sono-manifesto-2-bianchi/PB-02.jpg": 1
+    "/projects/pro/sono-manifesto-2-bianchi/PB-02.jpg": 1,
+    "/projects/pro/cult-ca-romanino/L1010797.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -100,9 +101,9 @@
       "sessions": 1
     },
     "2026-10-27": {
-      "total": 7,
+      "total": 8,
       "art": 1,
-      "pro": 5,
+      "pro": 6,
       "sessions": 1
     }
   },
