@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 83,
+    "total": 84,
     "art": 23,
-    "pro": 44,
+    "pro": 45,
     "landing": 16,
     "about": 0
   },
@@ -48,7 +48,8 @@
     "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-16.jpg": 1,
     "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-20.jpg": 1,
     "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-30.jpg": 1,
-    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-33.jpg": 1
+    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-33.jpg": 1,
+    "/projects/pro/cult-tridente/CULT2-fotoAEI(q40-100)-40.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -106,9 +107,9 @@
       "sessions": 1
     },
     "2026-10-27": {
-      "total": 13,
+      "total": 14,
       "art": 1,
-      "pro": 11,
+      "pro": 12,
       "sessions": 1
     }
   },
