@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 70,
+    "total": 71,
     "art": 22,
     "pro": 33,
-    "landing": 15,
+    "landing": 16,
     "about": 0
   },
   "projects": {
@@ -98,13 +98,20 @@
       "art": 0,
       "pro": 0,
       "sessions": 1
+    },
+    "2026-10-27": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
   "countries": {
     "IT": 14,
     "US": 2,
-    "NL": 1
+    "NL": 1,
+    "AT": 1
   },
   "cities": {
     "IT|Naples": {
@@ -146,19 +153,27 @@
       "cc": "NL",
       "lat": 50.87,
       "lon": 6.06
+    },
+    "AT|Vienna": {
+      "n": 1,
+      "city": "Vienna",
+      "region": "9",
+      "cc": "AT",
+      "lat": 48.21,
+      "lon": 16.37
     }
   },
   "referrers": {
     "direct": 9,
     "l.instagram.com": 5,
     "m.facebook.com": 1,
-    "google.com": 1,
+    "google.com": 2,
     "scriblihelp.com": 1
   },
   "devices": {
-    "desktop": 5,
+    "desktop": 6,
     "mobile": 12,
     "tablet": 0
   },
-  "sessions": 17
+  "sessions": 18
 }
