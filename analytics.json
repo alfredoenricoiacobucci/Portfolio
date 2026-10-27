@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 92,
+    "total": 93,
     "art": 23,
-    "pro": 52,
+    "pro": 53,
     "landing": 17,
     "about": 0
   },
@@ -16,7 +16,7 @@
     "art/benzina-senza-piombo": 2,
     "pro/sono-manifesto-1-fantini": 2,
     "pro/cult-ca-romanino": 2,
-    "pro/sono-manifesto-2-bianchi": 3,
+    "pro/sono-manifesto-2-bianchi": 4,
     "art/le-radici-ca-tieni": 1,
     "art/totem": 1,
     "pro/benevierre-store": 1,
@@ -111,9 +111,9 @@
       "sessions": 1
     },
     "2026-10-27": {
-      "total": 22,
+      "total": 23,
       "art": 1,
-      "pro": 19,
+      "pro": 20,
       "sessions": 2
     }
   },
