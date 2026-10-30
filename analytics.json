@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 94,
+    "total": 95,
     "art": 23,
     "pro": 54,
-    "landing": 17,
+    "landing": 18,
     "about": 0
   },
   "projects": {
@@ -115,12 +115,18 @@
       "art": 1,
       "pro": 21,
       "sessions": 2
+    },
+    "2026-10-30": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
   "countries": {
     "IT": 15,
-    "US": 2,
+    "US": 3,
     "NL": 1,
     "AT": 1
   },
@@ -172,19 +178,27 @@
       "cc": "AT",
       "lat": 48.21,
       "lon": 16.37
+    },
+    "US|New York City": {
+      "n": 1,
+      "city": "New York City",
+      "region": "NY",
+      "cc": "US",
+      "lat": 40.71,
+      "lon": -74.01
     }
   },
   "referrers": {
-    "direct": 9,
+    "direct": 10,
     "l.instagram.com": 5,
     "m.facebook.com": 1,
     "google.com": 3,
     "scriblihelp.com": 1
   },
   "devices": {
-    "desktop": 6,
+    "desktop": 7,
     "mobile": 13,
     "tablet": 0
   },
-  "sessions": 19
+  "sessions": 20
 }
