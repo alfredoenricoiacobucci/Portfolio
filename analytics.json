@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 99,
-    "art": 24,
+    "total": 100,
+    "art": 25,
     "pro": 54,
     "landing": 21,
     "about": 0
@@ -18,7 +18,7 @@
     "pro/cult-ca-romanino": 2,
     "pro/sono-manifesto-2-bianchi": 4,
     "art/le-radici-ca-tieni": 1,
-    "art/totem": 1,
+    "art/totem": 2,
     "pro/benevierre-store": 1,
     "pro/cult-tridente": 1
   },
@@ -129,8 +129,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 3,
-      "art": 1,
+      "total": 4,
+      "art": 2,
       "pro": 0,
       "sessions": 2
     }
