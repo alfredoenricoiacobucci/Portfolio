@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 117,
-    "art": 32,
+    "total": 118,
+    "art": 33,
     "pro": 60,
     "landing": 25,
     "about": 0
@@ -54,7 +54,8 @@
     "/projects/pro/sono-manifesto-2-bianchi/PB-20.jpg": 1,
     "/projects/pro/cult-ca-romanino/L1010414.jpg": 1,
     "/projects/pro/cult-ca-romanino/L1010541.jpg": 1,
-    "/projects/art/xylella/xylella-4.jpg": 1
+    "/projects/art/xylella/xylella-4.jpg": 1,
+    "/projects/art/labirinto-di-cemento/cimitero-12.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -130,8 +131,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 21,
-      "art": 9,
+      "total": 22,
+      "art": 10,
       "pro": 6,
       "sessions": 6
     }
