@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 110,
-    "art": 28,
+    "total": 111,
+    "art": 29,
     "pro": 57,
     "landing": 25,
     "about": 0
@@ -53,7 +53,8 @@
     "/projects/pro/sono-manifesto-1-fantini/IF-13.jpg": 1,
     "/projects/pro/sono-manifesto-2-bianchi/PB-20.jpg": 1,
     "/projects/pro/cult-ca-romanino/L1010414.jpg": 1,
-    "/projects/pro/cult-ca-romanino/L1010541.jpg": 1
+    "/projects/pro/cult-ca-romanino/L1010541.jpg": 1,
+    "/projects/art/xylella/xylella-4.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -129,8 +130,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 14,
-      "art": 5,
+      "total": 15,
+      "art": 6,
       "pro": 3,
       "sessions": 6
     }
