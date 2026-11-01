@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 108,
-    "art": 27,
+    "total": 109,
+    "art": 28,
     "pro": 57,
     "landing": 24,
     "about": 0
@@ -129,8 +129,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 12,
-      "art": 4,
+      "total": 13,
+      "art": 5,
       "pro": 3,
       "sessions": 5
     }
