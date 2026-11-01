@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 100,
-    "art": 25,
+    "total": 101,
+    "art": 26,
     "pro": 54,
     "landing": 21,
     "about": 0
@@ -35,7 +35,7 @@
     "/projects/art/le-radici-ca-tieni/radici-003.jpg": 1,
     "/projects/art/labirinto-di-cemento/cimitero-14.jpg": 1,
     "/projects/art/totem/totem-1.jpg": 1,
-    "/projects/art/totem/totem-2.jpg": 1,
+    "/projects/art/totem/totem-2.jpg": 2,
     "/projects/art/benzina-senza-piombo/benzina-03.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-103.jpg": 1,
     "/projects/pro/benevierre-store/Shot by AE x Benevierre (Q-30-100)-149.jpg": 1,
@@ -129,8 +129,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 4,
-      "art": 2,
+      "total": 5,
+      "art": 3,
       "pro": 0,
       "sessions": 2
     }
