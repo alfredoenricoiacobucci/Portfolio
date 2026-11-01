@@ -1,8 +1,8 @@
 {
   "views": {
-    "total": 119,
+    "total": 120,
     "art": 34,
-    "pro": 60,
+    "pro": 61,
     "landing": 25,
     "about": 0
   },
@@ -15,7 +15,7 @@
     "art/labirinto-di-cemento": 4,
     "art/benzina-senza-piombo": 2,
     "pro/sono-manifesto-1-fantini": 3,
-    "pro/cult-ca-romanino": 2,
+    "pro/cult-ca-romanino": 3,
     "pro/sono-manifesto-2-bianchi": 4,
     "art/le-radici-ca-tieni": 1,
     "art/totem": 2,
@@ -132,9 +132,9 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 23,
+      "total": 24,
       "art": 11,
-      "pro": 6,
+      "pro": 7,
       "sessions": 6
     }
   },
