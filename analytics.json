@@ -1,7 +1,7 @@
 {
   "views": {
-    "total": 118,
-    "art": 33,
+    "total": 119,
+    "art": 34,
     "pro": 60,
     "landing": 25,
     "about": 0
@@ -55,7 +55,8 @@
     "/projects/pro/cult-ca-romanino/L1010414.jpg": 1,
     "/projects/pro/cult-ca-romanino/L1010541.jpg": 1,
     "/projects/art/xylella/xylella-4.jpg": 1,
-    "/projects/art/labirinto-di-cemento/cimitero-12.jpg": 1
+    "/projects/art/labirinto-di-cemento/cimitero-12.jpg": 1,
+    "/projects/art/labirinto-di-cemento/cimitero-02.jpg": 1
   },
   "daily": {
     "2026-10-12": {
@@ -131,8 +132,8 @@
       "sessions": 1
     },
     "2026-11-01": {
-      "total": 22,
-      "art": 10,
+      "total": 23,
+      "art": 11,
       "pro": 6,
       "sessions": 6
     }
