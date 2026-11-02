@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 121,
+    "total": 122,
     "art": 35,
     "pro": 61,
-    "landing": 25,
+    "landing": 26,
     "about": 0
   },
   "projects": {
@@ -136,6 +136,12 @@
       "art": 12,
       "pro": 7,
       "sessions": 7
+    },
+    "2026-11-02": {
+      "total": 1,
+      "art": 0,
+      "pro": 0,
+      "sessions": 1
     }
   },
   "contacts": 0,
@@ -143,7 +149,8 @@
     "IT": 23,
     "US": 3,
     "NL": 1,
-    "AT": 1
+    "AT": 1,
+    "NG": 1
   },
   "cities": {
     "IT|Naples": {
@@ -201,19 +208,27 @@
       "cc": "US",
       "lat": 40.71,
       "lon": -74.01
+    },
+    "NG|Abuja": {
+      "n": 1,
+      "city": "Abuja",
+      "region": "FC",
+      "cc": "NG",
+      "lat": 9.06,
+      "lon": 7.5
     }
   },
   "referrers": {
-    "direct": 14,
+    "direct": 15,
     "l.instagram.com": 9,
     "m.facebook.com": 1,
     "google.com": 3,
     "scriblihelp.com": 1
   },
   "devices": {
-    "desktop": 7,
+    "desktop": 8,
     "mobile": 21,
     "tablet": 0
   },
-  "sessions": 28
+  "sessions": 29
 }
