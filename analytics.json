@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 126,
+    "total": 127,
     "art": 35,
     "pro": 63,
-    "landing": 28,
+    "landing": 29,
     "about": 0
   },
   "projects": {
@@ -144,17 +144,17 @@
       "sessions": 3
     },
     "2026-11-05": {
-      "total": 2,
+      "total": 3,
       "art": 0,
       "pro": 0,
-      "sessions": 2
+      "sessions": 3
     }
   },
   "contacts": 0,
   "countries": {
     "IT": 27,
     "US": 3,
-    "NL": 1,
+    "NL": 2,
     "AT": 1,
     "NG": 1
   },
@@ -222,10 +222,18 @@
       "cc": "NG",
       "lat": 9.06,
       "lon": 7.5
+    },
+    "NL|Winschoten": {
+      "n": 1,
+      "city": "Winschoten",
+      "region": "GR",
+      "cc": "NL",
+      "lat": 53.14,
+      "lon": 7.03
     }
   },
   "referrers": {
-    "direct": 18,
+    "direct": 19,
     "l.instagram.com": 9,
     "m.facebook.com": 1,
     "google.com": 3,
@@ -234,8 +242,8 @@
   },
   "devices": {
     "desktop": 8,
-    "mobile": 25,
+    "mobile": 26,
     "tablet": 0
   },
-  "sessions": 33
+  "sessions": 34
 }
