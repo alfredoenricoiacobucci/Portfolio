@@ -1,9 +1,9 @@
 {
   "views": {
-    "total": 125,
+    "total": 126,
     "art": 35,
     "pro": 63,
-    "landing": 27,
+    "landing": 28,
     "about": 0
   },
   "projects": {
@@ -144,15 +144,15 @@
       "sessions": 3
     },
     "2026-11-05": {
-      "total": 1,
+      "total": 2,
       "art": 0,
       "pro": 0,
-      "sessions": 1
+      "sessions": 2
     }
   },
   "contacts": 0,
   "countries": {
-    "IT": 26,
+    "IT": 27,
     "US": 3,
     "NL": 1,
     "AT": 1,
@@ -160,7 +160,7 @@
   },
   "cities": {
     "IT|Naples": {
-      "n": 24,
+      "n": 25,
       "city": "Naples",
       "region": "72",
       "cc": "IT",
@@ -229,12 +229,13 @@
     "l.instagram.com": 9,
     "m.facebook.com": 1,
     "google.com": 3,
-    "scriblihelp.com": 1
+    "scriblihelp.com": 1,
+    "android-app:": 1
   },
   "devices": {
     "desktop": 8,
-    "mobile": 24,
+    "mobile": 25,
     "tablet": 0
   },
-  "sessions": 32
+  "sessions": 33
 }
