@@ -93,11 +93,8 @@ function emptyAnalytics() {
 }
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
+  // Solo le pagine del sito possono inviare statistiche (niente permessi per altri siti)
+  if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (!GITHUB_TOKEN) {
     console.error("[track] GITHUB_TOKEN not configured. GH_PAT:", !!process.env.GH_PAT, "GITHUB_TOKEN:", !!process.env.GITHUB_TOKEN);
@@ -112,7 +109,19 @@ export default async function handler(req, res) {
     return res.status(204).end();
   }
 
-  const { page, project, photo, type, referrer, device, entry } = req.body || {};
+  // Solo valori attesi e di lunghezza ragionevole: nessuno può riempire l'archivio di dati inventati
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const str = (v, max) => (typeof v === "string" && v.length <= max ? v : undefined);
+  const PAGES = ["art", "artwork", "pro", "professional", "landing", "about"];
+  const page = PAGES.includes(body.page) ? body.page : undefined;
+  const project = str(body.project, 120);
+  const photo = str(body.photo, 300);
+  const type = body.type === "contact" ? "contact" : undefined;
+  const referrer = str(body.referrer, 300);
+  const device = ["desktop", "mobile", "tablet"].includes(body.device) ? body.device : "desktop";
+  const entry = body.entry === true;
+  if (!type && !page && !project && !photo) return res.status(204).end();
+  if (photo && !/^\/projects\//.test(photo) && !/^\/_next\/image/.test(photo)) return res.status(204).end();
   const isContact = type === "contact";
 
   const country = (req.headers["x-vercel-ip-country"] || "").toUpperCase() || null;

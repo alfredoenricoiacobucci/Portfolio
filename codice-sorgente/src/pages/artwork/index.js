@@ -306,6 +306,7 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
           subject: `Contatto dal portfolio — ${name}`,
           from_name: name,
           replyto: email || "",
+          botcheck: e.target.elements["botcheck"]?.checked || false,
           message: `Nome: ${name}\nEmail: ${email || "non fornita"}\n\n${message}`,
         }),
       });
@@ -340,9 +341,14 @@ function ContactForm({ mode, strings: S = {}, onSuccess }) {
       {error && (
         <p role="alert" style={{ color: "var(--error)", fontSize: "var(--text-xs)" }}>{error}</p>
       )}
+      {/* trappola per i programmi che inviano spam: un visitatore non la vede */}
+      <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
       <button type="submit" className={btnCls} disabled={sending} aria-busy={sending}>
         {sending ? (S.TASTO_INVIO_IN_CORSO || "Invio in corso…") : (S.TASTO_INVIA || "Invia")}
       </button>
+      <p className={`pt-3 text-center ${isDark ? "text-white/55" : "text-black/50"}`} style={{ fontSize: "var(--text-2xs, 11px)" }}>
+        Usato solo per risponderti. <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover-red transition-colors">Privacy</Link>
+      </p>
     </form>
   );
 }
@@ -1752,6 +1758,9 @@ export default function Portfolio({ projects, aboutArt = {}, aboutPro = {}, stri
         <div>{S.COPYRIGHT} © {new Date().getFullYear()}</div>
         <div className="text-xs font-normal">
           {S.DISCLAIMER}
+        </div>
+        <div className="text-xs font-normal">
+          <Link href="/privacy" className="underline underline-offset-2 hover-red transition-colors">Privacy, cookie e note legali</Link>
         </div>
       </footer>
 

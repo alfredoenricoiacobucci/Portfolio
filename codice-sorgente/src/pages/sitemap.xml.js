@@ -23,6 +23,7 @@ export async function getServerSideProps({ res }) {
     { loc: `${SITE_URL}/professional`, priority: "0.9" },
     { loc: `${SITE_URL}/artwork?p=about`, priority: "0.6" },
     { loc: `${SITE_URL}/professional?p=about`, priority: "0.6" },
+    { loc: `${SITE_URL}/privacy`, priority: "0.2" },
   ];
 
   for (const p of contenuti.projects || []) {

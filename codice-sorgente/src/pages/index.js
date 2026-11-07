@@ -307,7 +307,8 @@ export default function Landing({ artworkImages = [], professionalImages = [], s
           }`}
           style={{ zIndex: 10, fontSize: "var(--text-xs)" }}
         >
-          © {new Date().getFullYear()} Tutti i diritti riservati.
+          © {new Date().getFullYear()} Tutti i diritti riservati. ·{" "}
+          <Link href="/privacy" className="underline underline-offset-2 hover-red transition-colors" style={{ pointerEvents: "auto" }}>Privacy</Link>
         </div>
 
         {/* CURTAIN: parte bianca (artwork di default), sfuma rivelando lo sfondo */}
